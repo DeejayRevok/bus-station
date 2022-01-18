@@ -22,6 +22,8 @@ jobs:
         run: poetry run tox -e black -- --check
       - name: Check style
         run: poetry run tox -e flake8
+      - name: Check typing
+        run: poetry run tox -e pyre
       - name: Run unit tests
         run: poetry run tox -e unit_tests
       - name: Run integration tests
