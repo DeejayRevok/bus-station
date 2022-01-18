@@ -1,0 +1,39 @@
+[tool.poetry]
+name = "bus-station"
+version = "0.1.0"
+description = "A python bus station"
+readme = "README.md"
+authors = ["DeejayRevok <seryi_one@hotmail.com>"]
+
+[tool.poetry.dependencies]
+python = "3.10.0"
+kombu = "5.2.2"
+redis = "4.1.0"
+rpyc = "5.0.1"
+SQLAlchemy = "1.4.29"
+pymongo = "4.0.1"
+
+[tool.poetry.dev-dependencies]
+black = "21.11b1"
+coverage = "5.3"
+flake8 = "3.8.4"
+ipython = "7.19.0"
+pyre-check = "0.9.8"
+tox = "3.20.1"
+pytest = "6.2.5"
+pytest-docker = "0.10.3"
+psycopg2 = "2.9.3"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 120
+target-version = ['py310']
+exclude = '''
+/(
+  | \.git
+  | \.tox
+)/
+'''

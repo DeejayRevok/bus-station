@@ -1,0 +1,42 @@
+version: '3'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3.8.19-management
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_VHOST: /
+    ports:
+      - 4369:4369
+      - 5671:5671
+      - 5672:5672
+      - 15671:15671
+      - 15672:15672
+      - 15674:15674
+      - 25672:25672
+
+  redis:
+    image: 'bitnami/redis:latest'
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - 6379:6379
+
+  postgres:
+    image: postgres:14.1
+    environment:
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+      POSTGRES_DB: test_db
+    ports:
+      - 5432:5432
+
+  mongo:
+    image: mongo:4.4.11
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: test_user
+      MONGO_INITDB_ROOT_PASSWORD: test_password
+      MONGO_INITDB_DATABASE: test_db
+    ports:
+      - 27017:27017

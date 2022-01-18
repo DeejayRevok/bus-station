@@ -1,0 +1,37 @@
+from dataclasses import dataclass
+from time import sleep
+from unittest import TestCase
+
+from bus_station.command_terminal.bus.asynchronous.threaded_command_bus import ThreadedCommandBus
+from bus_station.command_terminal.command import Command
+from bus_station.command_terminal.command_handler import CommandHandler
+from bus_station.passengers.registry.in_memory_registry import InMemoryRegistry
+
+
+@dataclass(frozen=True)
+class CommandTest(Command):
+    pass
+
+
+class CommandTestHandler(CommandHandler):
+    def __init__(self):
+        self.call_count = 0
+
+    def handle(self, command: CommandTest) -> None:
+        self.call_count += 1
+
+
+class TestThreadedCommandBus(TestCase):
+    def setUp(self) -> None:
+        self.in_memory_registry = InMemoryRegistry()
+        self.threaded_command_bus = ThreadedCommandBus(self.in_memory_registry)
+
+    def test_execute_success(self):
+        test_command = CommandTest()
+        test_command_handler = CommandTestHandler()
+
+        self.threaded_command_bus.register(test_command_handler)
+        self.threaded_command_bus.execute(test_command)
+
+        sleep(1)
+        self.assertEqual(1, test_command_handler.call_count)

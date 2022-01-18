@@ -1,0 +1,72 @@
+from threading import Thread
+from typing import Callable
+from unittest import TestCase
+from unittest.mock import Mock, patch
+
+from bus_station.command_terminal.bus.asynchronous.threaded_command_bus import ThreadedCommandBus
+from bus_station.command_terminal.command import Command
+from bus_station.command_terminal.command_handler import CommandHandler
+from bus_station.command_terminal.handler_for_command_already_registered import HandlerForCommandAlreadyRegistered
+from bus_station.command_terminal.handler_not_found_for_command import HandlerNotFoundForCommand
+from bus_station.command_terminal.middleware.command_middleware_executor import CommandMiddlewareExecutor
+from bus_station.passengers.registry.in_memory_registry import InMemoryRegistry
+
+
+class TestThreadedCommandBus(TestCase):
+    def setUp(self) -> None:
+        self.command_registry_mock = Mock(spec=InMemoryRegistry)
+        self.threaded_command_bus = ThreadedCommandBus(self.command_registry_mock)
+
+    @patch("bus_station.command_terminal.bus.command_bus.get_type_hints")
+    def test_register_already_registered(self, get_type_hints_mock):
+        test_command_handler = Mock(spec=CommandHandler)
+        test_command = Mock(spec=Command, name="TestCommand")
+        get_type_hints_mock.return_value = {"command": test_command.__class__}
+        self.command_registry_mock.__contains__ = Mock(spec=Callable)
+        self.command_registry_mock.__contains__.return_value = True
+
+        with self.assertRaises(HandlerForCommandAlreadyRegistered) as hfcar:
+            self.threaded_command_bus.register(test_command_handler)
+
+            self.assertEqual("TestCommand", hfcar.command_name)
+        self.command_registry_mock.__contains__.assert_called_once_with(test_command.__class__)
+
+    @patch("bus_station.command_terminal.bus.command_bus.get_type_hints")
+    def test_register_success(self, get_type_hints_mock):
+        test_command_handler = Mock(spec=CommandHandler)
+        test_command = Mock(spec=Command, name="TestCommand")
+        get_type_hints_mock.return_value = {"command": test_command.__class__}
+        self.command_registry_mock.__contains__ = Mock(spec=Callable)
+        self.command_registry_mock.__contains__.return_value = False
+
+        self.threaded_command_bus.register(test_command_handler)
+
+        self.command_registry_mock.__contains__.assert_called_once_with(test_command.__class__)
+        self.command_registry_mock.register.assert_called_once_with(test_command.__class__, test_command_handler)
+
+    def test_execute_not_registered(self):
+        test_command = Mock(spec=Command)
+        self.command_registry_mock.get_passenger_destination.return_value = None
+
+        with self.assertRaises(HandlerNotFoundForCommand) as hnffc:
+            self.threaded_command_bus.execute(test_command)
+
+            self.assertEqual("TestCommand", hnffc.command_name)
+        self.command_registry_mock.get_passenger_destination.assert_called_once_with(test_command.__class__)
+
+    @patch("bus_station.command_terminal.bus.command_bus.get_type_hints")
+    @patch.object(CommandMiddlewareExecutor, "execute")
+    @patch("bus_station.command_terminal.bus.asynchronous.threaded_command_bus.Thread")
+    def test_execute_success(self, thread_mock, middleware_executor_mock, get_type_hints_mock):
+        test_command = Mock(spec=Command)
+        test_command_handler = Mock(spec=CommandHandler)
+        get_type_hints_mock.return_value = {"command": test_command.__class__}
+        test_thread = Mock(spec=Thread)
+        thread_mock.return_value = test_thread
+        self.command_registry_mock.get_passenger_destination.return_value = test_command_handler
+
+        self.threaded_command_bus.execute(test_command)
+
+        thread_mock.assert_called_once_with(target=middleware_executor_mock, args=(test_command, test_command_handler))
+        test_thread.start.assert_called_once_with()
+        self.command_registry_mock.get_passenger_destination.assert_called_once_with(test_command.__class__)
