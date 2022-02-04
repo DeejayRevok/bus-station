@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from logging import getLogger
-from unittest import TestCase
 
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
 from bus_station.command_terminal.middleware.command_middleware_executor import CommandMiddlewareExecutor
 from bus_station.command_terminal.middleware.implementations.timing_command_middleware import TimingCommandMiddleware
+from tests.integration.integration_test_case import IntegrationTestCase
 
 
 @dataclass(frozen=True)
@@ -21,7 +21,7 @@ class CommandTestHandler(CommandHandler):
         self.call_count = self.call_count + 1
 
 
-class TestTimingCommandMiddleware(TestCase):
+class TestTimingCommandMiddleware(IntegrationTestCase):
     def setUp(self) -> None:
         self.logger = getLogger()
         self.command_middleware_executor = CommandMiddlewareExecutor()

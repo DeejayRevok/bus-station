@@ -2,7 +2,6 @@ from ctypes import c_int
 from dataclasses import dataclass
 from multiprocessing import Value
 from time import sleep
-from unittest import TestCase
 
 from bus_station.command_terminal.bus.asynchronous.process_command_bus import ProcessCommandBus
 from bus_station.command_terminal.command import Command
@@ -10,6 +9,7 @@ from bus_station.command_terminal.command_handler import CommandHandler
 from bus_station.passengers.registry.in_memory_registry import InMemoryRegistry
 from bus_station.passengers.serialization.passenger_json_deserializer import PassengerJSONDeserializer
 from bus_station.passengers.serialization.passenger_json_serializer import PassengerJSONSerializer
+from tests.integration.integration_test_case import IntegrationTestCase
 
 
 @dataclass(frozen=True)
@@ -25,7 +25,7 @@ class CommandTestHandler(CommandHandler):
         self.call_count.value = self.call_count.value + 1
 
 
-class TestProcessCommandBus(TestCase):
+class TestProcessCommandBus(IntegrationTestCase):
     def setUp(self) -> None:
         self.passenger_serializer = PassengerJSONSerializer()
         self.passenger_deserializer = PassengerJSONDeserializer()

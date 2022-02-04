@@ -2,9 +2,6 @@ from ctypes import c_int
 from dataclasses import dataclass
 from multiprocessing import Value
 from time import sleep
-from unittest import TestCase
-
-import pytest
 
 from bus_station.event_terminal.bus.asynchronous.distributed.kombu_event_bus import KombuEventBus
 from bus_station.event_terminal.event import Event
@@ -15,6 +12,7 @@ from bus_station.shared_terminal.broker_connection.connection_parameters.rabbitm
     RabbitMQConnectionParameters,
 )
 from bus_station.shared_terminal.factories.kombu_connection_factory import KombuConnectionFactory
+from tests.integration.integration_test_case import IntegrationTestCase
 
 
 @dataclass(frozen=True)
@@ -38,8 +36,7 @@ class EventTestConsumer2(EventConsumer):
         self.call_count.value = self.call_count.value - 1
 
 
-@pytest.mark.usefixtures("rabbitmq")
-class TestRabbitKombuEventBus(TestCase):
+class TestRabbitKombuEventBus(IntegrationTestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.test_env_ready = False

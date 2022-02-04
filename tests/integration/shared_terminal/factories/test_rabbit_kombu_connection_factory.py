@@ -1,15 +1,11 @@
-from unittest import TestCase
-
-import pytest
-
 from bus_station.shared_terminal.broker_connection.connection_parameters.rabbitmq_connection_parameters import (
     RabbitMQConnectionParameters,
 )
 from bus_station.shared_terminal.factories.kombu_connection_factory import KombuConnectionFactory
+from tests.integration.integration_test_case import IntegrationTestCase
 
 
-@pytest.mark.usefixtures("rabbitmq")
-class TestRabbitKombuConnectionFactory(TestCase):
+class TestRabbitKombuConnectionFactory(IntegrationTestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.test_env_ready = False

@@ -1,7 +1,5 @@
 from dataclasses import dataclass, asdict
-from unittest import TestCase
 
-import pytest
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import sessionmaker, clear_mappers
 
@@ -20,6 +18,7 @@ from bus_station.tracking_terminal.repositories.implementations.sqlalchemy.sqlal
     SQLAlchemyEventTrackingRepository,
 )
 from bus_station.tracking_terminal.trackers.sqlalchemy_passenger_tracker import SQLAlchemyPassengerTracker
+from tests.integration.integration_test_case import IntegrationTestCase
 
 
 @dataclass(frozen=True)
@@ -35,8 +34,7 @@ class EventTestConsumer(EventConsumer):
         self.call_count = self.call_count + 1
 
 
-@pytest.mark.usefixtures("postgres")
-class TestSQLAlchemyTrackingEventMiddleware(TestCase):
+class TestSQLAlchemyTrackingEventMiddleware(IntegrationTestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.test_env_ready = False

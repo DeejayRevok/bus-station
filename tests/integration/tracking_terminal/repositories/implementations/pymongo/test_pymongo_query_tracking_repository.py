@@ -1,7 +1,5 @@
 from datetime import datetime
-from unittest import TestCase
 
-import pytest
 from pymongo import MongoClient
 
 
@@ -15,10 +13,10 @@ from bus_station.tracking_terminal.repositories.implementations.pymongo.mongo_pa
 from bus_station.tracking_terminal.repositories.implementations.pymongo.pymongo_query_tracking_repository import (
     PyMongoQueryTrackingRepository,
 )
+from tests.integration.integration_test_case import IntegrationTestCase
 
 
-@pytest.mark.usefixtures("mongo")
-class TestPyMongoQueryTrackingRepository(TestCase):
+class TestPyMongoQueryTrackingRepository(IntegrationTestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.test_env_ready = False

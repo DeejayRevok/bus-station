@@ -1,17 +1,13 @@
-from unittest import TestCase
-
-import pytest
-
 from bus_station.command_terminal.command import Command
 from bus_station.passengers.registry.redis_registry import RedisRegistry
+from tests.integration.integration_test_case import IntegrationTestCase
 
 
 class CommandTest(Command):
     pass
 
 
-@pytest.mark.usefixtures("rabbitmq", "redis")
-class TestRedisRegistry(TestCase):
+class TestRedisRegistry(IntegrationTestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.test_env_ready = False

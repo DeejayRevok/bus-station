@@ -1,7 +1,5 @@
 from dataclasses import dataclass, asdict
-from unittest import TestCase
 
-import pytest
 from pymongo import MongoClient
 
 from bus_station.query_terminal.query import Query
@@ -18,6 +16,7 @@ from bus_station.tracking_terminal.repositories.implementations.pymongo.pymongo_
 )
 from bus_station.tracking_terminal.trackers.passenger_tracking_not_found import PassengerTrackingNotFound
 from bus_station.tracking_terminal.trackers.pymongo_passenger_tracker import PyMongoPassengerTracker
+from tests.integration.integration_test_case import IntegrationTestCase
 
 
 @dataclass(frozen=True)
@@ -30,8 +29,7 @@ class QueryTestHandler(QueryHandler):
         return QueryResponse(data=query.test)
 
 
-@pytest.mark.usefixtures("mongo")
-class TestPyMongoPassengerTracker(TestCase):
+class TestPyMongoPassengerTracker(IntegrationTestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.test_env_ready = False

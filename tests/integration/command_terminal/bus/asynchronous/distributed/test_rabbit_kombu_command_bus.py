@@ -2,9 +2,6 @@ from ctypes import c_int
 from dataclasses import dataclass
 from multiprocessing import Value
 from time import sleep
-from unittest import TestCase
-
-import pytest
 
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
@@ -16,6 +13,7 @@ from bus_station.shared_terminal.broker_connection.connection_parameters.rabbitm
     RabbitMQConnectionParameters,
 )
 from bus_station.shared_terminal.factories.kombu_connection_factory import KombuConnectionFactory
+from tests.integration.integration_test_case import IntegrationTestCase
 
 
 @dataclass(frozen=True)
@@ -31,8 +29,7 @@ class CommandTestHandler(CommandHandler):
         self.call_count.value = self.call_count.value + 1
 
 
-@pytest.mark.usefixtures("rabbitmq", "redis")
-class TestRabbitKombuCommandBus(TestCase):
+class TestRabbitKombuCommandBus(IntegrationTestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.test_env_ready = False

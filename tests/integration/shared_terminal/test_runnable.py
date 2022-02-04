@@ -1,8 +1,7 @@
-from unittest import TestCase
-
 from bus_station.shared_terminal.runnable import Runnable, is_running, is_not_running
 from bus_station.shared_terminal.runnable_already_runnning_exception import RunnableAlreadyRunningException
 from bus_station.shared_terminal.runnable_not_running_exception import RunnableNotRunningException
+from tests.integration.integration_test_case import IntegrationTestCase
 
 
 class RunnableTest(Runnable):
@@ -25,7 +24,7 @@ class RunnableTest(Runnable):
         self.count -= 1
 
 
-class TestRunnable(TestCase):
+class TestRunnable(IntegrationTestCase):
     def setUp(self) -> None:
         self.runnable = RunnableTest()
 

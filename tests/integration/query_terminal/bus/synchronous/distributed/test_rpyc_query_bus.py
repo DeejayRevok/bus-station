@@ -1,9 +1,6 @@
 from ctypes import c_int
 from dataclasses import dataclass
 from multiprocessing import Value
-from unittest import TestCase
-
-import pytest
 
 from bus_station.passengers.registry.redis_registry import RedisRegistry
 from bus_station.passengers.serialization.passenger_json_deserializer import PassengerJSONDeserializer
@@ -14,6 +11,7 @@ from bus_station.query_terminal.query_handler import QueryHandler
 from bus_station.query_terminal.query_response import QueryResponse
 from bus_station.query_terminal.serialization.query_response_json_deserializer import QueryResponseJSONDeserializer
 from bus_station.query_terminal.serialization.query_response_json_serializer import QueryResponseJSONSerializer
+from tests.integration.integration_test_case import IntegrationTestCase
 
 
 @dataclass(frozen=True)
@@ -30,12 +28,11 @@ class QueryTestHandler(QueryHandler):
         return QueryResponse(data=query.test_value)
 
 
-@pytest.mark.usefixtures("redis")
-class TestRPyCQueryBus(TestCase):
+class TestRPyCQueryBus(IntegrationTestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.test_env_ready = False
-        cls.redis_host = cls.redis["host"]
+        cls.redis_host = "localhost"
         cls.redis_port = cls.redis["port"]
         cls.test_env_ready = True
 

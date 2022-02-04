@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from time import sleep
-from unittest import TestCase
 
 from bus_station.command_terminal.bus.asynchronous.threaded_command_bus import ThreadedCommandBus
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
 from bus_station.passengers.registry.in_memory_registry import InMemoryRegistry
+from tests.integration.integration_test_case import IntegrationTestCase
 
 
 @dataclass(frozen=True)
@@ -21,7 +21,7 @@ class CommandTestHandler(CommandHandler):
         self.call_count += 1
 
 
-class TestThreadedCommandBus(TestCase):
+class TestThreadedCommandBus(IntegrationTestCase):
     def setUp(self) -> None:
         self.in_memory_registry = InMemoryRegistry()
         self.threaded_command_bus = ThreadedCommandBus(self.in_memory_registry)

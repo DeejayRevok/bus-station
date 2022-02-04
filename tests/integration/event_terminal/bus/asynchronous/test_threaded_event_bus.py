@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from time import sleep
-from unittest import TestCase
 
 from bus_station.event_terminal.bus.asynchronous.threaded_event_bus import ThreadedEventBus
 from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
 from bus_station.passengers.registry.in_memory_registry import InMemoryRegistry
+from tests.integration.integration_test_case import IntegrationTestCase
 
 
 @dataclass(frozen=True)
@@ -29,7 +29,7 @@ class EventTestConsumer2(EventConsumer):
         self.call_count -= 1
 
 
-class TestThreadedEventBus(TestCase):
+class TestThreadedEventBus(IntegrationTestCase):
     def setUp(self) -> None:
         self.in_memory_registry = InMemoryRegistry()
         self.threaded_event_bus = ThreadedEventBus(self.in_memory_registry)

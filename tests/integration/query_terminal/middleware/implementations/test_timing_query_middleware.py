@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 from logging import getLogger
-from unittest import TestCase
 
 from bus_station.query_terminal.middleware.implementations.timing_query_middleware import TimingQueryMiddleware
 from bus_station.query_terminal.middleware.query_middleware_executor import QueryMiddlewareExecutor
 from bus_station.query_terminal.query import Query
 from bus_station.query_terminal.query_handler import QueryHandler
 from bus_station.query_terminal.query_response import QueryResponse
+from tests.integration.integration_test_case import IntegrationTestCase
 
 
 @dataclass(frozen=True)
@@ -23,7 +23,7 @@ class QueryTestHandler(QueryHandler):
         return QueryResponse(data=query.test_value)
 
 
-class TestTimingQueryMiddleware(TestCase):
+class TestTimingQueryMiddleware(IntegrationTestCase):
     def setUp(self) -> None:
         self.logger = getLogger()
         self.query_middleware_executor = QueryMiddlewareExecutor()

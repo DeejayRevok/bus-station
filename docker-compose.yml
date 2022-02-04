@@ -1,6 +1,20 @@
 version: '3'
 
 services:
+  bus-station:
+    build:
+      context: .
+    image: bus-station:latest
+    container_name: bus-station
+    command: tail -f > /dev/null
+    depends_on:
+      - rabbitmq
+      - redis
+      - postgres
+      - mongo
+    volumes:
+      - .:/app
+
   rabbitmq:
     image: rabbitmq:3.8.19-management
     environment:

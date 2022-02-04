@@ -1,16 +1,13 @@
-from unittest import TestCase
-
-import pytest
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import clear_mappers
 
 from bus_station.tracking_terminal.mappers.sqlalchemy.sqlalchemy_command_tracking_mapper import (
     SQLAlchemyCommandTrackingMapper,
 )
+from tests.integration.integration_test_case import IntegrationTestCase
 
 
-@pytest.mark.usefixtures("postgres")
-class TestSQLAlchemyCommandTrackingMapper(TestCase):
+class TestSQLAlchemyCommandTrackingMapper(IntegrationTestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.test_env_ready = False

@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from logging import getLogger
-from unittest import TestCase
 
 from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
 from bus_station.event_terminal.middleware.event_middleware_executor import EventMiddlewareExecutor
 from bus_station.event_terminal.middleware.implementations.logging_event_middleware import LoggingEventMiddleware
+from tests.integration.integration_test_case import IntegrationTestCase
 
 
 @dataclass(frozen=True)
@@ -21,7 +21,7 @@ class EventTestConsumer(EventConsumer):
         self.call_count += 1
 
 
-class TestLoggingEventMiddleware(TestCase):
+class TestLoggingEventMiddleware(IntegrationTestCase):
     def setUp(self) -> None:
         self.logger = getLogger()
         self.event_middleware_executor = EventMiddlewareExecutor()

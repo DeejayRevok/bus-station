@@ -2,7 +2,6 @@ from ctypes import c_int
 from dataclasses import dataclass
 from multiprocessing import Value
 from time import sleep
-from unittest import TestCase
 
 from bus_station.event_terminal.bus.asynchronous.process_event_bus import ProcessEventBus
 from bus_station.event_terminal.event import Event
@@ -10,6 +9,7 @@ from bus_station.event_terminal.event_consumer import EventConsumer
 from bus_station.passengers.registry.in_memory_registry import InMemoryRegistry
 from bus_station.passengers.serialization.passenger_json_deserializer import PassengerJSONDeserializer
 from bus_station.passengers.serialization.passenger_json_serializer import PassengerJSONSerializer
+from tests.integration.integration_test_case import IntegrationTestCase
 
 
 @dataclass(frozen=True)
@@ -33,7 +33,7 @@ class EventTestConsumer2(EventConsumer):
         self.call_count.value = self.call_count.value - 1
 
 
-class TestProcessEventBus(TestCase):
+class TestProcessEventBus(IntegrationTestCase):
     def setUp(self) -> None:
         self.passenger_serializer = PassengerJSONSerializer()
         self.passenger_deserializer = PassengerJSONDeserializer()

@@ -1,7 +1,5 @@
 from dataclasses import dataclass, asdict
-from unittest import TestCase
 
-import pytest
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import sessionmaker, clear_mappers
 
@@ -18,6 +16,7 @@ from bus_station.tracking_terminal.passenger_tracking_to_proxy_transformer impor
 from bus_station.tracking_terminal.proxy_to_passenger_tracking_transformer import ProxyToPassengerTrackingTransformer
 from bus_station.tracking_terminal.repositories.implementations.sqlalchemy import sqlalchemy_command_tracking_repository
 from bus_station.tracking_terminal.trackers.sqlalchemy_passenger_tracker import SQLAlchemyPassengerTracker
+from tests.integration.integration_test_case import IntegrationTestCase
 
 
 @dataclass(frozen=True)
@@ -33,8 +32,7 @@ class CommandTestHandler(CommandHandler):
         self.call_count = self.call_count + 1
 
 
-@pytest.mark.usefixtures("postgres")
-class TestSQLAlchemyTrackingCommandMiddleware(TestCase):
+class TestSQLAlchemyTrackingCommandMiddleware(IntegrationTestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.test_env_ready = False

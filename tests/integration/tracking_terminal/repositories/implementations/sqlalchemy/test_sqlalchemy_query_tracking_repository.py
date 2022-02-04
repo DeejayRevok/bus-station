@@ -1,7 +1,5 @@
 from datetime import datetime
-from unittest import TestCase
 
-import pytest
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import sessionmaker, Session, clear_mappers
 
@@ -15,10 +13,10 @@ from bus_station.tracking_terminal.proxy_to_passenger_tracking_transformer impor
 from bus_station.tracking_terminal.repositories.implementations.sqlalchemy.sqlalchemy_query_tracking_repository import (
     SQLAlchemyQueryTrackingRepository,
 )
+from tests.integration.integration_test_case import IntegrationTestCase
 
 
-@pytest.mark.usefixtures("postgres")
-class TestSQLAlchemyEventTrackingRepository(TestCase):
+class TestSQLAlchemyEventTrackingRepository(IntegrationTestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.test_env_ready = False
