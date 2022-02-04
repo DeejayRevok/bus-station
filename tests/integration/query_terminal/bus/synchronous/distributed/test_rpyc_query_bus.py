@@ -32,7 +32,7 @@ class TestRPyCQueryBus(IntegrationTestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.test_env_ready = False
-        cls.redis_host = "localhost"
+        cls.redis_host = cls.redis["host"]
         cls.redis_port = cls.redis["port"]
         cls.test_env_ready = True
 
