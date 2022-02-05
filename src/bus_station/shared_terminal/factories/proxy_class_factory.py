@@ -1,5 +1,5 @@
 from types import new_class
-from typing import Type, ClassVar
+from typing import ClassVar, Type
 
 
 class ProxyClassFactory:

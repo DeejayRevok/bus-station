@@ -1,12 +1,12 @@
 from abc import abstractmethod
-from typing import get_type_hints, Type
+from typing import Type, get_type_hints
 
 from bus_station.query_terminal.middleware.query_middleware import QueryMiddleware
 from bus_station.query_terminal.middleware.query_middleware_executor import QueryMiddlewareExecutor
-from bus_station.query_terminal.query_handler import QueryHandler
-from bus_station.shared_terminal.bus import Bus
 from bus_station.query_terminal.query import Query
+from bus_station.query_terminal.query_handler import QueryHandler
 from bus_station.query_terminal.query_response import QueryResponse
+from bus_station.shared_terminal.bus import Bus
 
 
 class QueryBus(Bus[QueryHandler, QueryMiddleware]):

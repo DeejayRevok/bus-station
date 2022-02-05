@@ -1,12 +1,11 @@
-from dataclasses import fields, Field, MISSING
+from dataclasses import MISSING, Field, fields
 from importlib import import_module
 from json import loads
-from typing import Type, Optional, TypeVar, Generic
+from typing import Generic, Optional, Type, TypeVar
 
 from bus_station.passengers.passenger import Passenger
 from bus_station.passengers.serialization.passenger_deserialization_error import PassengerDeserializationError
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
-
 
 P = TypeVar("P", bound=Passenger)
 

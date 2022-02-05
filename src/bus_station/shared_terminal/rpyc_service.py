@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from functools import partial
-from typing import ClassVar, TypeVar, Type, Optional, Generic
+from typing import ClassVar, Generic, Optional, Type, TypeVar
 
 from rpyc import Service
 

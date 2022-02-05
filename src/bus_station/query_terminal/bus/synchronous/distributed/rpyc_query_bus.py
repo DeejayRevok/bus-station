@@ -8,13 +8,13 @@ from rpyc import Connection, connect
 from bus_station.passengers.registry.remote_registry import RemoteRegistry
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 from bus_station.passengers.serialization.passenger_serializer import PassengerSerializer
-from bus_station.query_terminal.rpyc_query_service import RPyCQueryService
 from bus_station.query_terminal.bus.query_bus import QueryBus
 from bus_station.query_terminal.handler_for_query_already_registered import HandlerForQueryAlreadyRegistered
 from bus_station.query_terminal.handler_not_found_for_query import HandlerNotFoundForQuery
 from bus_station.query_terminal.query import Query
 from bus_station.query_terminal.query_handler import QueryHandler
 from bus_station.query_terminal.query_response import QueryResponse
+from bus_station.query_terminal.rpyc_query_service import RPyCQueryService
 from bus_station.query_terminal.serialization.query_response_deserializer import QueryResponseDeserializer
 from bus_station.query_terminal.serialization.query_response_serializer import QueryResponseSerializer
 from bus_station.shared_terminal.rpyc_server import RPyCServer

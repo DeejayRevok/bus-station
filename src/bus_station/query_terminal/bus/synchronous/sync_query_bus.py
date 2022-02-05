@@ -1,14 +1,10 @@
 from typing import final
 
 from bus_station.passengers.registry.in_memory_registry import InMemoryRegistry
-from bus_station.query_terminal.handler_for_query_already_registered import (
-    HandlerForQueryAlreadyRegistered,
-)
-from bus_station.query_terminal.handler_not_found_for_query import (
-    HandlerNotFoundForQuery,
-)
-from bus_station.query_terminal.query import Query
 from bus_station.query_terminal.bus.query_bus import QueryBus
+from bus_station.query_terminal.handler_for_query_already_registered import HandlerForQueryAlreadyRegistered
+from bus_station.query_terminal.handler_not_found_for_query import HandlerNotFoundForQuery
+from bus_station.query_terminal.query import Query
 from bus_station.query_terminal.query_handler import QueryHandler
 from bus_station.query_terminal.query_response import QueryResponse
 

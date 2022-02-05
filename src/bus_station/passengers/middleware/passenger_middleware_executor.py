@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import List, TypeVar, Generic, Optional, Any, Type, Tuple, Iterable
+from typing import Any, Generic, Iterable, List, Optional, Tuple, Type, TypeVar
 
 from bus_station.passengers.middleware.passenger_middleware import PassengerMiddleware
 from bus_station.passengers.passenger import Passenger

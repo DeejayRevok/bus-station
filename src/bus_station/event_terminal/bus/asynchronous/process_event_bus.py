@@ -1,8 +1,8 @@
-from multiprocessing import Queue, Process
-from typing import Tuple, List, final
+from multiprocessing import Process, Queue
+from typing import List, Tuple, final
 
-from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.bus.event_bus import EventBus
+from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
 from bus_station.passengers.process_passenger_worker import ProcessPassengerWorker
 from bus_station.passengers.registry.in_memory_registry import InMemoryRegistry

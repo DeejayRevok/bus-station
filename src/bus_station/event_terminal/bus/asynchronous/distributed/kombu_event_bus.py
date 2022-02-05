@@ -1,12 +1,12 @@
 from multiprocessing import Process
-from typing import Tuple, List, final, ClassVar, Type, Optional
+from typing import ClassVar, List, Optional, Tuple, Type, final
 
 from kombu import Connection
-from kombu.messaging import Producer, Queue, Exchange
+from kombu.messaging import Exchange, Producer, Queue
 from kombu.transport.virtual import Channel
 
-from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.bus.event_bus import EventBus
+from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
 from bus_station.passengers.passenger_kombu_consumer import PassengerKombuConsumer
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer

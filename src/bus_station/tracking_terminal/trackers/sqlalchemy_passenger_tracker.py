@@ -3,8 +3,8 @@ from typing import Type
 from bus_station.passengers.passenger import Passenger
 from bus_station.tracking_terminal.mappers.sqlalchemy.sqlalchemy_mapper import SQLAlchemyMapper
 from bus_station.tracking_terminal.models.passenger_tracking import PassengerTracking
-from bus_station.tracking_terminal.trackers.passenger_tracker import PassengerTracker
 from bus_station.tracking_terminal.repositories.passenger_tracking_repository import PassengerTrackingRepository
+from bus_station.tracking_terminal.trackers.passenger_tracker import PassengerTracker
 
 
 class SQLAlchemyPassengerTracker(PassengerTracker):

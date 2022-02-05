@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import TypeVar, Generic, Type, Any
+from typing import Any, Generic, Type, TypeVar
 
 from bus_station.passengers.middleware.passenger_middleware import PassengerMiddleware
 from bus_station.passengers.middleware.passenger_middleware_executor import PassengerMiddlewareExecutor

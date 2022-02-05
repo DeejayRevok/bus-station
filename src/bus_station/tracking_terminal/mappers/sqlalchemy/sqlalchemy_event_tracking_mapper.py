@@ -1,6 +1,6 @@
 from typing import Type
 
-from sqlalchemy import Table, Column, String, JSON, DateTime
+from sqlalchemy import JSON, Column, DateTime, String, Table
 
 from bus_station.tracking_terminal.mappers.sqlalchemy.sqlalchemy_mapper import SQLAlchemyMapper
 from bus_station.tracking_terminal.models.event_tracking import EventTracking

@@ -1,4 +1,4 @@
-from typing import final, ClassVar, Union
+from typing import ClassVar, Union, final
 from urllib.parse import urlencode
 
 from bus_station.shared_terminal.broker_connection.connection_parameters.connection_parameters import (

@@ -1,11 +1,11 @@
 from abc import abstractmethod
-from typing import get_type_hints, Type
+from typing import Type, get_type_hints
 
+from bus_station.command_terminal.command import Command
+from bus_station.command_terminal.command_handler import CommandHandler
 from bus_station.command_terminal.middleware.command_middleware import CommandMiddleware
 from bus_station.command_terminal.middleware.command_middleware_executor import CommandMiddlewareExecutor
 from bus_station.shared_terminal.bus import Bus
-from bus_station.command_terminal.command import Command
-from bus_station.command_terminal.command_handler import CommandHandler
 
 
 class CommandBus(Bus[CommandHandler, CommandMiddleware]):

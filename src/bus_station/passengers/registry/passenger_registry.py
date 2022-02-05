@@ -1,8 +1,7 @@
 from abc import abstractmethod
-from typing import Optional, Type, TypeVar, Protocol
+from typing import Optional, Protocol, Type, TypeVar
 
 from bus_station.passengers.passenger import Passenger
-
 
 D = TypeVar("D")
 

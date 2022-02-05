@@ -1,15 +1,11 @@
-from multiprocessing import Queue, Process
-from typing import Tuple, final, List
+from multiprocessing import Process, Queue
+from typing import List, Tuple, final
 
-from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.bus.command_bus import CommandBus
+from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
-from bus_station.command_terminal.handler_for_command_already_registered import (
-    HandlerForCommandAlreadyRegistered,
-)
-from bus_station.command_terminal.handler_not_found_for_command import (
-    HandlerNotFoundForCommand,
-)
+from bus_station.command_terminal.handler_for_command_already_registered import HandlerForCommandAlreadyRegistered
+from bus_station.command_terminal.handler_not_found_for_command import HandlerNotFoundForCommand
 from bus_station.passengers.process_passenger_worker import ProcessPassengerWorker
 from bus_station.passengers.registry.in_memory_registry import InMemoryRegistry
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer

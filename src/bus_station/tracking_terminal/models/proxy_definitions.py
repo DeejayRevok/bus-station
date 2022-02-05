@@ -3,7 +3,6 @@ from bus_station.tracking_terminal.models.command_tracking import CommandTrackin
 from bus_station.tracking_terminal.models.event_tracking import EventTracking
 from bus_station.tracking_terminal.models.query_tracking import QueryTracking
 
-
 SACommandTrackingProxy = ProxyClassFactory.get_proxy(CommandTracking)
 SAEventTrackingProxy = ProxyClassFactory.get_proxy(EventTracking)
 SAQueryTrackingProxy = ProxyClassFactory.get_proxy(QueryTracking)

@@ -1,4 +1,4 @@
-from typing import Any, Type, Optional, Dict
+from typing import Any, Dict, Optional, Type
 
 from bus_station.passengers.passenger import Passenger
 from bus_station.passengers.registry.passenger_registry import PassengerRegistry

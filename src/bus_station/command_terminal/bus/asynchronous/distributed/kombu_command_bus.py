@@ -1,16 +1,14 @@
 from multiprocessing import Process
-from typing import Tuple, final, ClassVar, Type, List, TypeVar, Optional
+from typing import ClassVar, List, Optional, Tuple, Type, TypeVar, final
 
 from kombu import Connection
-from kombu.messaging import Producer, Queue, Exchange
+from kombu.messaging import Exchange, Producer, Queue
 from kombu.transport.virtual import Channel
 
-from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.bus.command_bus import CommandBus
+from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
-from bus_station.command_terminal.handler_for_command_already_registered import (
-    HandlerForCommandAlreadyRegistered,
-)
+from bus_station.command_terminal.handler_for_command_already_registered import HandlerForCommandAlreadyRegistered
 from bus_station.command_terminal.handler_not_found_for_command import HandlerNotFoundForCommand
 from bus_station.passengers.passenger_kombu_consumer import PassengerKombuConsumer
 from bus_station.passengers.registry.remote_registry import RemoteRegistry

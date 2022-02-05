@@ -1,10 +1,10 @@
 from ctypes import c_bool
 from multiprocessing import Value
-from typing import Type, List, Callable
+from typing import Callable, List, Type
 
 from kombu import Connection, Message
-from kombu.messaging import Queue
 from kombu.messaging import Consumer as KombuConsumer
+from kombu.messaging import Queue
 from kombu.mixins import ConsumerMixin
 from kombu.transport.virtual import Channel
 

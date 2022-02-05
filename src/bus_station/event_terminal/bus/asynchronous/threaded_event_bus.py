@@ -1,8 +1,8 @@
 from threading import Thread
 from typing import final
 
-from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.bus.event_bus import EventBus
+from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
 from bus_station.passengers.registry.in_memory_registry import InMemoryRegistry
 

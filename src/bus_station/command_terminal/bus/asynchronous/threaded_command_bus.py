@@ -1,15 +1,11 @@
 from threading import Thread
 from typing import final
 
-from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.bus.command_bus import CommandBus
+from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
-from bus_station.command_terminal.handler_for_command_already_registered import (
-    HandlerForCommandAlreadyRegistered,
-)
-from bus_station.command_terminal.handler_not_found_for_command import (
-    HandlerNotFoundForCommand,
-)
+from bus_station.command_terminal.handler_for_command_already_registered import HandlerForCommandAlreadyRegistered
+from bus_station.command_terminal.handler_not_found_for_command import HandlerNotFoundForCommand
 from bus_station.passengers.registry.in_memory_registry import InMemoryRegistry
 
 

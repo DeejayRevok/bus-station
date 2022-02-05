@@ -5,8 +5,8 @@ from typing import Any, Type
 from bus_station.passengers.passenger import Passenger
 from bus_station.shared_terminal.bus_stop import BusStop
 from bus_station.tracking_terminal.models.passenger_tracking import PassengerTracking
-from bus_station.tracking_terminal.trackers.passenger_tracking_not_found import PassengerTrackingNotFound
 from bus_station.tracking_terminal.repositories.passenger_tracking_repository import PassengerTrackingRepository
+from bus_station.tracking_terminal.trackers.passenger_tracking_not_found import PassengerTrackingNotFound
 
 
 class PassengerTracker:

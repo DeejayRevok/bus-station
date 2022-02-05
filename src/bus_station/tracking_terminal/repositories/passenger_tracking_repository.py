@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import Generic, TypeVar, Optional
+from typing import Generic, Optional, TypeVar
 
 from bus_station.tracking_terminal.models.passenger_tracking import PassengerTracking
 

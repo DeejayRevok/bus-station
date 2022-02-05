@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import Protocol, Type, Optional
+from typing import Optional, Protocol, Type
 
 from bus_station.passengers.passenger import Passenger
 

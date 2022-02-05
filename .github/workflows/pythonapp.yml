@@ -9,6 +9,8 @@ jobs:
       - uses: actions/checkout@v2
       - name: Setup environment
         run: docker-compose up -d
+      - name: Check imports
+        run: docker exec bus-station poetry run tox -e isort -- --check-only
       - name: Check formatting
         run: docker exec bus-station poetry run tox -e black -- --check
       - name: Check style
