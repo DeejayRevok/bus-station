@@ -1,6 +1,7 @@
 from ctypes import c_int
 from dataclasses import dataclass
 from multiprocessing import Value
+from time import sleep
 
 from bus_station.passengers.registry.redis_registry import RedisRegistry
 from bus_station.passengers.serialization.passenger_json_deserializer import PassengerJSONDeserializer
@@ -64,6 +65,7 @@ class TestRPyCQueryBus(IntegrationTestCase):
         test_query_handler = QueryTestHandler()
         self.rpyc_query_bus.register(test_query_handler)
         self.rpyc_query_bus.start()
+        sleep(2)
 
         test_query_response = self.rpyc_query_bus.execute(test_query)
 

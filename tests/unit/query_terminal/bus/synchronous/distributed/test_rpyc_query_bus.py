@@ -3,7 +3,7 @@ from typing import Callable
 from unittest import TestCase
 from unittest.mock import Mock, patch
 
-from rpyc import ThreadedServer, Connection
+from rpyc import Connection
 
 from bus_station.passengers.registry.remote_registry import RemoteRegistry
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
@@ -17,6 +17,7 @@ from bus_station.query_terminal.query_handler import QueryHandler
 from bus_station.query_terminal.query_response import QueryResponse
 from bus_station.query_terminal.serialization.query_response_deserializer import QueryResponseDeserializer
 from bus_station.query_terminal.serialization.query_response_serializer import QueryResponseSerializer
+from bus_station.shared_terminal.rpyc_server import RPyCServer
 from bus_station.shared_terminal.runnable import Runnable
 
 
@@ -43,9 +44,9 @@ class TestRPyCQueryBus(TestCase):
         )
 
     @patch("bus_station.query_terminal.bus.synchronous.distributed.rpyc_query_bus.Process")
-    @patch("bus_station.query_terminal.bus.synchronous.distributed.rpyc_query_bus.ThreadedServer")
+    @patch("bus_station.query_terminal.bus.synchronous.distributed.rpyc_query_bus.RPyCServer")
     def test_start(self, rpyc_server_mock, process_mock):
-        test_rpyc_server = Mock(spec=ThreadedServer)
+        test_rpyc_server = Mock(spec=RPyCServer)
         rpyc_server_mock.return_value = test_rpyc_server
         test_process = Mock(spec=Process)
         process_mock.return_value = test_process
@@ -53,19 +54,19 @@ class TestRPyCQueryBus(TestCase):
         self.rpyc_query_bus.start()
 
         rpyc_server_mock.assert_called_once_with(
-            self.rpyc_query_service_mock,
-            hostname=self.test_host,
+            rpyc_service=self.rpyc_query_service_mock,
+            host=self.test_host,
             port=self.test_port,
         )
-        process_mock.assert_called_once_with(target=test_rpyc_server.start)
+        process_mock.assert_called_once_with(target=test_rpyc_server.run)
         test_process.start.assert_called_once_with()
 
     @patch("bus_station.query_terminal.bus.synchronous.distributed.rpyc_query_bus.signal")
     @patch("bus_station.query_terminal.bus.synchronous.distributed.rpyc_query_bus.os")
     @patch("bus_station.query_terminal.bus.synchronous.distributed.rpyc_query_bus.Process")
-    @patch("bus_station.query_terminal.bus.synchronous.distributed.rpyc_query_bus.ThreadedServer")
+    @patch("bus_station.query_terminal.bus.synchronous.distributed.rpyc_query_bus.RPyCServer")
     def test_stop(self, rpyc_server_mock, process_mock, os_mock, signal_mock):
-        test_rpyc_server = Mock(spec=ThreadedServer)
+        test_rpyc_server = Mock(spec=RPyCServer)
         rpyc_server_mock.return_value = test_rpyc_server
         test_process = Mock(spec=Process)
         process_mock.return_value = test_process
@@ -74,11 +75,11 @@ class TestRPyCQueryBus(TestCase):
         self.rpyc_query_bus.stop()
 
         rpyc_server_mock.assert_called_once_with(
-            self.rpyc_query_service_mock,
-            hostname=self.test_host,
+            rpyc_service=self.rpyc_query_service_mock,
+            host=self.test_host,
             port=self.test_port,
         )
-        process_mock.assert_called_once_with(target=test_rpyc_server.start)
+        process_mock.assert_called_once_with(target=test_rpyc_server.run)
         test_process.start.assert_called_once_with()
         os_mock.kill.assert_called_once_with(test_process.pid, signal_mock.SIGINT)
         test_process.join.assert_called_once_with()

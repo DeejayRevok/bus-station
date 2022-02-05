@@ -1,6 +1,7 @@
 from ctypes import c_int
 from dataclasses import dataclass
 from multiprocessing import Value
+from time import sleep
 
 from bus_station.command_terminal.bus.synchronous.distributed.rpyc_command_bus import RPyCCommandBus
 from bus_station.command_terminal.command import Command
@@ -55,6 +56,7 @@ class TestRPyCCommandBus(IntegrationTestCase):
         test_command_handler = CommandTestHandler()
         self.rpyc_command_bus.register(test_command_handler)
         self.rpyc_command_bus.start()
+        sleep(1)
 
         for i in range(10):
             self.rpyc_command_bus.execute(test_command)

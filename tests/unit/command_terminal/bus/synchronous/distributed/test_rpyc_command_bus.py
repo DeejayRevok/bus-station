@@ -3,7 +3,7 @@ from typing import Callable
 from unittest import TestCase
 from unittest.mock import patch, Mock
 
-from rpyc import ThreadedServer, Connection
+from rpyc import Connection
 
 from bus_station.command_terminal.bus.synchronous.distributed.rpyc_command_bus import RPyCCommandBus
 from bus_station.command_terminal.command import Command
@@ -14,6 +14,7 @@ from bus_station.command_terminal.rpyc_command_service import RPyCCommandService
 from bus_station.passengers.registry.remote_registry import RemoteRegistry
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 from bus_station.passengers.serialization.passenger_serializer import PassengerSerializer
+from bus_station.shared_terminal.rpyc_server import RPyCServer
 from bus_station.shared_terminal.runnable import Runnable
 
 
@@ -36,9 +37,9 @@ class TestRPyCCommandBus(TestCase):
         )
 
     @patch("bus_station.command_terminal.bus.synchronous.distributed.rpyc_command_bus.Process")
-    @patch("bus_station.command_terminal.bus.synchronous.distributed.rpyc_command_bus.ThreadedServer")
+    @patch("bus_station.command_terminal.bus.synchronous.distributed.rpyc_command_bus.RPyCServer")
     def test_start(self, rpyc_server_mock, process_mock):
-        test_rpyc_server = Mock(spec=ThreadedServer)
+        test_rpyc_server = Mock(spec=RPyCServer)
         rpyc_server_mock.return_value = test_rpyc_server
         test_process = Mock(spec=Process)
         process_mock.return_value = test_process
@@ -46,19 +47,19 @@ class TestRPyCCommandBus(TestCase):
         self.rpyc_command_bus.start()
 
         rpyc_server_mock.assert_called_once_with(
-            self.rpyc_command_service_mock,
-            hostname=self.test_host,
+            rpyc_service=self.rpyc_command_service_mock,
+            host=self.test_host,
             port=self.test_port,
         )
-        process_mock.assert_called_once_with(target=test_rpyc_server.start)
+        process_mock.assert_called_once_with(target=test_rpyc_server.run)
         test_process.start.assert_called_once_with()
 
     @patch("bus_station.command_terminal.bus.synchronous.distributed.rpyc_command_bus.signal")
     @patch("bus_station.command_terminal.bus.synchronous.distributed.rpyc_command_bus.os")
     @patch("bus_station.command_terminal.bus.synchronous.distributed.rpyc_command_bus.Process")
-    @patch("bus_station.command_terminal.bus.synchronous.distributed.rpyc_command_bus.ThreadedServer")
+    @patch("bus_station.command_terminal.bus.synchronous.distributed.rpyc_command_bus.RPyCServer")
     def test_stop(self, rpyc_server_mock, process_mock, os_mock, signal_mock):
-        test_rpyc_server = Mock(spec=ThreadedServer)
+        test_rpyc_server = Mock(spec=RPyCServer)
         rpyc_server_mock.return_value = test_rpyc_server
         test_process = Mock(spec=Process)
         process_mock.return_value = test_process
@@ -67,11 +68,11 @@ class TestRPyCCommandBus(TestCase):
         self.rpyc_command_bus.stop()
 
         rpyc_server_mock.assert_called_once_with(
-            self.rpyc_command_service_mock,
-            hostname=self.test_host,
+            rpyc_service=self.rpyc_command_service_mock,
+            host=self.test_host,
             port=self.test_port,
         )
-        process_mock.assert_called_once_with(target=test_rpyc_server.start)
+        process_mock.assert_called_once_with(target=test_rpyc_server.run)
         test_process.start.assert_called_once_with()
         os_mock.kill.assert_called_once_with(test_process.pid, signal_mock.SIGINT)
         test_process.join.assert_called_once_with()

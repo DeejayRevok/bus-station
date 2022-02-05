@@ -3,7 +3,7 @@ import signal
 from multiprocessing.context import Process
 from typing import ClassVar, Optional
 
-from rpyc import ThreadedServer, Connection, connect
+from rpyc import Connection, connect
 
 from bus_station.command_terminal.bus.command_bus import CommandBus
 from bus_station.command_terminal.command import Command
@@ -14,6 +14,7 @@ from bus_station.command_terminal.rpyc_command_service import RPyCCommandService
 from bus_station.passengers.registry.remote_registry import RemoteRegistry
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 from bus_station.passengers.serialization.passenger_serializer import PassengerSerializer
+from bus_station.shared_terminal.rpyc_server import RPyCServer
 from bus_station.shared_terminal.runnable import Runnable, is_not_running, is_running
 
 
@@ -36,16 +37,16 @@ class RPyCCommandBus(CommandBus, Runnable):
         self.__command_deserializer = command_deserializer
         self.__command_registry = command_registry
         self.__rpyc_service = RPyCCommandService(self.__command_deserializer, self._middleware_executor)
-        self.__rpyc_server: Optional[ThreadedServer] = None
+        self.__rpyc_server: Optional[RPyCServer] = None
         self.__server_process: Optional[Process] = None
 
     def _start(self):
-        self.__rpyc_server = ThreadedServer(
-            self.__rpyc_service,
-            hostname=self.__self_host,
+        self.__rpyc_server = RPyCServer(
+            rpyc_service=self.__rpyc_service,
+            host=self.__self_host,
             port=self.__self_port,
         )
-        self.__server_process = Process(target=self.__rpyc_server.start)
+        self.__server_process = Process(target=self.__rpyc_server.run)
         self.__server_process.start()
 
     @is_not_running

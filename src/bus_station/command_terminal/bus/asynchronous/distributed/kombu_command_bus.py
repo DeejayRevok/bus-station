@@ -117,4 +117,6 @@ class KombuCommandBus(CommandBus, Runnable):
             consumer.stop()
         for process in self.__command_consumer_processes:
             process.join()
+        if self.__producer is not None:
+            self.__producer.release()
         self.__broker_connection.release()

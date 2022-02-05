@@ -1,5 +1,3 @@
-from unittest import TestCase
-
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import clear_mappers
 

@@ -107,4 +107,6 @@ class KombuEventBus(EventBus, Runnable):
             kombu_consumer.stop()
         for kombu_consumer_process in self.__event_kombu_consumer_processes:
             kombu_consumer_process.join()
+        if self.__producer is not None:
+            self.__producer.release()
         self.__broker_connection.release()
