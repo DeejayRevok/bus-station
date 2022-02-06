@@ -21,5 +21,7 @@ jobs:
         run: docker exec bus-station poetry run tox -e unit_tests
       - name: Run integration tests
         run: docker exec bus-station poetry run tox -e integration_tests
+      - name: Check tests coverage
+        run: docker exec bus-station poetry run tox -e check_tests_coverage
       - name: Build the package
         run: docker exec bus-station poetry build
