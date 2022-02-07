@@ -48,7 +48,7 @@ class JsonRPCQueryBus(QueryBus, Runnable):
         self.__json_rpc_query_server = JsonRPCQueryServer(
             passenger_deserializer=self.__query_deserializer,
             passenger_middleware_executor=self._middleware_executor,
-            query_response_serializer=self.__query_response_serializer
+            query_response_serializer=self.__query_response_serializer,
         )
         self.__server_process: Optional[Process] = None
 

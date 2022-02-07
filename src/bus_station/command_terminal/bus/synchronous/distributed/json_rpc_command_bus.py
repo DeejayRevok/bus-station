@@ -39,8 +39,8 @@ class JsonRPCCommandBus(CommandBus, Runnable):
         self.__command_deserializer = command_deserializer
         self.__command_registry = command_registry
         self.__json_rpc_command_server = JsonRPCCommandServer(
-            passenger_deserializer=self.__command_deserializer,
-            passenger_middleware_executor=self._middleware_executor)
+            passenger_deserializer=self.__command_deserializer, passenger_middleware_executor=self._middleware_executor
+        )
         self.__server_process: Optional[Process] = None
 
     def _start(self):

@@ -3,7 +3,7 @@ from functools import partial
 from http.server import ThreadingHTTPServer
 from typing import Callable, ClassVar, Dict, Generic, Optional, Type, TypeVar
 
-from jsonrpcserver import Success, Error, method
+from jsonrpcserver import Error, Success, method
 from jsonrpcserver.codes import ERROR_INTERNAL_ERROR
 from jsonrpcserver.result import Result
 from jsonrpcserver.server import RequestHandler
@@ -48,9 +48,7 @@ class JsonRPCServer(Generic[P, S]):
         for exposed_callable_name, exposed_callable in self.__internal_registry.items():
             method(exposed_callable, name=exposed_callable_name)
 
-    def passenger_executor(
-        self, bus_stop: S, passenger_class: Type[P], serialized_passenger: str
-    ) -> Result:
+    def passenger_executor(self, bus_stop: S, passenger_class: Type[P], serialized_passenger: str) -> Result:
         try:
             serialized_response = self._passenger_executor(bus_stop, passenger_class, serialized_passenger)
         except Exception as ex:
