@@ -17,7 +17,7 @@ jsonrpcclient = "^4.0.2"
 requests = "^2.27.1"
 
 [tool.poetry.dev-dependencies]
-black = "21.11b1"
+black = "22.1.0"
 coverage = "5.3"
 flake8 = "3.8.4"
 ipython = "7.19.0"
