@@ -1,7 +1,7 @@
 from multiprocessing.context import Process
 from typing import Callable
 from unittest import TestCase
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
 
 from jsonrpcclient import Error
 from jsonrpcserver import Success
@@ -25,7 +25,6 @@ from bus_station.shared_terminal.runnable import Runnable
 
 
 class TestJsonRPCQueryBus(TestCase):
-
     @patch("bus_station.query_terminal.bus.synchronous.distributed.json_rpc_query_bus.JsonRPCQueryServer")
     def setUp(self, json_rpc_server_builder_mock) -> None:
         self.query_serializer_mock = Mock(spec=PassengerSerializer)
@@ -85,7 +84,7 @@ class TestJsonRPCQueryBus(TestCase):
         with self.assertRaises(HandlerForQueryAlreadyRegistered) as hfqar:
             self.json_rpc_query_bus.register(test_query_handler)
 
-            self.assertEqual(test_query.__class__.__name__, hfqar.query_name)
+        self.assertEqual(test_query.__class__.__name__, hfqar.exception.query_name)
         self.query_registry_mock.__contains__.assert_called_once_with(test_query.__class__)
 
     @patch("bus_station.query_terminal.bus.query_bus.get_type_hints")
@@ -113,7 +112,7 @@ class TestJsonRPCQueryBus(TestCase):
         with self.assertRaises(HandlerNotFoundForQuery) as hnffq:
             self.json_rpc_query_bus.execute(test_query)
 
-            self.assertEqual(test_query.__class__.__name__, hnffq.query_name)
+        self.assertEqual(test_query.__class__.__name__, hnffq.exception.query_name)
         self.query_serializer_mock.serialize.assert_not_called()
         self.query_registry_mock.get_passenger_destination.assert_called_once_with(test_query.__class__)
 
@@ -146,12 +145,8 @@ class TestJsonRPCQueryBus(TestCase):
 
         self.assertEqual(test_query_response, query_response)
         self.query_serializer_mock.serialize.assert_called_once_with(test_query)
-        request_mock.assert_called_once_with(
-            test_query.__class__.__name__, params=(test_serialized_query,)
-        )
-        requests_mock.post.assert_called_once_with(
-            test_query_handler_addr, json=test_json_rpc_request
-        )
+        request_mock.assert_called_once_with(test_query.__class__.__name__, params=(test_serialized_query,))
+        requests_mock.post.assert_called_once_with(test_query_handler_addr, json=test_json_rpc_request)
         to_result_mock.assert_called_once_with(test_json_requests_response)
         self.query_response_deserializer_mock.deserialize.assert_called_once_with(test_query_response_serialized)
 
@@ -184,10 +179,6 @@ class TestJsonRPCQueryBus(TestCase):
         self.assertEqual(test_query, qef.exception.query)
         self.assertEqual(test_error_message, qef.exception.reason)
         self.query_serializer_mock.serialize.assert_called_once_with(test_query)
-        request_mock.assert_called_once_with(
-            test_query.__class__.__name__, params=(test_serialized_query,)
-        )
-        requests_mock.post.assert_called_once_with(
-            test_query_handler_addr, json=test_json_rpc_request
-        )
+        request_mock.assert_called_once_with(test_query.__class__.__name__, params=(test_serialized_query,))
+        requests_mock.post.assert_called_once_with(test_query_handler_addr, json=test_json_rpc_request)
         to_result_mock.assert_called_once_with(test_json_requests_response)

@@ -3,9 +3,9 @@ from dataclasses import dataclass
 from multiprocessing import Value
 from time import sleep
 
+from bus_station.command_terminal.bus.asynchronous.distributed.kombu_command_bus import KombuCommandBus
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
-from bus_station.command_terminal.bus.asynchronous.distributed.kombu_command_bus import KombuCommandBus
 from bus_station.passengers.registry.redis_registry import RedisRegistry
 from bus_station.passengers.serialization.passenger_json_deserializer import PassengerJSONDeserializer
 from bus_station.passengers.serialization.passenger_json_serializer import PassengerJSONSerializer

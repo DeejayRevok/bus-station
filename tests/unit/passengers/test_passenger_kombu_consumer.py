@@ -1,7 +1,7 @@
 from unittest import TestCase
 from unittest.mock import Mock
 
-from kombu import Connection, Queue, Consumer, Message
+from kombu import Connection, Consumer, Message, Queue
 from kombu.transport.virtual import Channel
 
 from bus_station.passengers.middleware.passenger_middleware_executor import PassengerMiddlewareExecutor

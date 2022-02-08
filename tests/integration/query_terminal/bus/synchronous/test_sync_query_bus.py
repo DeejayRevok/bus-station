@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 
 from bus_station.passengers.registry.in_memory_registry import InMemoryRegistry
+from bus_station.query_terminal.bus.synchronous.sync_query_bus import SyncQueryBus
 from bus_station.query_terminal.query import Query
 from bus_station.query_terminal.query_handler import QueryHandler
 from bus_station.query_terminal.query_response import QueryResponse
-from bus_station.query_terminal.bus.synchronous.sync_query_bus import SyncQueryBus
 from tests.integration.integration_test_case import IntegrationTestCase
 
 

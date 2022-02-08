@@ -1,8 +1,8 @@
 from http.server import ThreadingHTTPServer
 from unittest import TestCase
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import MagicMock, Mock, patch
 
-from jsonrpcserver import Success, Error
+from jsonrpcserver import Error, Success
 from jsonrpcserver.codes import ERROR_INTERNAL_ERROR
 
 from bus_station.command_terminal.command import Command
@@ -13,13 +13,11 @@ from bus_station.passengers.serialization.passenger_deserializer import Passenge
 
 
 class TestJsonRPCCommandServer(TestCase):
-
     def setUp(self) -> None:
         self.passenger_deserializer_mock = Mock(spec=PassengerDeserializer)
         self.passenger_middleware_executor_mock = Mock(spec=PassengerMiddlewareExecutor)
         self.json_rpc_server = JsonRPCCommandServer(
-            self.passenger_deserializer_mock,
-            self.passenger_middleware_executor_mock
+            self.passenger_deserializer_mock, self.passenger_middleware_executor_mock
         )
 
     @patch("bus_station.shared_terminal.json_rpc_server.partial")
@@ -30,7 +28,9 @@ class TestJsonRPCCommandServer(TestCase):
 
         self.json_rpc_server.register(test_command_class, test_command_handler)
 
-        partial_mock.assert_called_once_with(self.json_rpc_server.passenger_executor, test_command_handler, test_command_class)
+        partial_mock.assert_called_once_with(
+            self.json_rpc_server.passenger_executor, test_command_handler, test_command_class
+        )
 
     @patch("bus_station.shared_terminal.json_rpc_server.method")
     @patch("bus_station.shared_terminal.json_rpc_server.RequestHandler")
@@ -47,12 +47,11 @@ class TestJsonRPCCommandServer(TestCase):
 
         self.json_rpc_server.run(test_port)
 
-        partial_mock.assert_called_once_with(self.json_rpc_server.passenger_executor, test_command_handler,
-                                             test_command_class)
-        method_mock.assert_called_once_with(partial_mock(), name=test_command_class.__name__)
-        http_server_mock.assert_called_once_with(
-            ("127.0.0.1", test_port), request_handler_mock
+        partial_mock.assert_called_once_with(
+            self.json_rpc_server.passenger_executor, test_command_handler, test_command_class
         )
+        method_mock.assert_called_once_with(partial_mock(), name=test_command_class.__name__)
+        http_server_mock.assert_called_once_with(("127.0.0.1", test_port), request_handler_mock)
         test_http_server.serve_forever.assert_called_once_with()
 
     def test_passenger_executor_success(self):

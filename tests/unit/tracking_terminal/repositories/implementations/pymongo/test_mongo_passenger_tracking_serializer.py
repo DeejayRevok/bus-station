@@ -1,6 +1,6 @@
 from datetime import datetime
 from unittest import TestCase
-from unittest.mock import patch, Mock, call
+from unittest.mock import Mock, call, patch
 
 from bus_station.tracking_terminal.models.passenger_tracking import PassengerTracking
 from bus_station.tracking_terminal.repositories.implementations.pymongo.mongo_passenger_tracking_serializer import (

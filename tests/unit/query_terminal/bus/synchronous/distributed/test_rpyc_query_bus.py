@@ -9,12 +9,12 @@ from bus_station.passengers.registry.remote_registry import RemoteRegistry
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 from bus_station.passengers.serialization.passenger_serializer import PassengerSerializer
 from bus_station.query_terminal.bus.synchronous.distributed.rpyc_query_bus import RPyCQueryBus
-from bus_station.query_terminal.rpyc_query_service import RPyCQueryService
 from bus_station.query_terminal.handler_for_query_already_registered import HandlerForQueryAlreadyRegistered
 from bus_station.query_terminal.handler_not_found_for_query import HandlerNotFoundForQuery
 from bus_station.query_terminal.query import Query
 from bus_station.query_terminal.query_handler import QueryHandler
 from bus_station.query_terminal.query_response import QueryResponse
+from bus_station.query_terminal.rpyc_query_service import RPyCQueryService
 from bus_station.query_terminal.serialization.query_response_deserializer import QueryResponseDeserializer
 from bus_station.query_terminal.serialization.query_response_serializer import QueryResponseSerializer
 from bus_station.shared_terminal.rpyc_server import RPyCServer
@@ -95,7 +95,7 @@ class TestRPyCQueryBus(TestCase):
         with self.assertRaises(HandlerForQueryAlreadyRegistered) as hfqar:
             self.rpyc_query_bus.register(test_query_handler)
 
-            self.assertEqual(test_query.__class__.__name__, hfqar.query_name)
+        self.assertEqual(test_query.__class__.__name__, hfqar.exception.query_name)
         self.query_registry_mock.__contains__.assert_called_once_with(test_query.__class__)
 
     @patch("bus_station.query_terminal.bus.query_bus.get_type_hints")
@@ -123,7 +123,7 @@ class TestRPyCQueryBus(TestCase):
         with self.assertRaises(HandlerNotFoundForQuery) as hnffq:
             self.rpyc_query_bus.execute(test_query)
 
-            self.assertEqual(test_query.__class__.__name__, hnffq.query_name)
+        self.assertEqual(test_query.__class__.__name__, hnffq.exception.query_name)
         self.query_serializer_mock.serialize.assert_not_called()
         self.query_registry_mock.get_passenger_destination.assert_called_once_with(test_query.__class__)
 

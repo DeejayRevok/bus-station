@@ -3,12 +3,12 @@ from typing import Callable
 from unittest import TestCase
 from unittest.mock import Mock, patch
 
-from kombu import Connection, Queue, Producer
+from kombu import Connection, Producer, Queue
 from kombu.transport.virtual import Channel
 
+from bus_station.command_terminal.bus.asynchronous.distributed.kombu_command_bus import KombuCommandBus
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
-from bus_station.command_terminal.bus.asynchronous.distributed.kombu_command_bus import KombuCommandBus
 from bus_station.command_terminal.handler_for_command_already_registered import HandlerForCommandAlreadyRegistered
 from bus_station.command_terminal.handler_not_found_for_command import HandlerNotFoundForCommand
 from bus_station.passengers.middleware.passenger_middleware_executor import PassengerMiddlewareExecutor
@@ -50,7 +50,7 @@ class TestKombuCommandBus(TestCase):
         with self.assertRaises(HandlerForCommandAlreadyRegistered) as hfcar:
             self.kombu_command_bus.register(test_command_handler)
 
-            self.assertEqual("TestCommand", hfcar.command_name)
+        self.assertEqual(test_command.__class__.__name__, hfcar.exception.command_name)
         queue_mock.assert_not_called()
         consumer_mock.assert_not_called()
         process_mock.assert_not_called()
@@ -68,7 +68,7 @@ class TestKombuCommandBus(TestCase):
         test_process = Mock(spec=Process)
         process_mock.return_value = test_process
         test_command_handler = Mock(spec=CommandHandler)
-        test_command = Mock(spec=Command, name="TestCommand")
+        test_command = Mock(spec=Command)
         get_type_hints_mock.return_value = {"command": test_command.__class__}
         self.command_registry_mock.__contains__ = Mock(spec=Callable)
         self.command_registry_mock.__contains__.return_value = False
@@ -95,14 +95,14 @@ class TestKombuCommandBus(TestCase):
     @patch.object(Runnable, "running")
     def test_execute_not_registered(self, running_mock):
         running_mock.return_value = True
-        test_command = Mock(spec=Command, name="TestCommand")
+        test_command = Mock(spec=Command)
         self.command_registry_mock.__contains__ = Mock(spec=Callable)
         self.command_registry_mock.__contains__.return_value = False
 
         with self.assertRaises(HandlerNotFoundForCommand) as hnffc:
             self.kombu_command_bus.execute(test_command)
 
-            self.assertEqual("TestCommand", hnffc.command_name)
+        self.assertEqual(test_command.__class__.__name__, hnffc.exception.command_name)
         self.command_serializer_mock.serialize.assert_not_called()
         self.command_registry_mock.__contains__.assert_called_once_with(test_command.__class__)
 
@@ -148,7 +148,7 @@ class TestKombuCommandBus(TestCase):
         test_process = Mock(spec=Process)
         process_mock.return_value = test_process
         test_command_handler = Mock(spec=CommandHandler)
-        test_command = Mock(spec=Command, name="TestCommand")
+        test_command = Mock(spec=Command)
         get_type_hints_mock.return_value = {"command": test_command.__class__}
         self.command_registry_mock.__contains__ = Mock(spec=Callable)
         self.command_registry_mock.__contains__.return_value = False
@@ -184,7 +184,7 @@ class TestKombuCommandBus(TestCase):
         test_process = Mock(spec=Process)
         process_mock.return_value = test_process
         test_command_handler = Mock(spec=CommandHandler)
-        test_command = Mock(spec=Command, name="TestCommand")
+        test_command = Mock(spec=Command)
         get_type_hints_mock.return_value = {"command": test_command.__class__}
         self.command_registry_mock.__contains__ = Mock(spec=Callable)
         self.command_registry_mock.__contains__.return_value = False

@@ -1,4 +1,4 @@
-from bus_station.shared_terminal.runnable import Runnable, is_running, is_not_running
+from bus_station.shared_terminal.runnable import Runnable, is_not_running, is_running
 from bus_station.shared_terminal.runnable_already_runnning_exception import RunnableAlreadyRunningException
 from bus_station.shared_terminal.runnable_not_running_exception import RunnableNotRunningException
 from tests.integration.integration_test_case import IntegrationTestCase
@@ -44,7 +44,7 @@ class TestRunnable(IntegrationTestCase):
         with self.assertRaises(RunnableNotRunningException) as rnnrex:
             self.runnable.test_running_method()
 
-            self.assertEqual(self.runnable.__class__.__name__, rnnrex.runnable_name)
+        self.assertEqual(self.runnable.__class__.__name__, rnnrex.exception.runnable_name)
 
     def test_is_not_running_fails_if_running(self):
         self.runnable.start()
@@ -52,4 +52,4 @@ class TestRunnable(IntegrationTestCase):
         with self.assertRaises(RunnableAlreadyRunningException) as rarex:
             self.runnable.test_not_running_method()
 
-            self.assertEqual(self.runnable.__class__.__name__, rarex.runnable_name)
+        self.assertEqual(self.runnable.__class__.__name__, rarex.exception.runnable_name)

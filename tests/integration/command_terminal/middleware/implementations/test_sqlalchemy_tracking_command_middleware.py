@@ -1,7 +1,7 @@
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 
-from sqlalchemy import create_engine, MetaData
-from sqlalchemy.orm import sessionmaker, clear_mappers
+from sqlalchemy import MetaData, create_engine
+from sqlalchemy.orm import clear_mappers, sessionmaker
 
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler

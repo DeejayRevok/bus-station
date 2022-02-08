@@ -1,7 +1,7 @@
 from multiprocessing.context import Process
 from typing import Callable
 from unittest import TestCase
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
 
 from rpyc import Connection
 
@@ -88,7 +88,7 @@ class TestRPyCCommandBus(TestCase):
         with self.assertRaises(HandlerForCommandAlreadyRegistered) as hfcar:
             self.rpyc_command_bus.register(test_command_handler)
 
-            self.assertEqual(test_command.__class__.__name__, hfcar.command_name)
+        self.assertEqual(test_command.__class__.__name__, hfcar.exception.command_name)
         self.command_registry_mock.__contains__.assert_called_once_with(test_command.__class__)
 
     @patch("bus_station.command_terminal.bus.command_bus.get_type_hints")
@@ -116,7 +116,7 @@ class TestRPyCCommandBus(TestCase):
         with self.assertRaises(HandlerNotFoundForCommand) as hnffc:
             self.rpyc_command_bus.execute(test_command)
 
-            self.assertEqual(test_command.__class__.__name__, hnffc.command_name)
+        self.assertEqual(test_command.__class__.__name__, hnffc.exception.command_name)
         self.command_serializer_mock.serialize.assert_not_called()
         self.command_registry_mock.get_passenger_destination.assert_called_once_with(test_command.__class__)
 

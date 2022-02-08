@@ -1,7 +1,7 @@
 from multiprocessing.context import Process
 from typing import Callable
 from unittest import TestCase
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
 
 from jsonrpcclient import Error
 from jsonrpcserver import Success
@@ -22,7 +22,6 @@ from bus_station.shared_terminal.runnable import Runnable
 
 
 class TestJsonRPCCommandBus(TestCase):
-
     @patch("bus_station.command_terminal.bus.synchronous.distributed.json_rpc_command_bus.JsonRPCCommandServer")
     def setUp(self, json_rpc_server_builder_mock) -> None:
         self.command_serializer_mock = Mock(spec=PassengerSerializer)
@@ -78,7 +77,7 @@ class TestJsonRPCCommandBus(TestCase):
         with self.assertRaises(HandlerForCommandAlreadyRegistered) as hfcar:
             self.json_rpc_command_bus.register(test_command_handler)
 
-            self.assertEqual(test_command.__class__.__name__, hfcar.command_name)
+        self.assertEqual(test_command.__class__.__name__, hfcar.exception.command_name)
         self.command_registry_mock.__contains__.assert_called_once_with(test_command.__class__)
 
     @patch("bus_station.command_terminal.bus.command_bus.get_type_hints")
@@ -106,7 +105,7 @@ class TestJsonRPCCommandBus(TestCase):
         with self.assertRaises(HandlerNotFoundForCommand) as hnffc:
             self.json_rpc_command_bus.execute(test_command)
 
-            self.assertEqual(test_command.__class__.__name__, hnffc.command_name)
+        self.assertEqual(test_command.__class__.__name__, hnffc.exception.command_name)
         self.command_serializer_mock.serialize.assert_not_called()
         self.command_registry_mock.get_passenger_destination.assert_called_once_with(test_command.__class__)
 
@@ -135,12 +134,8 @@ class TestJsonRPCCommandBus(TestCase):
         self.json_rpc_command_bus.execute(test_command)
 
         self.command_serializer_mock.serialize.assert_called_once_with(test_command)
-        request_mock.assert_called_once_with(
-            test_command.__class__.__name__, params=(test_serialized_command,)
-        )
-        requests_mock.post.assert_called_once_with(
-            test_command_handler_addr, json=test_json_rpc_request
-        )
+        request_mock.assert_called_once_with(test_command.__class__.__name__, params=(test_serialized_command,))
+        requests_mock.post.assert_called_once_with(test_command_handler_addr, json=test_json_rpc_request)
         to_result_mock.assert_called_once_with(test_json_requests_response)
 
     @patch("bus_station.command_terminal.bus.synchronous.distributed.json_rpc_command_bus.to_result")
@@ -172,10 +167,6 @@ class TestJsonRPCCommandBus(TestCase):
         self.assertEqual(test_command, cef.exception.command)
         self.assertEqual(test_error_message, cef.exception.reason)
         self.command_serializer_mock.serialize.assert_called_once_with(test_command)
-        request_mock.assert_called_once_with(
-            test_command.__class__.__name__, params=(test_serialized_command,)
-        )
-        requests_mock.post.assert_called_once_with(
-            test_command_handler_addr, json=test_json_rpc_request
-        )
+        request_mock.assert_called_once_with(test_command.__class__.__name__, params=(test_serialized_command,))
+        requests_mock.post.assert_called_once_with(test_command_handler_addr, json=test_json_rpc_request)
         to_result_mock.assert_called_once_with(test_json_requests_response)

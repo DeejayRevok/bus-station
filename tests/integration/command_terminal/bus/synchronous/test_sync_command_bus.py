@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
+from bus_station.command_terminal.bus.synchronous.sync_command_bus import SyncCommandBus
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
-from bus_station.command_terminal.bus.synchronous.sync_command_bus import SyncCommandBus
 from bus_station.passengers.registry.in_memory_registry import InMemoryRegistry
 from tests.integration.integration_test_case import IntegrationTestCase
 

@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
+from bus_station.event_terminal.bus.synchronous.sync_event_bus import SyncEventBus
 from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
-from bus_station.event_terminal.bus.synchronous.sync_event_bus import SyncEventBus
 from bus_station.passengers.registry.in_memory_registry import InMemoryRegistry
 from tests.integration.integration_test_case import IntegrationTestCase
 

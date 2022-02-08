@@ -1,6 +1,6 @@
 from multiprocessing import Queue
 from unittest import TestCase
-from unittest.mock import Mock, call, MagicMock
+from unittest.mock import MagicMock, Mock, call
 
 from bus_station.passengers.middleware.passenger_middleware_executor import PassengerMiddlewareExecutor
 from bus_station.passengers.passenger import Passenger

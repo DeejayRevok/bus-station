@@ -1,6 +1,6 @@
 from logging import Logger
 from unittest import TestCase
-from unittest.mock import Mock, patch, call
+from unittest.mock import Mock, call, patch
 
 from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer

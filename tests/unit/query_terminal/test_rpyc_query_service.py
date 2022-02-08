@@ -1,12 +1,12 @@
 from unittest import TestCase
-from unittest.mock import Mock, MagicMock
+from unittest.mock import MagicMock, Mock
 
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
-from bus_station.query_terminal.rpyc_query_service import RPyCQueryService
 from bus_station.query_terminal.middleware.query_middleware_executor import QueryMiddlewareExecutor
 from bus_station.query_terminal.query import Query
 from bus_station.query_terminal.query_handler import QueryHandler
 from bus_station.query_terminal.query_response import QueryResponse
+from bus_station.query_terminal.rpyc_query_service import RPyCQueryService
 from bus_station.query_terminal.serialization.query_response_serializer import QueryResponseSerializer
 
 

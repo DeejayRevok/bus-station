@@ -55,5 +55,5 @@ class TestPassengerJSONDeserializer(TestCase):
         with self.assertRaises(PassengerDeserializationError) as pderr:
             self.passenger_json_deserializer.deserialize(test_passenger_serialized, TestPassenger)
 
-            self.assertEqual(TestPassenger, pderr.passenger)
-            self.assertEqual("Missing value for field test_arg", pderr.reason)
+        self.assertEqual(TestPassenger, pderr.exception.passenger)
+        self.assertEqual("Missing value for field test_arg", pderr.exception.reason)

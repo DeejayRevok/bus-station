@@ -1,10 +1,10 @@
 from unittest import TestCase
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
 
+from bus_station.event_terminal.bus.synchronous.sync_event_bus import SyncEventBus
 from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
 from bus_station.event_terminal.middleware.event_middleware_executor import EventMiddlewareExecutor
-from bus_station.event_terminal.bus.synchronous.sync_event_bus import SyncEventBus
 from bus_station.passengers.registry.in_memory_registry import InMemoryRegistry
 
 

@@ -1,15 +1,15 @@
 from typing import Callable
 from unittest import TestCase
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
 
 from bus_station.passengers.registry.in_memory_registry import InMemoryRegistry
+from bus_station.query_terminal.bus.synchronous.sync_query_bus import SyncQueryBus
 from bus_station.query_terminal.handler_for_query_already_registered import HandlerForQueryAlreadyRegistered
 from bus_station.query_terminal.handler_not_found_for_query import HandlerNotFoundForQuery
 from bus_station.query_terminal.middleware.query_middleware_executor import QueryMiddlewareExecutor
 from bus_station.query_terminal.query import Query
 from bus_station.query_terminal.query_handler import QueryHandler
 from bus_station.query_terminal.query_response import QueryResponse
-from bus_station.query_terminal.bus.synchronous.sync_query_bus import SyncQueryBus
 
 
 class TestSyncQueryBus(TestCase):
@@ -20,7 +20,7 @@ class TestSyncQueryBus(TestCase):
     @patch("bus_station.query_terminal.bus.query_bus.get_type_hints")
     def test_register_already_registered(self, get_type_hints_mock):
         test_query_handler = Mock(spec=QueryHandler)
-        test_query = Mock(spec=Query, name="TestQuery")
+        test_query = Mock(spec=Query)
         get_type_hints_mock.return_value = {"query": test_query.__class__}
         self.query_registry_mock.__contains__ = Mock(spec=Callable)
         self.query_registry_mock.__contains__.return_value = True
@@ -28,13 +28,13 @@ class TestSyncQueryBus(TestCase):
         with self.assertRaises(HandlerForQueryAlreadyRegistered) as hfqar:
             self.sync_query_bus.register(test_query_handler)
 
-            self.assertEqual("TestQuery", hfqar.query_name)
+        self.assertEqual(test_query.__class__.__name__, hfqar.exception.query_name)
         self.query_registry_mock.__contains__.assert_called_once_with(test_query.__class__)
 
     @patch("bus_station.query_terminal.bus.query_bus.get_type_hints")
     def test_register_success(self, get_type_hints_mock):
         test_query_handler = Mock(spec=QueryHandler)
-        test_query = Mock(spec=Query, name="TestQuery")
+        test_query = Mock(spec=Query)
         get_type_hints_mock.return_value = {"query": test_query.__class__}
         self.query_registry_mock.__contains__ = Mock(spec=Callable)
         self.query_registry_mock.__contains__.return_value = False
@@ -51,7 +51,7 @@ class TestSyncQueryBus(TestCase):
         with self.assertRaises(HandlerNotFoundForQuery) as hnffq:
             self.sync_query_bus.execute(test_query)
 
-            self.assertEqual(test_query.__class__.__name__, hnffq.query_name)
+        self.assertEqual(test_query.__class__.__name__, hnffq.exception.query_name)
         self.query_registry_mock.get_passenger_destination.assert_called_once_with(test_query.__class__)
 
     @patch("bus_station.query_terminal.bus.query_bus.get_type_hints")

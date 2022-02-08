@@ -1,14 +1,12 @@
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 
-from sqlalchemy import create_engine, MetaData
-from sqlalchemy.orm import sessionmaker, clear_mappers
+from sqlalchemy import MetaData, create_engine
+from sqlalchemy.orm import clear_mappers, sessionmaker
 
 from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
 from bus_station.event_terminal.middleware.event_middleware_executor import EventMiddlewareExecutor
-from bus_station.event_terminal.middleware.implementations.tracking_event_middleware import (
-    TrackingEventMiddleware,
-)
+from bus_station.event_terminal.middleware.implementations.tracking_event_middleware import TrackingEventMiddleware
 from bus_station.tracking_terminal.mappers.sqlalchemy.sqlalchemy_event_tracking_mapper import (
     SQLAlchemyEventTrackingMapper,
 )

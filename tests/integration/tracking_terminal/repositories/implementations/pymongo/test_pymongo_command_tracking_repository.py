@@ -2,7 +2,6 @@ from datetime import datetime
 
 from pymongo import MongoClient
 
-
 from bus_station.tracking_terminal.models.command_tracking import CommandTracking
 from bus_station.tracking_terminal.repositories.implementations.pymongo.mongo_passenger_tracking_deserializer import (
     MongoPassengerTrackingDeserializer,

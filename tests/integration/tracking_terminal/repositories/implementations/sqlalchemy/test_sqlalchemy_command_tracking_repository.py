@@ -1,7 +1,7 @@
 from datetime import datetime
 
-from sqlalchemy import create_engine, MetaData
-from sqlalchemy.orm import sessionmaker, Session, clear_mappers
+from sqlalchemy import MetaData, create_engine
+from sqlalchemy.orm import Session, clear_mappers, sessionmaker
 
 from bus_station.tracking_terminal.mappers.sqlalchemy.sqlalchemy_command_tracking_mapper import (
     SQLAlchemyCommandTrackingMapper,

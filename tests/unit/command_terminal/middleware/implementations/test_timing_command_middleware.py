@@ -1,6 +1,6 @@
 from logging import Logger
 from unittest import TestCase
-from unittest.mock import Mock, patch, call
+from unittest.mock import Mock, call, patch
 
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler

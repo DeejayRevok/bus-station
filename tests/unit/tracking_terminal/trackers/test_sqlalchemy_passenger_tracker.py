@@ -6,8 +6,8 @@ from bus_station.passengers.passenger import Passenger
 from bus_station.shared_terminal.bus_stop import BusStop
 from bus_station.tracking_terminal.mappers.sqlalchemy.sqlalchemy_mapper import SQLAlchemyMapper
 from bus_station.tracking_terminal.models.passenger_tracking import PassengerTracking
-from bus_station.tracking_terminal.trackers.passenger_tracking_not_found import PassengerTrackingNotFound
 from bus_station.tracking_terminal.repositories.passenger_tracking_repository import PassengerTrackingRepository
+from bus_station.tracking_terminal.trackers.passenger_tracking_not_found import PassengerTrackingNotFound
 from bus_station.tracking_terminal.trackers.sqlalchemy_passenger_tracker import SQLAlchemyPassengerTracker
 
 
@@ -64,8 +64,8 @@ class TestSQLAlchemyPassengerTracker(TestCase):
         with self.assertRaises(PassengerTrackingNotFound) as ptnf:
             self.sqlalchemy_passenger_tracker.end_tracking(test_passenger)
 
-            self.assertEqual(test_passenger.__class__.__name__, ptnf.passenger_name)
-            self.assertEqual(str(id(test_passenger)), ptnf.passenger_id)
+        self.assertEqual(test_passenger.__class__.__name__, ptnf.exception.passenger_name)
+        self.assertEqual(str(id(test_passenger)), ptnf.exception.passenger_tracking_id)
         self.passenger_tracking_repository_mock.find_by_id.assert_called_once_with(str(id(test_passenger)))
         self.passenger_tracking_repository_mock.save.assert_not_called()
 

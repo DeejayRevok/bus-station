@@ -1,8 +1,8 @@
 from multiprocessing.context import Process
 from unittest import TestCase
-from unittest.mock import Mock, patch, call
+from unittest.mock import Mock, call, patch
 
-from kombu import Connection, Queue, Exchange, Producer
+from kombu import Connection, Exchange, Producer, Queue
 from kombu.transport.virtual import Channel
 
 from bus_station.event_terminal.bus.asynchronous.distributed.kombu_event_bus import KombuEventBus

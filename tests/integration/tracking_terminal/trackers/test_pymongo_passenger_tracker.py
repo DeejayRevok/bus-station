@@ -1,4 +1,4 @@
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 
 from pymongo import MongoClient
 
@@ -100,5 +100,5 @@ class TestPyMongoPassengerTracker(IntegrationTestCase):
         with self.assertRaises(PassengerTrackingNotFound) as ptnf:
             self.pymongo_passenger_tracker.end_tracking(test_query)
 
-            self.assertEqual(test_query.__class__.__name__, ptnf.passenger_name)
-            self.assertEqual(str(id(test_query)), ptnf.passenger_id)
+        self.assertEqual(test_query.__class__.__name__, ptnf.exception.passenger_name)
+        self.assertEqual(str(id(test_query)), ptnf.exception.passenger_tracking_id)

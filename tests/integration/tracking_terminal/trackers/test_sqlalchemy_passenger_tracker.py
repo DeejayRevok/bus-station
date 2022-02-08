@@ -1,7 +1,7 @@
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 
-from sqlalchemy import create_engine, MetaData
-from sqlalchemy.orm import sessionmaker, clear_mappers
+from sqlalchemy import MetaData, create_engine
+from sqlalchemy.orm import clear_mappers, sessionmaker
 
 from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
@@ -11,10 +11,10 @@ from bus_station.tracking_terminal.mappers.sqlalchemy.sqlalchemy_event_tracking_
 from bus_station.tracking_terminal.models.proxy_definitions import SAEventTrackingProxy
 from bus_station.tracking_terminal.passenger_tracking_to_proxy_transformer import PassengerTrackingToProxyTransformer
 from bus_station.tracking_terminal.proxy_to_passenger_tracking_transformer import ProxyToPassengerTrackingTransformer
-from bus_station.tracking_terminal.trackers.passenger_tracking_not_found import PassengerTrackingNotFound
 from bus_station.tracking_terminal.repositories.implementations.sqlalchemy.sqlalchemy_event_tracking_repository import (
     SQLAlchemyEventTrackingRepository,
 )
+from bus_station.tracking_terminal.trackers.passenger_tracking_not_found import PassengerTrackingNotFound
 from bus_station.tracking_terminal.trackers.sqlalchemy_passenger_tracker import SQLAlchemyPassengerTracker
 from tests.integration.integration_test_case import IntegrationTestCase
 
@@ -106,5 +106,5 @@ class TestSQLAlchemyPassengerTracker(IntegrationTestCase):
         with self.assertRaises(PassengerTrackingNotFound) as ptnf:
             self.sqlalchemy_passenger_tracker.end_tracking(test_event)
 
-            self.assertEqual(test_event.__class__.__name__, ptnf.passenger_name)
-            self.assertEqual(str(id(test_event)), ptnf.passenger_id)
+        self.assertEqual(test_event.__class__.__name__, ptnf.exception.passenger_name)
+        self.assertEqual(str(id(test_event)), ptnf.exception.passenger_tracking_id)

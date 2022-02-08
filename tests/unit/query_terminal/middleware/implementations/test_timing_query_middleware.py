@@ -1,6 +1,6 @@
 from logging import Logger
 from unittest import TestCase
-from unittest.mock import Mock, patch, call
+from unittest.mock import Mock, call, patch
 
 from bus_station.query_terminal.middleware.implementations.timing_query_middleware import TimingQueryMiddleware
 from bus_station.query_terminal.query import Query

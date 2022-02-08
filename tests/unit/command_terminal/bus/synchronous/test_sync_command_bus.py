@@ -1,13 +1,13 @@
 from typing import Callable
 from unittest import TestCase
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
 
+from bus_station.command_terminal.bus.synchronous.sync_command_bus import SyncCommandBus
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
 from bus_station.command_terminal.handler_for_command_already_registered import HandlerForCommandAlreadyRegistered
 from bus_station.command_terminal.handler_not_found_for_command import HandlerNotFoundForCommand
 from bus_station.command_terminal.middleware.command_middleware_executor import CommandMiddlewareExecutor
-from bus_station.command_terminal.bus.synchronous.sync_command_bus import SyncCommandBus
 from bus_station.passengers.registry.in_memory_registry import InMemoryRegistry
 
 
@@ -19,7 +19,7 @@ class TestSyncCommandBus(TestCase):
     @patch("bus_station.command_terminal.bus.command_bus.get_type_hints")
     def test_register_already_registered(self, get_type_hints_mock):
         test_command_handler = Mock(spec=CommandHandler)
-        test_command = Mock(spec=Command, name="TestCommand")
+        test_command = Mock(spec=Command)
         get_type_hints_mock.return_value = {"command": test_command.__class__}
         self.command_registry_mock.__contains__ = Mock(spec=Callable)
         self.command_registry_mock.__contains__.return_value = True
@@ -27,13 +27,13 @@ class TestSyncCommandBus(TestCase):
         with self.assertRaises(HandlerForCommandAlreadyRegistered) as hfcar:
             self.sync_command_bus.register(test_command_handler)
 
-            self.assertEqual("TestCommand", hfcar.command_name)
+        self.assertEqual(test_command.__class__.__name__, hfcar.exception.command_name)
         self.command_registry_mock.__contains__.assert_called_once_with(test_command.__class__)
 
     @patch("bus_station.command_terminal.bus.command_bus.get_type_hints")
     def test_register_success(self, get_type_hints_mock):
         test_command_handler = Mock(spec=CommandHandler)
-        test_command = Mock(spec=Command, name="TestCommand")
+        test_command = Mock(spec=Command)
         get_type_hints_mock.return_value = {"command": test_command.__class__}
         self.command_registry_mock.__contains__ = Mock(spec=Callable)
         self.command_registry_mock.__contains__.return_value = False
@@ -50,7 +50,7 @@ class TestSyncCommandBus(TestCase):
         with self.assertRaises(HandlerNotFoundForCommand) as hnffc:
             self.sync_command_bus.execute(test_command)
 
-            self.assertEqual("TestCommand", hnffc.command_name)
+        self.assertEqual(test_command.__class__.__name__, hnffc.exception.command_name)
         self.command_registry_mock.get_passenger_destination.assert_called_once_with(test_command.__class__)
 
     @patch("bus_station.command_terminal.bus.command_bus.get_type_hints")

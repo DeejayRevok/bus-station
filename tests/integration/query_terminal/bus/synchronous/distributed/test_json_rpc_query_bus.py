@@ -61,9 +61,7 @@ class TestJsonRPCCommandBus(IntegrationTestCase):
 
     def test_execute_success(self):
         test_value = "test_value"
-        test_query = QueryTest(
-            test_value=test_value
-        )
+        test_query = QueryTest(test_value=test_value)
         test_query_handler = QueryTestHandler()
         self.json_rpc_query_bus.register(test_query_handler)
         self.json_rpc_query_bus.start()
@@ -73,7 +71,5 @@ class TestJsonRPCCommandBus(IntegrationTestCase):
             query_response = self.json_rpc_query_bus.execute(test_query)
 
             self.assertEqual(i + 1, test_query_handler.call_count.value)
-            expected_query_response = QueryResponse(
-                data=test_value
-            )
+            expected_query_response = QueryResponse(data=test_value)
             self.assertEqual(expected_query_response, query_response)

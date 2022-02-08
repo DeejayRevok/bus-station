@@ -1,11 +1,9 @@
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 
-from sqlalchemy import create_engine, MetaData
-from sqlalchemy.orm import sessionmaker, clear_mappers
+from sqlalchemy import MetaData, create_engine
+from sqlalchemy.orm import clear_mappers, sessionmaker
 
-from bus_station.query_terminal.middleware.implementations.tracking_query_middleware import (
-    TrackingQueryMiddleware,
-)
+from bus_station.query_terminal.middleware.implementations.tracking_query_middleware import TrackingQueryMiddleware
 from bus_station.query_terminal.middleware.query_middleware_executor import QueryMiddlewareExecutor
 from bus_station.query_terminal.query import Query
 from bus_station.query_terminal.query_handler import QueryHandler
