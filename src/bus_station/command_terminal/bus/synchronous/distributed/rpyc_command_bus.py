@@ -43,7 +43,6 @@ class RPyCCommandBus(CommandBus, Runnable):
     def _start(self):
         self.__rpyc_server = RPyCServer(
             rpyc_service=self.__rpyc_service,
-            host=self.__self_host,
             port=self.__self_port,
         )
         self.__server_process = Process(target=self.__rpyc_server.run)

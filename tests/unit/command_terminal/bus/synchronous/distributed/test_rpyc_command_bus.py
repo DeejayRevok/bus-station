@@ -48,7 +48,6 @@ class TestRPyCCommandBus(TestCase):
 
         rpyc_server_mock.assert_called_once_with(
             rpyc_service=self.rpyc_command_service_mock,
-            host=self.test_host,
             port=self.test_port,
         )
         process_mock.assert_called_once_with(target=test_rpyc_server.run)
@@ -69,7 +68,6 @@ class TestRPyCCommandBus(TestCase):
 
         rpyc_server_mock.assert_called_once_with(
             rpyc_service=self.rpyc_command_service_mock,
-            host=self.test_host,
             port=self.test_port,
         )
         process_mock.assert_called_once_with(target=test_rpyc_server.run)

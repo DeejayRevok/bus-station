@@ -55,7 +55,6 @@ class TestRPyCQueryBus(TestCase):
 
         rpyc_server_mock.assert_called_once_with(
             rpyc_service=self.rpyc_query_service_mock,
-            host=self.test_host,
             port=self.test_port,
         )
         process_mock.assert_called_once_with(target=test_rpyc_server.run)
@@ -76,7 +75,6 @@ class TestRPyCQueryBus(TestCase):
 
         rpyc_server_mock.assert_called_once_with(
             rpyc_service=self.rpyc_query_service_mock,
-            host=self.test_host,
             port=self.test_port,
         )
         process_mock.assert_called_once_with(target=test_rpyc_server.run)
