@@ -21,7 +21,6 @@ from bus_station.query_terminal.query_response import QueryResponse
 from bus_station.query_terminal.serialization.query_response_deserializer import QueryResponseDeserializer
 from bus_station.query_terminal.serialization.query_response_serializer import QueryResponseSerializer
 from bus_station.shared_terminal.json_rpc_server import JsonRPCServer
-from bus_station.shared_terminal.runnable import Runnable
 
 
 class TestJsonRPCQueryBus(TestCase):
@@ -103,9 +102,7 @@ class TestJsonRPCQueryBus(TestCase):
             test_query.__class__, f"http://{self.test_host}:{self.test_port}/"
         )
 
-    @patch.object(Runnable, "running")
-    def test_execute_not_registered(self, running_mock):
-        running_mock.return_value = True
+    def test_execute_not_registered(self):
         test_query = Mock(spec=Query, name="TestQuery")
         self.query_registry_mock.get_passenger_destination.return_value = None
 
@@ -119,9 +116,7 @@ class TestJsonRPCQueryBus(TestCase):
     @patch("bus_station.query_terminal.bus.synchronous.distributed.json_rpc_query_bus.to_result")
     @patch("bus_station.query_terminal.bus.synchronous.distributed.json_rpc_query_bus.request")
     @patch("bus_station.query_terminal.bus.synchronous.distributed.json_rpc_query_bus.requests")
-    @patch.object(Runnable, "running")
-    def test_execute_success(self, running_mock, requests_mock, request_mock, to_result_mock):
-        running_mock.return_value = True
+    def test_execute_success(self, requests_mock, request_mock, to_result_mock):
         test_query = Mock(spec=Query, name="TestQuery")
         test_host = "test_host"
         test_port = "41124"
@@ -153,9 +148,7 @@ class TestJsonRPCQueryBus(TestCase):
     @patch("bus_station.query_terminal.bus.synchronous.distributed.json_rpc_query_bus.to_result")
     @patch("bus_station.query_terminal.bus.synchronous.distributed.json_rpc_query_bus.request")
     @patch("bus_station.query_terminal.bus.synchronous.distributed.json_rpc_query_bus.requests")
-    @patch.object(Runnable, "running")
-    def test_execute_error(self, running_mock, requests_mock, request_mock, to_result_mock):
-        running_mock.return_value = True
+    def test_execute_error(self, requests_mock, request_mock, to_result_mock):
         test_query = Mock(spec=Query, name="TestQuery")
         test_host = "test_host"
         test_port = "41124"

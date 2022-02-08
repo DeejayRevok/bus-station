@@ -18,7 +18,6 @@ from bus_station.query_terminal.rpyc_query_service import RPyCQueryService
 from bus_station.query_terminal.serialization.query_response_deserializer import QueryResponseDeserializer
 from bus_station.query_terminal.serialization.query_response_serializer import QueryResponseSerializer
 from bus_station.shared_terminal.rpyc_server import RPyCServer
-from bus_station.shared_terminal.runnable import Runnable
 
 
 class TestRPyCQueryBus(TestCase):
@@ -112,9 +111,7 @@ class TestRPyCQueryBus(TestCase):
             test_query.__class__, f"{self.test_host}:{self.test_port}"
         )
 
-    @patch.object(Runnable, "running")
-    def test_execute_not_registered(self, running_mock):
-        running_mock.return_value = True
+    def test_execute_not_registered(self):
         test_query = Mock(spec=Query, name="TestQuery")
         self.query_registry_mock.get_passenger_destination.return_value = None
 
@@ -126,9 +123,7 @@ class TestRPyCQueryBus(TestCase):
         self.query_registry_mock.get_passenger_destination.assert_called_once_with(test_query.__class__)
 
     @patch("bus_station.query_terminal.bus.synchronous.distributed.rpyc_query_bus.connect")
-    @patch.object(Runnable, "running")
-    def test_execute_success(self, running_mock, connect_mock):
-        running_mock.return_value = True
+    def test_execute_success(self, connect_mock):
         test_query = Mock(spec=Query, name="TestQuery")
         test_host = "test_host"
         test_port = "41124"

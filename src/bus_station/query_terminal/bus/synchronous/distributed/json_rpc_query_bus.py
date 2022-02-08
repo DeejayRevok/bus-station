@@ -20,7 +20,7 @@ from bus_station.query_terminal.query_handler import QueryHandler
 from bus_station.query_terminal.query_response import QueryResponse
 from bus_station.query_terminal.serialization.query_response_deserializer import QueryResponseDeserializer
 from bus_station.query_terminal.serialization.query_response_serializer import QueryResponseSerializer
-from bus_station.shared_terminal.runnable import Runnable, is_not_running, is_running
+from bus_station.shared_terminal.runnable import Runnable, is_not_running
 
 
 class JsonRPCQueryBus(QueryBus, Runnable):
@@ -67,7 +67,6 @@ class JsonRPCQueryBus(QueryBus, Runnable):
         self_addr = self.__SELF_ADDR_PATTERN.format(host=self.__self_host, port=self.__self_port)
         self.__query_registry.register(handler_query, self_addr)
 
-    @is_running
     def execute(self, query: Query) -> QueryResponse:
         query_handler_addr = self.__query_registry.get_passenger_destination(query.__class__)
         if query_handler_addr is None:

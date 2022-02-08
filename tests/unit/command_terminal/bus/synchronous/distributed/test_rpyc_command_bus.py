@@ -15,7 +15,6 @@ from bus_station.passengers.registry.remote_registry import RemoteRegistry
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 from bus_station.passengers.serialization.passenger_serializer import PassengerSerializer
 from bus_station.shared_terminal.rpyc_server import RPyCServer
-from bus_station.shared_terminal.runnable import Runnable
 
 
 class TestRPyCCommandBus(TestCase):
@@ -105,9 +104,7 @@ class TestRPyCCommandBus(TestCase):
             test_command.__class__, f"{self.test_host}:{self.test_port}"
         )
 
-    @patch.object(Runnable, "running")
-    def test_execute_not_registered(self, running_mock):
-        running_mock.return_value = True
+    def test_execute_not_registered(self):
         test_command = Mock(spec=Command, name="TestCommand")
         self.command_registry_mock.get_passenger_destination.return_value = None
 
@@ -119,9 +116,7 @@ class TestRPyCCommandBus(TestCase):
         self.command_registry_mock.get_passenger_destination.assert_called_once_with(test_command.__class__)
 
     @patch("bus_station.command_terminal.bus.synchronous.distributed.rpyc_command_bus.connect")
-    @patch.object(Runnable, "running")
-    def test_execute_success(self, running_mock, connect_mock):
-        running_mock.return_value = True
+    def test_execute_success(self, connect_mock):
         test_command = Mock(spec=Command, name="TestCommand")
         test_host = "test_host"
         test_port = "41124"

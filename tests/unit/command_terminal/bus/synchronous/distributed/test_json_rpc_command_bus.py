@@ -18,7 +18,6 @@ from bus_station.passengers.registry.remote_registry import RemoteRegistry
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 from bus_station.passengers.serialization.passenger_serializer import PassengerSerializer
 from bus_station.shared_terminal.json_rpc_server import JsonRPCServer
-from bus_station.shared_terminal.runnable import Runnable
 
 
 class TestJsonRPCCommandBus(TestCase):
@@ -96,9 +95,7 @@ class TestJsonRPCCommandBus(TestCase):
             test_command.__class__, f"http://{self.test_host}:{self.test_port}/"
         )
 
-    @patch.object(Runnable, "running")
-    def test_execute_not_registered(self, running_mock):
-        running_mock.return_value = True
+    def test_execute_not_registered(self):
         test_command = Mock(spec=Command, name="TestCommand")
         self.command_registry_mock.get_passenger_destination.return_value = None
 
@@ -112,9 +109,7 @@ class TestJsonRPCCommandBus(TestCase):
     @patch("bus_station.command_terminal.bus.synchronous.distributed.json_rpc_command_bus.to_result")
     @patch("bus_station.command_terminal.bus.synchronous.distributed.json_rpc_command_bus.request")
     @patch("bus_station.command_terminal.bus.synchronous.distributed.json_rpc_command_bus.requests")
-    @patch.object(Runnable, "running")
-    def test_execute_success(self, running_mock, requests_mock, request_mock, to_result_mock):
-        running_mock.return_value = True
+    def test_execute_success(self, requests_mock, request_mock, to_result_mock):
         test_command = Mock(spec=Command, name="TestCommand")
         test_host = "test_host"
         test_port = "41124"
@@ -141,9 +136,7 @@ class TestJsonRPCCommandBus(TestCase):
     @patch("bus_station.command_terminal.bus.synchronous.distributed.json_rpc_command_bus.to_result")
     @patch("bus_station.command_terminal.bus.synchronous.distributed.json_rpc_command_bus.request")
     @patch("bus_station.command_terminal.bus.synchronous.distributed.json_rpc_command_bus.requests")
-    @patch.object(Runnable, "running")
-    def test_execute_error(self, running_mock, requests_mock, request_mock, to_result_mock):
-        running_mock.return_value = True
+    def test_execute_error(self, requests_mock, request_mock, to_result_mock):
         test_command = Mock(spec=Command, name="TestCommand")
         test_host = "test_host"
         test_port = "41124"

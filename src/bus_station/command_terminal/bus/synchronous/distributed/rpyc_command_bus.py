@@ -15,7 +15,7 @@ from bus_station.passengers.registry.remote_registry import RemoteRegistry
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 from bus_station.passengers.serialization.passenger_serializer import PassengerSerializer
 from bus_station.shared_terminal.rpyc_server import RPyCServer
-from bus_station.shared_terminal.runnable import Runnable, is_not_running, is_running
+from bus_station.shared_terminal.runnable import Runnable, is_not_running
 
 
 class RPyCCommandBus(CommandBus, Runnable):
@@ -59,7 +59,6 @@ class RPyCCommandBus(CommandBus, Runnable):
         self_addr = self.__SELF_ADDR_PATTERN.format(host=self.__self_host, port=self.__self_port)
         self.__command_registry.register(handler_command, self_addr)
 
-    @is_running
     def execute(self, command: Command) -> None:
         command_handler_addr = self.__command_registry.get_passenger_destination(command.__class__)
         if command_handler_addr is None:
