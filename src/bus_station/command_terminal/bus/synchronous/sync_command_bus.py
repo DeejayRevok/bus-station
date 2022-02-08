@@ -1,5 +1,3 @@
-from typing import final
-
 from bus_station.command_terminal.bus.command_bus import CommandBus
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
@@ -8,7 +6,6 @@ from bus_station.command_terminal.handler_not_found_for_command import HandlerNo
 from bus_station.passengers.registry.in_memory_registry import InMemoryRegistry
 
 
-@final
 class SyncCommandBus(CommandBus):
     def __init__(self, command_registry: InMemoryRegistry):
         super().__init__()

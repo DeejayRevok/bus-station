@@ -6,7 +6,6 @@ from bus_station.event_terminal.event_consumer import EventConsumer
 from bus_station.passengers.registry.in_memory_registry import InMemoryRegistry
 
 
-@final
 class SyncEventBus(EventBus):
     def __init__(self, event_registry: InMemoryRegistry):
         super().__init__()

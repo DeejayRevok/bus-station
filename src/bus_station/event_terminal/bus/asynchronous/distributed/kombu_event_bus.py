@@ -1,5 +1,5 @@
 from multiprocessing import Process
-from typing import ClassVar, List, Optional, Tuple, Type, final
+from typing import ClassVar, List, Optional, Tuple, Type
 
 from kombu import Connection
 from kombu.messaging import Exchange, Producer, Queue
@@ -14,7 +14,6 @@ from bus_station.passengers.serialization.passenger_serializer import PassengerS
 from bus_station.shared_terminal.runnable import Runnable, is_not_running, is_running
 
 
-@final
 class KombuEventBus(EventBus, Runnable):
     __DEAD_LETTER_EXCHANGE_NAME: ClassVar[str] = "failed_events"
 

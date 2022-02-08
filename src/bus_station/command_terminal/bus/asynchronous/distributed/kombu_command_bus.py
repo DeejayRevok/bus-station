@@ -1,5 +1,5 @@
 from multiprocessing import Process
-from typing import ClassVar, List, Optional, Tuple, Type, TypeVar, final
+from typing import ClassVar, List, Optional, Tuple, Type, TypeVar
 
 from kombu import Connection
 from kombu.messaging import Exchange, Producer, Queue
@@ -19,7 +19,6 @@ from bus_station.shared_terminal.runnable import Runnable, is_not_running, is_ru
 R = TypeVar("R", bound=RemoteRegistry)
 
 
-@final
 class KombuCommandBus(CommandBus, Runnable):
     __DEAD_LETTER_EXCHANGE_NAME: ClassVar[str] = "failed_commands"
 

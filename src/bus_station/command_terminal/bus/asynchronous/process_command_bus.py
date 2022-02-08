@@ -1,5 +1,5 @@
 from multiprocessing import Process, Queue
-from typing import List, Tuple, final
+from typing import List, Tuple
 
 from bus_station.command_terminal.bus.command_bus import CommandBus
 from bus_station.command_terminal.command import Command
@@ -13,7 +13,6 @@ from bus_station.passengers.serialization.passenger_serializer import PassengerS
 from bus_station.shared_terminal.runnable import Runnable, is_not_running, is_running
 
 
-@final
 class ProcessCommandBus(CommandBus, Runnable):
     def __init__(
         self,
