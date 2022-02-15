@@ -3,6 +3,8 @@ from dataclasses import dataclass
 from multiprocessing import Value
 from time import sleep
 
+from redis import Redis
+
 from bus_station.command_terminal.bus.synchronous.distributed.json_rpc_command_bus import JsonRPCCommandBus
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
@@ -31,12 +33,13 @@ class TestJsonRPCCommandBus(IntegrationTestCase):
         cls.test_env_ready = False
         cls.redis_host = cls.redis["host"]
         cls.redis_port = cls.redis["port"]
+        cls.redis_client = Redis(host=cls.redis_host, port=cls.redis_port)
         cls.test_env_ready = True
 
     def setUp(self) -> None:
         if self.test_env_ready is False:
             self.fail("Test environment is not ready")
-        self.redis_registry = RedisRegistry(self.redis_host, self.redis_port)
+        self.redis_registry = RedisRegistry(self.redis_client)
         self.command_serializer = PassengerJSONSerializer()
         self.command_deserializer = PassengerJSONDeserializer()
         self.json_rpc_command_bus = JsonRPCCommandBus(

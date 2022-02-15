@@ -3,6 +3,8 @@ from dataclasses import dataclass
 from multiprocessing import Value
 from time import sleep
 
+from redis import Redis
+
 from bus_station.passengers.registry.redis_registry import RedisRegistry
 from bus_station.passengers.serialization.passenger_json_deserializer import PassengerJSONDeserializer
 from bus_station.passengers.serialization.passenger_json_serializer import PassengerJSONSerializer
@@ -35,12 +37,13 @@ class TestJsonRPCCommandBus(IntegrationTestCase):
         cls.test_env_ready = False
         cls.redis_host = cls.redis["host"]
         cls.redis_port = cls.redis["port"]
+        cls.redis_client = Redis(host=cls.redis_host, port=cls.redis_port)
         cls.test_env_ready = True
 
     def setUp(self) -> None:
         if self.test_env_ready is False:
             self.fail("Test environment is not ready")
-        self.redis_registry = RedisRegistry(self.redis_host, self.redis_port)
+        self.redis_registry = RedisRegistry(self.redis_client)
         self.query_serializer = PassengerJSONSerializer()
         self.query_deserializer = PassengerJSONDeserializer()
         self.query_response_serializer = QueryResponseJSONSerializer()

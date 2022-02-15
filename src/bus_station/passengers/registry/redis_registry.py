@@ -7,12 +7,8 @@ from bus_station.passengers.registry.remote_registry import RemoteRegistry
 
 
 class RedisRegistry(RemoteRegistry):
-    def __init__(self, host: str, port: int, username: Optional[str] = None, password: Optional[str] = None):
-        self.__host = host
-        self.__port = port
-        self.__username = username
-        self.__password = password
-        self.__client = Redis(host=host, port=port, username=username, password=password)
+    def __init__(self, client: Redis):
+        self.__client = client
 
     def register(self, passenger: Type[Passenger], destination: str) -> None:
         self.__client.set(passenger.__name__, destination.encode("UTF-8"))

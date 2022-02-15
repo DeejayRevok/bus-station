@@ -44,7 +44,6 @@ class JsonRPCCommandBus(CommandBus, Runnable):
         self.__server_process: Optional[Process] = None
 
     def _start(self):
-
         self.__server_process = Process(target=self.__json_rpc_command_server.run, args=(self.__self_port,))
         self.__server_process.start()
 

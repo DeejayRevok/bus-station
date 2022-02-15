@@ -3,6 +3,8 @@ from dataclasses import dataclass
 from multiprocessing import Value
 from time import sleep
 
+from redis import Redis
+
 from bus_station.command_terminal.bus.asynchronous.distributed.kombu_command_bus import KombuCommandBus
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
@@ -39,6 +41,7 @@ class TestRabbitKombuCommandBus(IntegrationTestCase):
         cls.rabbit_port = cls.rabbitmq["port"]
         cls.redis_host = cls.redis["host"]
         cls.redis_port = cls.redis["port"]
+        cls.redis_client = Redis(host=cls.redis_host, port=cls.redis_port)
         cls.test_env_ready = True
         test_connection_params = RabbitMQConnectionParameters(
             cls.rabbit_host, cls.rabbit_port, cls.rabbit_user, cls.rabbit_password, "/"
@@ -52,7 +55,7 @@ class TestRabbitKombuCommandBus(IntegrationTestCase):
             self.fail("Test environment is not ready")
         self.command_serializer = PassengerJSONSerializer()
         self.command_deserializer = PassengerJSONDeserializer()
-        self.redis_registry = RedisRegistry(host=self.redis_host, port=self.redis_port)
+        self.redis_registry = RedisRegistry(self.redis_client)
         self.kombu_command_bus = KombuCommandBus(
             self.kombu_connection, self.command_serializer, self.command_deserializer, self.redis_registry
         )
