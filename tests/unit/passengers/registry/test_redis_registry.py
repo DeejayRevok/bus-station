@@ -16,7 +16,7 @@ class TestRedisRegistry(TestCase):
         test_command = Mock(spec=Command)
         test_destination = "test_destination"
 
-        self.redis_registry.register(test_command.__class__, test_destination)
+        self.redis_registry.register_destination(test_command.__class__, test_destination)
 
         self.redis_mock.set.assert_called_once_with(test_command.__class__.__name__, test_destination.encode("UTF-8"))
 

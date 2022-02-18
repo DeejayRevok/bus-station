@@ -43,7 +43,7 @@ class ProcessEventBus(EventBus, Runnable):
             self.__event_worker_processes.append(worker_process)
         else:
             queue, worker, worker_process = self.__create_consumer(handler)
-            self.__event_registry.register(consumer_event, [queue])
+            self.__event_registry.register_destination(consumer_event, [queue])
             self.__event_queues.append(queue)
             self.__event_workers.append(worker)
             self.__event_worker_processes.append(worker_process)

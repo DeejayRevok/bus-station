@@ -17,7 +17,7 @@ class ThreadedEventBus(EventBus):
         if event_consumers is not None:
             event_consumers.append(handler)
         else:
-            self.__event_registry.register(consumer_event, [handler])
+            self.__event_registry.register_destination(consumer_event, [handler])
 
     def publish(self, event: Event) -> None:
         event_consumers = self.__event_registry.get_passenger_destination(event.__class__)

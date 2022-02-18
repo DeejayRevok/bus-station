@@ -16,7 +16,7 @@ class SyncQueryBus(QueryBus):
         handler_query = self._get_handler_query(handler)
         if handler_query in self.__query_registry:
             raise HandlerForQueryAlreadyRegistered(handler_query.__name__)
-        self.__query_registry.register(handler_query, handler)
+        self.__query_registry.register_destination(handler_query, handler)
 
     def execute(self, query: Query) -> QueryResponse:
         query_handler = self.__query_registry.get_passenger_destination(query.__class__)

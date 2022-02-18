@@ -66,7 +66,7 @@ class RPyCQueryBus(QueryBus, Runnable):
         self.__rpyc_service.register(handler_query, handler)
 
         self_addr = self.__SELF_ADDR_PATTERN.format(host=self.__self_host, port=self.__self_port)
-        self.__query_registry.register(handler_query, self_addr)
+        self.__query_registry.register_destination(handler_query, self_addr)
 
     def execute(self, query: Query) -> QueryResponse:
         query_handler_addr = self.__query_registry.get_passenger_destination(query.__class__)

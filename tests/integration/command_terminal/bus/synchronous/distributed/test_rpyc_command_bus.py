@@ -8,7 +8,7 @@ from redis import Redis
 from bus_station.command_terminal.bus.synchronous.distributed.rpyc_command_bus import RPyCCommandBus
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
-from bus_station.passengers.registry.redis_registry import RedisRegistry
+from bus_station.command_terminal.registry.redis_command_registry import RedisCommandRegistry
 from bus_station.passengers.serialization.passenger_json_deserializer import PassengerJSONDeserializer
 from bus_station.passengers.serialization.passenger_json_serializer import PassengerJSONSerializer
 from tests.integration.integration_test_case import IntegrationTestCase
@@ -39,12 +39,14 @@ class TestRPyCCommandBus(IntegrationTestCase):
     def setUp(self) -> None:
         if self.test_env_ready is False:
             self.fail("Test environment is not ready")
-        self.redis_registry = RedisRegistry(self.redis_client)
+        self.redis_registry = RedisCommandRegistry(self.redis_client)
         self.command_serializer = PassengerJSONSerializer()
         self.command_deserializer = PassengerJSONDeserializer()
+        self.bus_host = "localhost"
+        self.bus_port = 1234
         self.rpyc_command_bus = RPyCCommandBus(
-            "localhost",
-            1234,
+            self.bus_host,
+            self.bus_port,
             self.command_serializer,
             self.command_deserializer,
             self.redis_registry,
@@ -57,7 +59,7 @@ class TestRPyCCommandBus(IntegrationTestCase):
     def test_execute_success(self):
         test_command = CommandTest()
         test_command_handler = CommandTestHandler()
-        self.rpyc_command_bus.register(test_command_handler)
+        self.redis_registry.register_destination(test_command_handler, f"{self.bus_host}:{self.bus_port}")
         self.rpyc_command_bus.start()
         sleep(1)
 

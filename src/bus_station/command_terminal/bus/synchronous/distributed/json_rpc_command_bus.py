@@ -10,14 +10,12 @@ from jsonrpcclient.responses import Error, to_result
 from bus_station.command_terminal.bus.command_bus import CommandBus
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_execution_failed import CommandExecutionFailed
-from bus_station.command_terminal.command_handler import CommandHandler
-from bus_station.command_terminal.handler_for_command_already_registered import HandlerForCommandAlreadyRegistered
 from bus_station.command_terminal.handler_not_found_for_command import HandlerNotFoundForCommand
 from bus_station.command_terminal.json_rpc_command_server import JsonRPCCommandServer
-from bus_station.passengers.registry.remote_registry import RemoteRegistry
+from bus_station.command_terminal.registry.remote_command_registry import RemoteCommandRegistry
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 from bus_station.passengers.serialization.passenger_serializer import PassengerSerializer
-from bus_station.shared_terminal.runnable import Runnable, is_not_running
+from bus_station.shared_terminal.runnable import Runnable
 
 
 class JsonRPCCommandBus(CommandBus, Runnable):
@@ -29,7 +27,7 @@ class JsonRPCCommandBus(CommandBus, Runnable):
         self_port: int,
         command_serializer: PassengerSerializer,
         command_deserializer: PassengerDeserializer,
-        command_registry: RemoteRegistry,
+        command_registry: RemoteCommandRegistry,
     ):
         CommandBus.__init__(self)
         Runnable.__init__(self)
@@ -44,26 +42,18 @@ class JsonRPCCommandBus(CommandBus, Runnable):
         self.__server_process: Optional[Process] = None
 
     def _start(self):
+        for command in self.__command_registry.get_registered_passengers():
+            command_handler_registration = self.__command_registry.get_passenger_destination_registration(command)
+            self.__json_rpc_command_server.register(command, command_handler_registration.destination)
+
         self.__server_process = Process(target=self.__json_rpc_command_server.run, args=(self.__self_port,))
         self.__server_process.start()
 
-    @is_not_running
-    def register(self, handler: CommandHandler) -> None:
-        handler_command = self._get_handler_command(handler)
-        if handler_command in self.__command_registry:
-            raise HandlerForCommandAlreadyRegistered(handler_command.__name__)
-
-        self.__json_rpc_command_server.register(handler_command, handler)
-
-        self_addr = self.__SELF_ADDR_PATTERN.format(host=self.__self_host, port=self.__self_port)
-        self.__command_registry.register(handler_command, self_addr)
-
     def execute(self, command: Command) -> None:
-        command_handler_addr = self.__command_registry.get_passenger_destination(command.__class__)
-        if command_handler_addr is None:
+        command_handler_registration = self.__command_registry.get_passenger_destination_registration(command.__class__)
+        if command_handler_registration is None or command_handler_registration.destination_contact is None:
             raise HandlerNotFoundForCommand(command.__class__.__name__)
-
-        self.__execute_command(command, command_handler_addr)
+        self.__execute_command(command, command_handler_registration.destination_contact)
 
     def __execute_command(self, command: Command, command_handler_addr: str) -> None:
         serialized_command = self.__command_serializer.serialize(command)

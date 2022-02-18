@@ -1,5 +1,5 @@
 from multiprocessing import Process
-from typing import ClassVar, List, Optional, Tuple, Type, TypeVar
+from typing import ClassVar, List, Optional, Tuple, Type
 
 from kombu import Connection
 from kombu.messaging import Exchange, Producer, Queue
@@ -7,16 +7,14 @@ from kombu.transport.virtual import Channel
 
 from bus_station.command_terminal.bus.command_bus import CommandBus
 from bus_station.command_terminal.command import Command
-from bus_station.command_terminal.command_handler import CommandHandler
-from bus_station.command_terminal.handler_for_command_already_registered import HandlerForCommandAlreadyRegistered
 from bus_station.command_terminal.handler_not_found_for_command import HandlerNotFoundForCommand
+from bus_station.command_terminal.registry.remote_command_registry import RemoteCommandRegistry
+from bus_station.passengers.passenger import Passenger
 from bus_station.passengers.passenger_kombu_consumer import PassengerKombuConsumer
-from bus_station.passengers.registry.remote_registry import RemoteRegistry
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 from bus_station.passengers.serialization.passenger_serializer import PassengerSerializer
-from bus_station.shared_terminal.runnable import Runnable, is_not_running, is_running
-
-R = TypeVar("R", bound=RemoteRegistry)
+from bus_station.shared_terminal.bus_stop import BusStop
+from bus_station.shared_terminal.runnable import Runnable, is_running
 
 
 class KombuCommandBus(CommandBus, Runnable):
@@ -27,14 +25,13 @@ class KombuCommandBus(CommandBus, Runnable):
         broker_connection: Connection,
         command_serializer: PassengerSerializer,
         command_deserializer: PassengerDeserializer,
-        command_registry: R,
+        command_registry: RemoteCommandRegistry,
     ):
         CommandBus.__init__(self)
         Runnable.__init__(self)
         self.__broker_connection = broker_connection
         self.__command_consumers: List[PassengerKombuConsumer] = list()
         self.__command_consumer_processes: List[Process] = list()
-        self.__command_queues: List[Queue] = list()
         self.__command_serializer = command_serializer
         self.__command_deserializer = command_deserializer
         self.__command_registry = command_registry
@@ -43,39 +40,35 @@ class KombuCommandBus(CommandBus, Runnable):
     def _start(self) -> None:
         broker_channel = self.__broker_connection.channel()
         self.__create_dead_letter_exchange(broker_channel)
-        for queue in self.__command_queues:
-            queue.declare(channel=broker_channel)
-        for process in self.__command_consumer_processes:
-            process.start()
+
+        for command in self.__command_registry.get_registered_passengers():
+            command_handler_registration = self.__command_registry.get_passenger_destination_registration(command)
+            if command_handler_registration is None:
+                continue
+
+            try:
+                consumer, consumer_process, consumer_queue = self.__create_consumer(command_handler_registration.destination, command)
+            except Exception as ex:
+                self.__command_registry.unregister(command)
+                raise ex
+
+            self.__command_consumers.append(consumer)
+            self.__command_consumer_processes.append(consumer_process)
+            consumer_queue.declare(channel=broker_channel)
+            consumer_process.start()
+
         self.__producer = Producer(broker_channel)
 
     def __create_dead_letter_exchange(self, channel: Channel) -> None:
         command_failure_exchange = Exchange(self.__DEAD_LETTER_EXCHANGE_NAME, type="fanout", channel=channel)
         command_failure_exchange.declare()
 
-    @is_not_running
-    def register(self, handler: CommandHandler) -> None:
-        handler_command = self._get_handler_command(handler)
-        if handler_command in self.__command_registry:
-            raise HandlerForCommandAlreadyRegistered(handler_command.__name__)
-
-        self.__command_registry.register(handler_command, handler.__class__.__name__)
-
-        try:
-            consumer, consumer_process = self.__create_consumer(handler, handler_command)
-            self.__command_consumers.append(consumer)
-            self.__command_consumer_processes.append(consumer_process)
-        except Exception as ex:
-            self.__command_registry.unregister(handler_command)
-            raise ex
-
     def __create_consumer(
-        self, command_handler: CommandHandler, command_cls: Type[Command]
-    ) -> Tuple[PassengerKombuConsumer, Process]:
+        self, command_handler: BusStop, command_cls: Type[Passenger]
+    ) -> Tuple[PassengerKombuConsumer, Process, Queue]:
         handler_queue = Queue(
             command_cls.__name__, queue_arguments={"x-dead-letter-exchange": self.__DEAD_LETTER_EXCHANGE_NAME}
         )
-        self.__command_queues.append(handler_queue)
         handler_consumer = PassengerKombuConsumer(
             self.__broker_connection,
             handler_queue,
@@ -85,21 +78,23 @@ class KombuCommandBus(CommandBus, Runnable):
             self.__command_deserializer,
         )
         handler_process = Process(target=handler_consumer.run)
-        return handler_consumer, handler_process
+        return handler_consumer, handler_process, handler_queue
 
     @is_running
     def execute(self, command: Command) -> None:
-        if command.__class__ not in self.__command_registry:
+        command_handler_registration = self.__command_registry.get_passenger_destination_registration(command.__class__)
+        if command_handler_registration is None or command_handler_registration.destination_contact is None:
             raise HandlerNotFoundForCommand(command.__class__.__name__)
-        self.__publish_command(command)
 
-    def __publish_command(self, command: Command) -> None:
+        self.__publish_command(command, command_handler_registration.destination_contact)
+
+    def __publish_command(self, command: Command, routing_key: str) -> None:
         serialized_command = self.__command_serializer.serialize(command)
         if self.__producer is not None:
             self.__producer.publish(
                 serialized_command,
                 exchange="",
-                routing_key=command.__class__.__name__,
+                routing_key=routing_key,
                 retry=True,
                 retry_policy={
                     "interval_start": 0,

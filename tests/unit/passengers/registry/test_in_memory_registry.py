@@ -15,7 +15,7 @@ class TestInMemoryRegistry(TestCase):
         test_command = Mock(spec=Command)
         test_destination = "test_destination"
 
-        self.in_memory_registry.register(test_command.__class__, test_destination)
+        self.in_memory_registry.register_destination(test_command.__class__, test_destination)
 
         self.dict_mock().__setitem__.assert_called_once_with(test_command.__class__, test_destination)
 
