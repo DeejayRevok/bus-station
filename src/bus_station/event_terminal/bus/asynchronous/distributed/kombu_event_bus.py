@@ -7,11 +7,13 @@ from kombu.transport.virtual import Channel
 
 from bus_station.event_terminal.bus.event_bus import EventBus
 from bus_station.event_terminal.event import Event
-from bus_station.event_terminal.event_consumer import EventConsumer
+from bus_station.event_terminal.registry.remote_event_registry import RemoteEventRegistry
+from bus_station.passengers.passenger import Passenger
 from bus_station.passengers.passenger_kombu_consumer import PassengerKombuConsumer
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 from bus_station.passengers.serialization.passenger_serializer import PassengerSerializer
-from bus_station.shared_terminal.runnable import Runnable, is_not_running, is_running
+from bus_station.shared_terminal.bus_stop import BusStop
+from bus_station.shared_terminal.runnable import Runnable
 
 
 class KombuEventBus(EventBus, Runnable):
@@ -22,55 +24,52 @@ class KombuEventBus(EventBus, Runnable):
         broker_connection: Connection,
         event_serializer: PassengerSerializer,
         event_deserializer: PassengerDeserializer,
+        event_registry: RemoteEventRegistry,
     ):
         EventBus.__init__(self)
         Runnable.__init__(self)
         self.__broker_connection = broker_connection
-        self.__event_kombu_consumers: List[PassengerKombuConsumer] = list()
-        self.__event_kombu_consumer_processes: List[Process] = list()
-        self.__event_queues: List[Queue] = list()
-        self.__event_exchanges: List[Exchange] = list()
+        self.__event_kombu_consumers: List[PassengerKombuConsumer] = []
+        self.__event_kombu_consumer_processes: List[Process] = []
         self.__event_serializer = event_serializer
         self.__event_deserializer = event_deserializer
+        self.__event_registry = event_registry
         self.__producer: Optional[Producer] = None
 
     def _start(self) -> None:
         broker_channel = self.__broker_connection.channel()
         self.__create_dead_letter_exchange(broker_channel)
-        for exchange in self.__event_exchanges:
-            exchange.declare(channel=broker_channel)
-        for queue in self.__event_queues:
-            queue.declare(channel=broker_channel)
-        for process in self.__event_kombu_consumer_processes:
-            process.start()
+
+        for event, event_consumers, exchange_names in self.__event_registry.get_events_registered():
+            for event_consumer, event_exchange_name in zip(event_consumers, exchange_names):
+                event_exchange = self.__create_event_exchange(event_exchange_name)
+                event_exchange.declare(channel=broker_channel)
+                kombu_consumer, kombu_consumer_process, kombu_queue = self.__create_consumer(
+                    event_consumer, event, event_exchange
+                )
+                kombu_queue.declare(channel=broker_channel)
+                kombu_consumer_process.start()
+                self.__event_kombu_consumers.append(kombu_consumer)
+                self.__event_kombu_consumer_processes.append(kombu_consumer_process)
+
         self.__producer = Producer(broker_channel)
 
     def __create_dead_letter_exchange(self, channel: Channel) -> None:
         event_failure_exchange = Exchange(self.__DEAD_LETTER_EXCHANGE_NAME, type="fanout", channel=channel)
         event_failure_exchange.declare()
 
-    @is_not_running
-    def register(self, handler: EventConsumer) -> None:
-        consumer_event = self._get_consumer_event(handler)
-        event_exchange = self.__create_event_exchange(consumer_event.__name__)
-        self.__event_exchanges.append(event_exchange)
-        kombu_consumer, kombu_consumer_process = self.__create_consumer(handler, consumer_event, event_exchange)
-        self.__event_kombu_consumers.append(kombu_consumer)
-        self.__event_kombu_consumer_processes.append(kombu_consumer_process)
-
     def __create_event_exchange(self, event_name: str) -> Exchange:
         event_exchange = Exchange(event_name, type="fanout")
         return event_exchange
 
     def __create_consumer(
-        self, event_consumer: EventConsumer, event_cls: Type[Event], exchange: Exchange
-    ) -> Tuple[PassengerKombuConsumer, Process]:
+        self, event_consumer: BusStop, event_cls: Type[Passenger], exchange: Exchange
+    ) -> Tuple[PassengerKombuConsumer, Process, Queue]:
         consumer_queue = Queue(
             event_consumer.__class__.__name__,
             exchange=exchange,
             queue_arguments={"x-dead-letter-exchange": self.__DEAD_LETTER_EXCHANGE_NAME},
         )
-        self.__event_queues.append(consumer_queue)
         consumer_consumer = PassengerKombuConsumer(
             self.__broker_connection,
             consumer_queue,
@@ -80,18 +79,26 @@ class KombuEventBus(EventBus, Runnable):
             self.__event_deserializer,
         )
         consumer_process = Process(target=consumer_consumer.run)
-        return consumer_consumer, consumer_process
+        return consumer_consumer, consumer_process, consumer_queue
 
-    @is_running
     def publish(self, event: Event) -> None:
-        self.__publish_event(event)
+        event_exchange_names = self.__event_registry.get_event_destination_contacts(event.__class__)
+        if event_exchange_names is None:
+            return
 
-    def __publish_event(self, event: Event) -> None:
+        published_exchanges = []
+        for event_exchange_name in event_exchange_names:
+            if event_exchange_name in published_exchanges:
+                continue
+            self.__publish_event(event, event_exchange_name)
+            published_exchanges.append(event_exchange_name)
+
+    def __publish_event(self, event: Event, event_exchange_name: str) -> None:
         serialized_event = self.__event_serializer.serialize(event)
         if self.__producer is not None:
             self.__producer.publish(
                 serialized_event,
-                exchange=event.__class__.__name__,
+                exchange=event_exchange_name,
                 retry=True,
                 retry_policy={
                     "interval_start": 0,

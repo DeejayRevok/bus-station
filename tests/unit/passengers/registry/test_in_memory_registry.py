@@ -2,7 +2,7 @@ from unittest import TestCase
 from unittest.mock import Mock, patch
 
 from bus_station.command_terminal.command import Command
-from bus_station.passengers.registry.in_memory_registry import InMemoryRegistry
+from bus_station.passengers.registry.in_memory_passenger_record_repository import InMemoryRegistry
 
 
 class TestInMemoryRegistry(TestCase):

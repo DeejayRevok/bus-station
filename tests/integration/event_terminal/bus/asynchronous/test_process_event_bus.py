@@ -1,12 +1,13 @@
 from ctypes import c_int
 from dataclasses import dataclass
-from multiprocessing import Value
+from multiprocessing import Queue, Value
 from time import sleep
 
 from bus_station.event_terminal.bus.asynchronous.process_event_bus import ProcessEventBus
 from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
-from bus_station.passengers.registry.in_memory_registry import InMemoryRegistry
+from bus_station.event_terminal.registry.in_memory_event_registry import InMemoryEventRegistry
+from bus_station.passengers.registry.in_memory_passenger_record_repository import InMemoryPassengerRecordRepository
 from bus_station.passengers.serialization.passenger_json_deserializer import PassengerJSONDeserializer
 from bus_station.passengers.serialization.passenger_json_serializer import PassengerJSONSerializer
 from tests.integration.integration_test_case import IntegrationTestCase
@@ -37,7 +38,8 @@ class TestProcessEventBus(IntegrationTestCase):
     def setUp(self) -> None:
         self.passenger_serializer = PassengerJSONSerializer()
         self.passenger_deserializer = PassengerJSONDeserializer()
-        self.in_memory_registry = InMemoryRegistry()
+        self.in_memory_repository = InMemoryPassengerRecordRepository()
+        self.in_memory_registry = InMemoryEventRegistry(self.in_memory_repository)
         self.process_event_bus = ProcessEventBus(
             self.passenger_serializer, self.passenger_deserializer, self.in_memory_registry
         )
@@ -49,8 +51,9 @@ class TestProcessEventBus(IntegrationTestCase):
         test_event = EventTest()
         test_event_consumer1 = EventTestConsumer1()
         test_event_consumer2 = EventTestConsumer2()
-        self.process_event_bus.register(test_event_consumer1)
-        self.process_event_bus.register(test_event_consumer2)
+        test_queue = Queue()
+        self.in_memory_registry.register(test_event_consumer1, test_queue)
+        self.in_memory_registry.register(test_event_consumer2, test_queue)
         self.process_event_bus.start()
 
         self.process_event_bus.publish(test_event)

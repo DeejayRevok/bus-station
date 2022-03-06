@@ -21,24 +21,22 @@ class ProcessCommandBus(CommandBus, Runnable):
     ):
         CommandBus.__init__(self)
         Runnable.__init__(self)
-        self.__command_workers: List[ProcessPassengerWorker] = list()
-        self.__command_worker_processes: List[Process] = list()
+        self.__command_workers: List[ProcessPassengerWorker] = []
+        self.__command_worker_processes: List[Process] = []
         self.__command_serializer = command_serializer
         self.__command_deserializer = command_deserializer
         self.__command_registry = command_registry
 
     def _start(self) -> None:
-        for command in self.__command_registry.get_registered_passengers():
-            command_handler_registration = self.__command_registry.get_passenger_destination_registration(command)
-            if command_handler_registration is None:
-                continue
-
-            worker, process = self.__create_handler(command_handler_registration.destination, command_handler_registration.destination_contact)
+        for command, handler, handler_queue in self.__command_registry.get_commands_registered():
+            worker, process = self.__create_handler(handler, handler_queue)
             self.__command_workers.append(worker)
             self.__command_worker_processes.append(process)
             process.start()
 
-    def __create_handler(self, command_handler: BusStop, command_queue: Queue) -> Tuple[ProcessPassengerWorker, Process]:
+    def __create_handler(
+        self, command_handler: BusStop, command_queue: Queue
+    ) -> Tuple[ProcessPassengerWorker, Process]:
         handler_worker = ProcessPassengerWorker(
             command_queue, command_handler, self._middleware_executor, self.__command_deserializer
         )
@@ -47,11 +45,11 @@ class ProcessCommandBus(CommandBus, Runnable):
 
     @is_running
     def execute(self, command: Command) -> None:
-        command_handler_registration = self.__command_registry.get_passenger_destination_registration(command.__class__)
-        if command_handler_registration is None or command_handler_registration.destination_contact is None:
+        handler_queue = self.__command_registry.get_command_destination_contact(command.__class__)
+        if handler_queue is None:
             raise HandlerNotFoundForCommand(command.__class__.__name__)
 
-        self.__put_command(command_handler_registration.destination_contact, command)
+        self.__put_command(handler_queue, command)
 
     def __put_command(self, queue: Queue, command: Command) -> None:
         serialized_command = self.__command_serializer.serialize(command)

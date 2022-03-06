@@ -8,7 +8,7 @@ from bus_station.command_terminal.command_handler import CommandHandler
 from bus_station.command_terminal.handler_for_command_already_registered import HandlerForCommandAlreadyRegistered
 from bus_station.command_terminal.handler_not_found_for_command import HandlerNotFoundForCommand
 from bus_station.command_terminal.middleware.command_middleware_executor import CommandMiddlewareExecutor
-from bus_station.passengers.registry.in_memory_registry import InMemoryRegistry
+from bus_station.passengers.registry.in_memory_passenger_record_repository import InMemoryRegistry
 
 
 class TestSyncCommandBus(TestCase):

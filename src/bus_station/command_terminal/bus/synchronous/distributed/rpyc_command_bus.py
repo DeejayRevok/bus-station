@@ -39,9 +39,8 @@ class RPyCCommandBus(CommandBus, Runnable):
         self.__server_process: Optional[Process] = None
 
     def _start(self):
-        for command in self.__command_registry.get_registered_passengers():
-            command_handler_registration = self.__command_registry.get_passenger_destination_registration(command)
-            self.__rpyc_service.register(command, command_handler_registration.destination)
+        for command, handler, _ in self.__command_registry.get_commands_registered():
+            self.__rpyc_service.register(command, handler)
 
         self.__rpyc_server = RPyCServer(
             rpyc_service=self.__rpyc_service,
@@ -51,11 +50,11 @@ class RPyCCommandBus(CommandBus, Runnable):
         self.__server_process.start()
 
     def execute(self, command: Command) -> None:
-        command_handler_registration = self.__command_registry.get_passenger_destination_registration(command.__class__)
-        if command_handler_registration is None or command_handler_registration.destination_contact is None:
+        handler_address = self.__command_registry.get_command_destination_contact(command.__class__)
+        if handler_address is None:
             raise HandlerNotFoundForCommand(command.__class__.__name__)
 
-        rpyc_client = self.__get_rpyc_client(command_handler_registration.destination_contact)
+        rpyc_client = self.__get_rpyc_client(handler_address)
         self.__execute_command(rpyc_client, command)
         rpyc_client.close()
 

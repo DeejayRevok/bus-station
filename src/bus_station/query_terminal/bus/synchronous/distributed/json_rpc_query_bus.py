@@ -7,20 +7,18 @@ import requests
 from jsonrpcclient import request
 from jsonrpcclient.responses import Error, to_result
 
-from bus_station.passengers.registry.remote_registry import RemoteRegistry
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 from bus_station.passengers.serialization.passenger_serializer import PassengerSerializer
 from bus_station.query_terminal.bus.query_bus import QueryBus
-from bus_station.query_terminal.handler_for_query_already_registered import HandlerForQueryAlreadyRegistered
 from bus_station.query_terminal.handler_not_found_for_query import HandlerNotFoundForQuery
 from bus_station.query_terminal.json_rpc_query_server import JsonRPCQueryServer
 from bus_station.query_terminal.query import Query
 from bus_station.query_terminal.query_execution_failed import QueryExecutionFailed
-from bus_station.query_terminal.query_handler import QueryHandler
 from bus_station.query_terminal.query_response import QueryResponse
+from bus_station.query_terminal.registry.remote_query_registry import RemoteQueryRegistry
 from bus_station.query_terminal.serialization.query_response_deserializer import QueryResponseDeserializer
 from bus_station.query_terminal.serialization.query_response_serializer import QueryResponseSerializer
-from bus_station.shared_terminal.runnable import Runnable, is_not_running
+from bus_station.shared_terminal.runnable import Runnable
 
 
 class JsonRPCQueryBus(QueryBus, Runnable):
@@ -34,7 +32,7 @@ class JsonRPCQueryBus(QueryBus, Runnable):
         query_deserializer: PassengerDeserializer,
         query_response_serializer: QueryResponseSerializer,
         query_response_deserializer: QueryResponseDeserializer,
-        query_registry: RemoteRegistry,
+        query_registry: RemoteQueryRegistry,
     ):
         QueryBus.__init__(self)
         Runnable.__init__(self)
@@ -53,26 +51,18 @@ class JsonRPCQueryBus(QueryBus, Runnable):
         self.__server_process: Optional[Process] = None
 
     def _start(self):
+        for query, handler, _ in self.__query_registry.get_queries_registered():
+            self.__json_rpc_query_server.register(query, handler)
+
         self.__server_process = Process(target=self.__json_rpc_query_server.run, args=(self.__self_port,))
         self.__server_process.start()
 
-    @is_not_running
-    def register(self, handler: QueryHandler) -> None:
-        handler_query = self._get_handler_query(handler)
-        if handler_query in self.__query_registry:
-            raise HandlerForQueryAlreadyRegistered(handler_query.__name__)
-
-        self.__json_rpc_query_server.register(handler_query, handler)
-
-        self_addr = self.__SELF_ADDR_PATTERN.format(host=self.__self_host, port=self.__self_port)
-        self.__query_registry.register_destination(handler_query, self_addr)
-
     def execute(self, query: Query) -> QueryResponse:
-        query_handler_addr = self.__query_registry.get_passenger_destination(query.__class__)
-        if query_handler_addr is None:
+        handler_address = self.__query_registry.get_query_destination_contact(query.__class__)
+        if handler_address is None:
             raise HandlerNotFoundForQuery(query.__class__.__name__)
 
-        return self.__execute_query(query, query_handler_addr)
+        return self.__execute_query(query, handler_address)
 
     def __execute_query(self, query: Query, query_handler_addr: str) -> QueryResponse:
         serialized_query = self.__query_serializer.serialize(query)

@@ -3,7 +3,8 @@ from dataclasses import dataclass
 from bus_station.event_terminal.bus.synchronous.sync_event_bus import SyncEventBus
 from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
-from bus_station.passengers.registry.in_memory_registry import InMemoryRegistry
+from bus_station.event_terminal.registry.in_memory_event_registry import InMemoryEventRegistry
+from bus_station.passengers.registry.in_memory_passenger_record_repository import InMemoryPassengerRecordRepository
 from tests.integration.integration_test_case import IntegrationTestCase
 
 
@@ -30,16 +31,17 @@ class EventTestConsumer2(EventConsumer):
 
 class TestSyncEventBus(IntegrationTestCase):
     def setUp(self) -> None:
-        self.in_memory_registry = InMemoryRegistry()
+        self.in_memory_repository = InMemoryPassengerRecordRepository()
+        self.in_memory_registry = InMemoryEventRegistry(self.in_memory_repository)
         self.sync_event_bus = SyncEventBus(self.in_memory_registry)
 
     def test_publish_success(self):
         test_event = EventTest()
         test_event_consumer1 = EventTestConsumer1()
         test_event_consumer2 = EventTestConsumer2()
+        self.in_memory_registry.register(test_event_consumer1, test_event_consumer1)
+        self.in_memory_registry.register(test_event_consumer2, test_event_consumer2)
 
-        self.sync_event_bus.register(test_event_consumer1)
-        self.sync_event_bus.register(test_event_consumer2)
         self.sync_event_bus.publish(test_event)
 
         self.assertEqual(1, test_event_consumer1.call_count)

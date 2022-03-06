@@ -2,7 +2,7 @@ from typing import Callable
 from unittest import TestCase
 from unittest.mock import Mock, patch
 
-from bus_station.passengers.registry.in_memory_registry import InMemoryRegistry
+from bus_station.passengers.registry.in_memory_passenger_record_repository import InMemoryRegistry
 from bus_station.query_terminal.bus.synchronous.sync_query_bus import SyncQueryBus
 from bus_station.query_terminal.handler_for_query_already_registered import HandlerForQueryAlreadyRegistered
 from bus_station.query_terminal.handler_not_found_for_query import HandlerNotFoundForQuery

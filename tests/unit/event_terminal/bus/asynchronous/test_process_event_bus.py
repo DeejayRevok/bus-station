@@ -8,7 +8,7 @@ from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
 from bus_station.passengers.middleware.passenger_middleware_executor import PassengerMiddlewareExecutor
 from bus_station.passengers.process_passenger_worker import ProcessPassengerWorker
-from bus_station.passengers.registry.in_memory_registry import InMemoryRegistry
+from bus_station.passengers.registry.in_memory_passenger_record_repository import InMemoryRegistry
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 from bus_station.passengers.serialization.passenger_serializer import PassengerSerializer
 from bus_station.shared_terminal.runnable import Runnable

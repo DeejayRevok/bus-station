@@ -3,9 +3,14 @@ from dataclasses import dataclass
 from multiprocessing import Value
 from time import sleep
 
+from redis import Redis
+
 from bus_station.event_terminal.bus.asynchronous.distributed.kombu_event_bus import KombuEventBus
 from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
+from bus_station.event_terminal.registry.redis_event_registry import RedisEventRegistry
+from bus_station.passengers.registry.in_memory_passenger_record_repository import InMemoryPassengerRecordRepository
+from bus_station.passengers.registry.redis_passenger_record_repository import RedisPassengerRecordRepository
 from bus_station.passengers.serialization.passenger_json_deserializer import PassengerJSONDeserializer
 from bus_station.passengers.serialization.passenger_json_serializer import PassengerJSONSerializer
 from bus_station.shared_terminal.broker_connection.connection_parameters.rabbitmq_connection_parameters import (
@@ -44,6 +49,9 @@ class TestRabbitKombuEventBus(IntegrationTestCase):
         cls.rabbit_password = cls.rabbitmq["password"]
         cls.rabbit_host = cls.rabbitmq["host"]
         cls.rabbit_port = cls.rabbitmq["port"]
+        cls.redis_host = cls.redis["host"]
+        cls.redis_port = cls.redis["port"]
+        cls.redis_client = Redis(host=cls.redis_host, port=cls.redis_port)
         cls.test_env_ready = True
         test_connection_params = RabbitMQConnectionParameters(
             cls.rabbit_host, cls.rabbit_port, cls.rabbit_user, cls.rabbit_password, "/"
@@ -57,9 +65,15 @@ class TestRabbitKombuEventBus(IntegrationTestCase):
             self.fail("Test environment is not ready")
         self.event_serializer = PassengerJSONSerializer()
         self.event_deserializer = PassengerJSONDeserializer()
-        self.kombu_event_bus = KombuEventBus(self.kombu_connection, self.event_serializer, self.event_deserializer)
+        self.in_memory_repository = InMemoryPassengerRecordRepository()
+        self.redis_repository = RedisPassengerRecordRepository(self.redis_client, self.in_memory_repository)
+        self.redis_registry = RedisEventRegistry(self.redis_repository)
+        self.kombu_event_bus = KombuEventBus(
+            self.kombu_connection, self.event_serializer, self.event_deserializer, self.redis_registry
+        )
 
     def tearDown(self) -> None:
+        self.redis_registry.unregister(EventTest)
         self.kombu_event_bus.stop()
 
     def test_publish_success(self):
@@ -67,8 +81,8 @@ class TestRabbitKombuEventBus(IntegrationTestCase):
         test_event_consumer1 = EventTestConsumer1()
         test_event_consumer2 = EventTestConsumer2()
         test_iterations = 20
-        self.kombu_event_bus.register(test_event_consumer1)
-        self.kombu_event_bus.register(test_event_consumer2)
+        self.redis_registry.register(test_event_consumer1, test_event.__class__.__name__)
+        self.redis_registry.register(test_event_consumer2, test_event.__class__.__name__)
         self.kombu_event_bus.start()
 
         for _ in range(test_iterations):

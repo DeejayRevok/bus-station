@@ -42,18 +42,18 @@ class JsonRPCCommandBus(CommandBus, Runnable):
         self.__server_process: Optional[Process] = None
 
     def _start(self):
-        for command in self.__command_registry.get_registered_passengers():
-            command_handler_registration = self.__command_registry.get_passenger_destination_registration(command)
-            self.__json_rpc_command_server.register(command, command_handler_registration.destination)
+        for command, handler, _ in self.__command_registry.get_commands_registered():
+            self.__json_rpc_command_server.register(command, handler)
 
         self.__server_process = Process(target=self.__json_rpc_command_server.run, args=(self.__self_port,))
         self.__server_process.start()
 
     def execute(self, command: Command) -> None:
-        command_handler_registration = self.__command_registry.get_passenger_destination_registration(command.__class__)
-        if command_handler_registration is None or command_handler_registration.destination_contact is None:
+        handler_address = self.__command_registry.get_command_destination_contact(command.__class__)
+        if handler_address is None:
             raise HandlerNotFoundForCommand(command.__class__.__name__)
-        self.__execute_command(command, command_handler_registration.destination_contact)
+
+        self.__execute_command(command, handler_address)
 
     def __execute_command(self, command: Command, command_handler_addr: str) -> None:
         serialized_command = self.__command_serializer.serialize(command)

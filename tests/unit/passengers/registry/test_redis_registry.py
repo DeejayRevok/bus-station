@@ -4,7 +4,7 @@ from unittest.mock import Mock
 from redis import Redis
 
 from bus_station.command_terminal.command import Command
-from bus_station.passengers.registry.redis_registry import RedisRegistry
+from bus_station.passengers.registry.redis_passenger_record_repository import RedisRegistry
 
 
 class TestRedisRegistry(TestCase):

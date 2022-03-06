@@ -9,6 +9,8 @@ from bus_station.command_terminal.bus.asynchronous.distributed.kombu_command_bus
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
 from bus_station.command_terminal.registry.redis_command_registry import RedisCommandRegistry
+from bus_station.passengers.registry.in_memory_passenger_record_repository import InMemoryPassengerRecordRepository
+from bus_station.passengers.registry.redis_passenger_record_repository import RedisPassengerRecordRepository
 from bus_station.passengers.serialization.passenger_json_deserializer import PassengerJSONDeserializer
 from bus_station.passengers.serialization.passenger_json_serializer import PassengerJSONSerializer
 from bus_station.shared_terminal.broker_connection.connection_parameters.rabbitmq_connection_parameters import (
@@ -55,7 +57,9 @@ class TestRabbitKombuCommandBus(IntegrationTestCase):
             self.fail("Test environment is not ready")
         self.command_serializer = PassengerJSONSerializer()
         self.command_deserializer = PassengerJSONDeserializer()
-        self.redis_registry = RedisCommandRegistry(self.redis_client)
+        self.in_memory_repository = InMemoryPassengerRecordRepository()
+        self.redis_repository = RedisPassengerRecordRepository(self.redis_client, self.in_memory_repository)
+        self.redis_registry = RedisCommandRegistry(self.redis_repository)
         self.kombu_command_bus = KombuCommandBus(
             self.kombu_connection, self.command_serializer, self.command_deserializer, self.redis_registry
         )
@@ -67,7 +71,7 @@ class TestRabbitKombuCommandBus(IntegrationTestCase):
     def test_execute_success(self):
         test_command = CommandTest()
         test_command_handler = CommandTestHandler()
-        self.redis_registry.register_destination(test_command_handler, test_command.__class__.__name__)
+        self.redis_registry.register(test_command_handler, test_command.__class__.__name__)
         self.kombu_command_bus.start()
 
         self.kombu_command_bus.execute(test_command)
