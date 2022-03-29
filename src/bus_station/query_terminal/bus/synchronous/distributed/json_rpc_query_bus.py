@@ -51,7 +51,8 @@ class JsonRPCQueryBus(QueryBus, Runnable):
         self.__server_process: Optional[Process] = None
 
     def _start(self):
-        for query, handler, _ in self.__query_registry.get_queries_registered():
+        for query in self.__query_registry.get_queries_registered():
+            handler = self.__query_registry.get_query_destination(query)
             self.__json_rpc_query_server.register(query, handler)
 
         self.__server_process = Process(target=self.__json_rpc_query_server.run, args=(self.__self_port,))

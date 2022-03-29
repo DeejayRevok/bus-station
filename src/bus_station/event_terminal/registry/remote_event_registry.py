@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Iterable, Optional, Tuple, Type
+from typing import Iterable, Optional, Type
 
 from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
@@ -13,8 +13,4 @@ class RemoteEventRegistry(EventRegistry, ABC):
 
     @abstractmethod
     def get_event_destination_contacts(self, event: Type[Event]) -> Optional[Iterable[str]]:
-        pass
-
-    @abstractmethod
-    def get_events_registered(self) -> Iterable[Tuple[Type[Event], Iterable[EventConsumer], Iterable[str]]]:
         pass

@@ -10,7 +10,6 @@ from tests.integration.integration_test_case import IntegrationTestCase
 class TestSQLAlchemyEventTrackingMapper(IntegrationTestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        cls.test_env_ready = False
         cls.postgres_user = cls.postgres["user"]
         cls.postgres_password = cls.postgres["password"]
         cls.postgres_host = cls.postgres["host"]
@@ -20,11 +19,8 @@ class TestSQLAlchemyEventTrackingMapper(IntegrationTestCase):
             f"postgresql://{cls.postgres_user}:{cls.postgres_password}"
             f"@{cls.postgres_host}:{cls.postgres_port}/{cls.postgres_db}"
         )
-        cls.test_env_ready = True
 
     def setUp(self) -> None:
-        if self.test_env_ready is False:
-            self.fail("Test environment is not ready")
         self.sqlalchemy_metadata = MetaData(bind=self.sqlalchemy_engine)
         clear_mappers()
         self.sqlalchemy_event_tracking_mapper = SQLAlchemyEventTrackingMapper(db_metadata=self.sqlalchemy_metadata)

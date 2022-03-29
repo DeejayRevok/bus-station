@@ -32,7 +32,6 @@ class EventTestConsumer(EventConsumer):
 class TestSQLAlchemyPassengerTracker(IntegrationTestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        cls.test_env_ready = False
         cls.postgres_user = cls.postgres["user"]
         cls.postgres_password = cls.postgres["password"]
         cls.postgres_host = cls.postgres["host"]
@@ -42,7 +41,6 @@ class TestSQLAlchemyPassengerTracker(IntegrationTestCase):
             f"postgresql://{cls.postgres_user}:{cls.postgres_password}"
             f"@{cls.postgres_host}:{cls.postgres_port}/{cls.postgres_db}"
         )
-        cls.test_env_ready = True
         cls.sqlalchemy_metadata = MetaData(bind=cls.sqlalchemy_engine)
         clear_mappers()
         cls.sqlalchemy_event_tracking_mapper = SQLAlchemyEventTrackingMapper(cls.sqlalchemy_metadata)
@@ -61,8 +59,6 @@ class TestSQLAlchemyPassengerTracker(IntegrationTestCase):
         cls.sqlalchemy_metadata.drop_all()
 
     def setUp(self) -> None:
-        if self.test_env_ready is False:
-            self.fail("Test environment is not ready")
         self.sqlalchemy_passenger_tracker = SQLAlchemyPassengerTracker(
             self.sqlalchemy_event_tracking_repository, self.sqlalchemy_event_tracking_mapper
         )

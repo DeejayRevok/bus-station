@@ -1,5 +1,4 @@
 from multiprocessing.context import Process
-from typing import Callable
 from unittest import TestCase
 from unittest.mock import Mock, patch
 
@@ -8,16 +7,15 @@ from jsonrpcserver import Success
 from requests import Response
 
 from bus_station.passengers.middleware.passenger_middleware_executor import PassengerMiddlewareExecutor
-from bus_station.passengers.registry.remote_registry import RemoteRegistry
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 from bus_station.passengers.serialization.passenger_serializer import PassengerSerializer
 from bus_station.query_terminal.bus.synchronous.distributed.json_rpc_query_bus import JsonRPCQueryBus
-from bus_station.query_terminal.handler_for_query_already_registered import HandlerForQueryAlreadyRegistered
 from bus_station.query_terminal.handler_not_found_for_query import HandlerNotFoundForQuery
 from bus_station.query_terminal.query import Query
 from bus_station.query_terminal.query_execution_failed import QueryExecutionFailed
 from bus_station.query_terminal.query_handler import QueryHandler
 from bus_station.query_terminal.query_response import QueryResponse
+from bus_station.query_terminal.registry.remote_query_registry import RemoteQueryRegistry
 from bus_station.query_terminal.serialization.query_response_deserializer import QueryResponseDeserializer
 from bus_station.query_terminal.serialization.query_response_serializer import QueryResponseSerializer
 from bus_station.shared_terminal.json_rpc_server import JsonRPCServer
@@ -30,7 +28,7 @@ class TestJsonRPCQueryBus(TestCase):
         self.query_deserializer_mock = Mock(spec=PassengerDeserializer)
         self.query_response_serializer_mock = Mock(spec=QueryResponseSerializer)
         self.query_response_deserializer_mock = Mock(spec=QueryResponseDeserializer)
-        self.query_registry_mock = Mock(spec=RemoteRegistry)
+        self.query_registry_mock = Mock(spec=RemoteQueryRegistry)
         self.middleware_executor_mock = Mock(spec=PassengerMiddlewareExecutor)
         self.test_host = "test_host"
         self.test_port = 1234
@@ -51,6 +49,10 @@ class TestJsonRPCQueryBus(TestCase):
     def test_start(self, process_mock):
         test_process = Mock(spec=Process)
         process_mock.return_value = test_process
+        test_query = Mock(spec=Query)
+        self.query_registry_mock.get_queries_registered.return_value = [test_query.__class__]
+        test_query_handler = Mock(spec=QueryHandler)
+        self.query_registry_mock.get_query_destination.return_value = test_query_handler
 
         self.json_rpc_query_bus.start()
 
@@ -63,6 +65,7 @@ class TestJsonRPCQueryBus(TestCase):
     def test_stop(self, process_mock, os_mock, signal_mock):
         test_process = Mock(spec=Process)
         process_mock.return_value = test_process
+        self.query_registry_mock.get_queries_registered.return_value = []
         self.json_rpc_query_bus.start()
 
         self.json_rpc_query_bus.stop()
@@ -72,46 +75,16 @@ class TestJsonRPCQueryBus(TestCase):
         os_mock.kill.assert_called_once_with(test_process.pid, signal_mock.SIGINT)
         test_process.join.assert_called_once_with()
 
-    @patch("bus_station.query_terminal.bus.query_bus.get_type_hints")
-    def test_register_already_registered(self, get_type_hints_mock):
-        test_query = Mock(spec=Query)
-        test_query_handler = Mock(spec=QueryHandler)
-        get_type_hints_mock.return_value = {"query": test_query.__class__}
-        self.query_registry_mock.__contains__ = Mock(spec=Callable)
-        self.query_registry_mock.__contains__.return_value = True
-
-        with self.assertRaises(HandlerForQueryAlreadyRegistered) as hfqar:
-            self.json_rpc_query_bus.register(test_query_handler)
-
-        self.assertEqual(test_query.__class__.__name__, hfqar.exception.query_name)
-        self.query_registry_mock.__contains__.assert_called_once_with(test_query.__class__)
-
-    @patch("bus_station.query_terminal.bus.query_bus.get_type_hints")
-    def test_register_success(self, get_type_hints_mock):
-        test_query = Mock(spec=Query)
-        test_query_handler = Mock(spec=QueryHandler)
-        get_type_hints_mock.return_value = {"query": test_query.__class__}
-        self.query_registry_mock.__contains__ = Mock(spec=Callable)
-        self.query_registry_mock.__contains__.return_value = False
-
-        self.json_rpc_query_bus.register(test_query_handler)
-
-        self.query_registry_mock.__contains__.assert_called_once_with(test_query.__class__)
-        self.json_rpc_server_mock.register.assert_called_once_with(test_query.__class__, test_query_handler)
-        self.query_registry_mock.register.assert_called_once_with(
-            test_query.__class__, f"http://{self.test_host}:{self.test_port}/"
-        )
-
     def test_execute_not_registered(self):
         test_query = Mock(spec=Query, name="TestQuery")
-        self.query_registry_mock.get_passenger_destination.return_value = None
+        self.query_registry_mock.get_query_destination_contact.return_value = None
 
         with self.assertRaises(HandlerNotFoundForQuery) as hnffq:
             self.json_rpc_query_bus.execute(test_query)
 
         self.assertEqual(test_query.__class__.__name__, hnffq.exception.query_name)
         self.query_serializer_mock.serialize.assert_not_called()
-        self.query_registry_mock.get_passenger_destination.assert_called_once_with(test_query.__class__)
+        self.query_registry_mock.get_query_destination_contact.assert_called_once_with(test_query.__class__)
 
     @patch("bus_station.query_terminal.bus.synchronous.distributed.json_rpc_query_bus.to_result")
     @patch("bus_station.query_terminal.bus.synchronous.distributed.json_rpc_query_bus.request")
@@ -121,7 +94,7 @@ class TestJsonRPCQueryBus(TestCase):
         test_host = "test_host"
         test_port = "41124"
         test_query_handler_addr = f"{test_host}:{test_port}"
-        self.query_registry_mock.get_passenger_destination.return_value = test_query_handler_addr
+        self.query_registry_mock.get_query_destination_contact.return_value = test_query_handler_addr
         test_serialized_query = "test_serialized_query"
         self.query_serializer_mock.serialize.return_value = test_serialized_query
         test_json_rpc_request = {"test": "test"}
@@ -153,7 +126,7 @@ class TestJsonRPCQueryBus(TestCase):
         test_host = "test_host"
         test_port = "41124"
         test_query_handler_addr = f"{test_host}:{test_port}"
-        self.query_registry_mock.get_passenger_destination.return_value = test_query_handler_addr
+        self.query_registry_mock.get_query_destination_contact.return_value = test_query_handler_addr
         test_serialized_query = "test_serialized_query"
         self.query_serializer_mock.serialize.return_value = test_serialized_query
         test_json_rpc_request = {"test": "test"}

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Iterable, Optional, Tuple, Type
+from typing import Optional, Type
 
 from bus_station.query_terminal.query import Query
 from bus_station.query_terminal.query_handler import QueryHandler
@@ -13,8 +13,4 @@ class RemoteQueryRegistry(QueryRegistry, ABC):
 
     @abstractmethod
     def get_query_destination_contact(self, query: Type[Query]) -> Optional[str]:
-        pass
-
-    @abstractmethod
-    def get_queries_registered(self) -> Iterable[Tuple[Type[Query], QueryHandler, str]]:
         pass

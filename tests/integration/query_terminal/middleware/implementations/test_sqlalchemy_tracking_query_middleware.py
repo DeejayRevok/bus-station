@@ -38,7 +38,6 @@ class QueryTestHandler(QueryHandler):
 class TestSQLAlchemyTrackingQueryMiddleware(IntegrationTestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        cls.test_env_ready = False
         cls.postgres_user = cls.postgres["user"]
         cls.postgres_password = cls.postgres["password"]
         cls.postgres_host = cls.postgres["host"]
@@ -48,7 +47,6 @@ class TestSQLAlchemyTrackingQueryMiddleware(IntegrationTestCase):
             f"postgresql://{cls.postgres_user}:{cls.postgres_password}"
             f"@{cls.postgres_host}:{cls.postgres_port}/{cls.postgres_db}"
         )
-        cls.test_env_ready = True
         cls.sqlalchemy_metadata = MetaData(bind=cls.sqlalchemy_engine)
         clear_mappers()
         cls.sqlalchemy_query_tracking_mapper = SQLAlchemyQueryTrackingMapper(cls.sqlalchemy_metadata)
@@ -70,8 +68,6 @@ class TestSQLAlchemyTrackingQueryMiddleware(IntegrationTestCase):
         cls.sqlalchemy_metadata.drop_all()
 
     def setUp(self) -> None:
-        if self.test_env_ready is False:
-            self.fail("Test environment is not ready")
         self.query_middleware_executor = QueryMiddlewareExecutor()
         self.query_middleware_executor.add_middleware_definition(
             TrackingQueryMiddleware, self.sqlalchemy_query_tracker, lazy=False

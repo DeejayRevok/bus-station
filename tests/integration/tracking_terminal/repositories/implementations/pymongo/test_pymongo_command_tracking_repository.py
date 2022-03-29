@@ -18,7 +18,6 @@ from tests.integration.integration_test_case import IntegrationTestCase
 class TestPyMongoCommandTrackingRepository(IntegrationTestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        cls.test_env_ready = False
         cls.mongo_user = cls.mongo["user"]
         cls.mongo_password = cls.mongo["password"]
         cls.mongo_host = cls.mongo["host"]
@@ -30,7 +29,6 @@ class TestPyMongoCommandTrackingRepository(IntegrationTestCase):
         cls.pymongo_db = cls.pymongo_client.get_database(cls.mongo_db)
         cls.mongo_tracking_serializer = MongoPassengerTrackingSerializer()
         cls.mongo_tracking_deserializer = MongoPassengerTrackingDeserializer()
-        cls.test_env_ready = True
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -38,8 +36,6 @@ class TestPyMongoCommandTrackingRepository(IntegrationTestCase):
         cls.pymongo_client.close()
 
     def setUp(self) -> None:
-        if self.test_env_ready is False:
-            self.fail("Test environment is not ready")
         self.pymongo_command_tracking_repository = PyMongoCommandTrackingRepository(
             self.pymongo_db, self.mongo_tracking_serializer, self.mongo_tracking_deserializer
         )

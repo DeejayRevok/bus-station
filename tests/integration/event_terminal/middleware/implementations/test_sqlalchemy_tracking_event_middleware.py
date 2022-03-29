@@ -35,7 +35,6 @@ class EventTestConsumer(EventConsumer):
 class TestSQLAlchemyTrackingEventMiddleware(IntegrationTestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        cls.test_env_ready = False
         cls.postgres_user = cls.postgres["user"]
         cls.postgres_password = cls.postgres["password"]
         cls.postgres_host = cls.postgres["host"]
@@ -45,7 +44,6 @@ class TestSQLAlchemyTrackingEventMiddleware(IntegrationTestCase):
             f"postgresql://{cls.postgres_user}:{cls.postgres_password}"
             f"@{cls.postgres_host}:{cls.postgres_port}/{cls.postgres_db}"
         )
-        cls.test_env_ready = True
         cls.sqlalchemy_metadata = MetaData(bind=cls.sqlalchemy_engine)
         clear_mappers()
         cls.sqlalchemy_event_tracking_mapper = SQLAlchemyEventTrackingMapper(cls.sqlalchemy_metadata)
@@ -67,8 +65,6 @@ class TestSQLAlchemyTrackingEventMiddleware(IntegrationTestCase):
         cls.sqlalchemy_metadata.drop_all()
 
     def setUp(self) -> None:
-        if self.test_env_ready is False:
-            self.fail("Test environment is not ready")
         self.event_middleware_executor = EventMiddlewareExecutor()
         self.event_middleware_executor.add_middleware_definition(
             TrackingEventMiddleware, self.sqlalchemy_event_tracker, lazy=False

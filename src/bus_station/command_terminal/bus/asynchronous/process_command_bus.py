@@ -28,7 +28,9 @@ class ProcessCommandBus(CommandBus, Runnable):
         self.__command_registry = command_registry
 
     def _start(self) -> None:
-        for command, handler, handler_queue in self.__command_registry.get_commands_registered():
+        for command in self.__command_registry.get_commands_registered():
+            handler = self.__command_registry.get_command_destination(command)
+            handler_queue = self.__command_registry.get_command_destination_contact(command)
             worker, process = self.__create_handler(handler, handler_queue)
             self.__command_workers.append(worker)
             self.__command_worker_processes.append(process)

@@ -17,7 +17,6 @@ from tests.integration.integration_test_case import IntegrationTestCase
 class TestSQLAlchemyCommandTrackingRepository(IntegrationTestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        cls.test_env_ready = False
         cls.postgres_user = cls.postgres["user"]
         cls.postgres_password = cls.postgres["password"]
         cls.postgres_host = cls.postgres["host"]
@@ -27,7 +26,6 @@ class TestSQLAlchemyCommandTrackingRepository(IntegrationTestCase):
             f"postgresql://{cls.postgres_user}:{cls.postgres_password}"
             f"@{cls.postgres_host}:{cls.postgres_port}/{cls.postgres_db}"
         )
-        cls.test_env_ready = True
         cls.sqlalchemy_metadata = MetaData(bind=cls.sqlalchemy_engine)
         clear_mappers()
         cls.sqlalchemy_command_tracking_mapper = SQLAlchemyCommandTrackingMapper(cls.sqlalchemy_metadata)
@@ -42,8 +40,6 @@ class TestSQLAlchemyCommandTrackingRepository(IntegrationTestCase):
         cls.sqlalchemy_metadata.drop_all()
 
     def setUp(self) -> None:
-        if self.test_env_ready is False:
-            self.fail("Test environment is not ready")
         self.sqlalchemy_session: Session = self.sqlalchemy_session_maker()
         self.sqlalchemy_command_tracking_repository = (
             sqlalchemy_command_tracking_repository.SQLAlchemyCommandTrackingRepository(

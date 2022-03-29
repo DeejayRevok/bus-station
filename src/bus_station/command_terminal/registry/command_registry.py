@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import Any, Iterable, Optional, Tuple, Type, get_type_hints
+from typing import Any, Iterable, Optional, Type, get_type_hints
 
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
@@ -40,7 +40,7 @@ class CommandRegistry(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def get_commands_registered(self) -> Iterable[Tuple[Type[Command], Optional[CommandHandler], Any]]:
+    def get_commands_registered(self) -> Iterable[Type[Command]]:
         pass
 
     @abstractmethod

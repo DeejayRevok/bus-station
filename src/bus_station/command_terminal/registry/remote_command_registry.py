@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Iterable, Optional, Tuple, Type
+from typing import Optional, Type
 
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
@@ -13,8 +13,4 @@ class RemoteCommandRegistry(CommandRegistry, ABC):
 
     @abstractmethod
     def get_command_destination_contact(self, command: Type[Command]) -> Optional[str]:
-        pass
-
-    @abstractmethod
-    def get_commands_registered(self) -> Iterable[Tuple[Type[Command], CommandHandler, str]]:
         pass

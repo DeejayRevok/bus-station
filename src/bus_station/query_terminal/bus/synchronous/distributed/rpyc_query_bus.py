@@ -48,7 +48,8 @@ class RPyCQueryBus(QueryBus, Runnable):
         self.__server_process: Optional[Process] = None
 
     def _start(self):
-        for query, handler, _ in self.__query_registry.get_queries_registered():
+        for query in self.__query_registry.get_queries_registered():
+            handler = self.__query_registry.get_query_destination(query)
             self.__rpyc_service.register(query, handler)
 
         self.__rpyc_server = RPyCServer(

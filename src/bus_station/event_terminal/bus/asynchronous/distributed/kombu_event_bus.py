@@ -40,7 +40,11 @@ class KombuEventBus(EventBus, Runnable):
         broker_channel = self.__broker_connection.channel()
         self.__create_dead_letter_exchange(broker_channel)
 
-        for event, event_consumers, exchange_names in self.__event_registry.get_events_registered():
+        for event in self.__event_registry.get_events_registered():
+            event_consumers = self.__event_registry.get_event_destinations(event)
+            exchange_names = self.__event_registry.get_event_destination_contacts(event)
+            if event_consumers is None or exchange_names is None:
+                continue
             for event_consumer, event_exchange_name in zip(event_consumers, exchange_names):
                 event_exchange = self.__create_event_exchange(event_exchange_name)
                 event_exchange.declare(channel=broker_channel)

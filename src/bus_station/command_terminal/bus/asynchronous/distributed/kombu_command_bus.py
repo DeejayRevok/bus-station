@@ -40,7 +40,11 @@ class KombuCommandBus(CommandBus, Runnable):
         broker_channel = self.__broker_connection.channel()
         self.__create_dead_letter_exchange(broker_channel)
 
-        for command, handler, handler_queue_name in self.__command_registry.get_commands_registered():
+        for command in self.__command_registry.get_commands_registered():
+            handler = self.__command_registry.get_command_destination(command)
+            handler_queue_name = self.__command_registry.get_command_destination_contact(command)
+            if handler_queue_name is None:
+                continue
             consumer, consumer_process, consumer_queue = self.__create_consumer(handler, handler_queue_name, command)
             self.__command_consumers.append(consumer)
             self.__command_consumer_processes.append(consumer_process)

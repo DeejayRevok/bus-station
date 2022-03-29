@@ -4,12 +4,18 @@ from multiprocessing import Queue, Value
 from time import sleep
 
 from bus_station.event_terminal.bus.asynchronous.process_event_bus import ProcessEventBus
+from bus_station.event_terminal.bus.synchronous.sync_event_bus import SyncEventBus
 from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
 from bus_station.event_terminal.registry.in_memory_event_registry import InMemoryEventRegistry
-from bus_station.passengers.registry.in_memory_passenger_record_repository import InMemoryPassengerRecordRepository
+from bus_station.passengers.passenger_class_resolver import PassengerClassResolver
+from bus_station.passengers.passenger_record.in_memory_passenger_record_repository import (
+    InMemoryPassengerRecordRepository,
+)
 from bus_station.passengers.serialization.passenger_json_deserializer import PassengerJSONDeserializer
 from bus_station.passengers.serialization.passenger_json_serializer import PassengerJSONSerializer
+from bus_station.shared_terminal.bus_stop_resolver.in_memory_bus_stop_resolver import InMemoryBusStopResolver
+from bus_station.shared_terminal.fqn_getter import FQNGetter
 from tests.integration.integration_test_case import IntegrationTestCase
 
 
@@ -39,7 +45,16 @@ class TestProcessEventBus(IntegrationTestCase):
         self.passenger_serializer = PassengerJSONSerializer()
         self.passenger_deserializer = PassengerJSONDeserializer()
         self.in_memory_repository = InMemoryPassengerRecordRepository()
-        self.in_memory_registry = InMemoryEventRegistry(self.in_memory_repository)
+        self.fqn_getter = FQNGetter()
+        self.event_consumer_resolver = InMemoryBusStopResolver[EventConsumer](fqn_getter=self.fqn_getter)
+        self.passenger_class_resolver = PassengerClassResolver()
+        self.in_memory_registry = InMemoryEventRegistry(
+            in_memory_repository=self.in_memory_repository,
+            event_consumer_resolver=self.event_consumer_resolver,
+            fqn_getter=self.fqn_getter,
+            passenger_class_resolver=self.passenger_class_resolver,
+        )
+        self.sync_event_bus = SyncEventBus(self.in_memory_registry)
         self.process_event_bus = ProcessEventBus(
             self.passenger_serializer, self.passenger_deserializer, self.in_memory_registry
         )
@@ -54,6 +69,8 @@ class TestProcessEventBus(IntegrationTestCase):
         test_queue = Queue()
         self.in_memory_registry.register(test_event_consumer1, test_queue)
         self.in_memory_registry.register(test_event_consumer2, test_queue)
+        self.event_consumer_resolver.add_bus_stop(test_event_consumer1)
+        self.event_consumer_resolver.add_bus_stop(test_event_consumer2)
         self.process_event_bus.start()
 
         self.process_event_bus.publish(test_event)

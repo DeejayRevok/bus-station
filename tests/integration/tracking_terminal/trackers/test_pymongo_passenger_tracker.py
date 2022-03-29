@@ -32,7 +32,6 @@ class QueryTestHandler(QueryHandler):
 class TestPyMongoPassengerTracker(IntegrationTestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        cls.test_env_ready = False
         cls.mongo_user = cls.mongo["user"]
         cls.mongo_password = cls.mongo["password"]
         cls.mongo_host = cls.mongo["host"]
@@ -47,7 +46,6 @@ class TestPyMongoPassengerTracker(IntegrationTestCase):
         cls.pymongo_query_tracking_repository = PyMongoQueryTrackingRepository(
             cls.pymongo_db, cls.mongo_tracking_serializer, cls.mongo_tracking_deserializer
         )
-        cls.test_env_ready = True
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -55,8 +53,6 @@ class TestPyMongoPassengerTracker(IntegrationTestCase):
         cls.pymongo_client.close()
 
     def setUp(self) -> None:
-        if self.test_env_ready is False:
-            self.fail("Test environment is not ready")
         self.pymongo_passenger_tracker = PyMongoPassengerTracker(self.pymongo_query_tracking_repository)
 
     def tearDown(self) -> None:

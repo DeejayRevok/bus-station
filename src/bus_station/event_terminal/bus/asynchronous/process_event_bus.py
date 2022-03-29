@@ -27,7 +27,11 @@ class ProcessEventBus(EventBus, Runnable):
         self.__event_registry = event_registry
 
     def _start(self) -> None:
-        for event, consumers, consumer_queues in self.__event_registry.get_events_registered():
+        for event in self.__event_registry.get_events_registered():
+            consumers = self.__event_registry.get_event_destinations(event)
+            consumer_queues = self.__event_registry.get_event_destination_contacts(event)
+            if consumers is None or consumer_queues is None:
+                continue
             for consumer, consumer_queue in zip(consumers, consumer_queues):
                 worker, process = self.__create_consumer(consumer, consumer_queue)
                 process.start()

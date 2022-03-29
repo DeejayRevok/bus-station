@@ -11,7 +11,7 @@ class ThreadedEventBus(EventBus):
         self.__event_registry = event_registry
 
     def publish(self, event: Event) -> None:
-        event_consumers = self.__event_registry.get_event_destinations(event.__class__)
+        event_consumers = self.__event_registry.get_event_destination_contacts(event.__class__)
         if event_consumers is None:
             return
 

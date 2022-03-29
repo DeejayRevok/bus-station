@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import Any, Iterable, Optional, Tuple, Type, get_type_hints
+from typing import Any, Iterable, Optional, Type, get_type_hints
 
 from bus_station.query_terminal.handler_for_query_already_registered import HandlerForQueryAlreadyRegistered
 from bus_station.query_terminal.query import Query
@@ -40,7 +40,7 @@ class QueryRegistry(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def get_queries_registered(self) -> Iterable[Tuple[Type[Query], QueryHandler, Any]]:
+    def get_queries_registered(self) -> Iterable[Type[Query]]:
         pass
 
     @abstractmethod

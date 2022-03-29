@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import Any, Iterable, Optional, Tuple, Type, get_type_hints
+from typing import Any, Iterable, Optional, Type, get_type_hints
 
 from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
@@ -34,7 +34,7 @@ class EventRegistry(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def get_events_registered(self) -> Iterable[Tuple[Type[Event], Iterable[EventConsumer], Iterable[Any]]]:
+    def get_events_registered(self) -> Iterable[Type[Event]]:
         pass
 
     @abstractmethod

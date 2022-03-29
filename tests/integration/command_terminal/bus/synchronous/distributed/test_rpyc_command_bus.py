@@ -9,10 +9,12 @@ from bus_station.command_terminal.bus.synchronous.distributed.rpyc_command_bus i
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
 from bus_station.command_terminal.registry.redis_command_registry import RedisCommandRegistry
-from bus_station.passengers.registry.in_memory_passenger_record_repository import InMemoryPassengerRecordRepository
-from bus_station.passengers.registry.redis_passenger_record_repository import RedisPassengerRecordRepository
+from bus_station.passengers.passenger_class_resolver import PassengerClassResolver
+from bus_station.passengers.passenger_record.redis_passenger_record_repository import RedisPassengerRecordRepository
 from bus_station.passengers.serialization.passenger_json_deserializer import PassengerJSONDeserializer
 from bus_station.passengers.serialization.passenger_json_serializer import PassengerJSONSerializer
+from bus_station.shared_terminal.bus_stop_resolver.in_memory_bus_stop_resolver import InMemoryBusStopResolver
+from bus_station.shared_terminal.fqn_getter import FQNGetter
 from tests.integration.integration_test_case import IntegrationTestCase
 
 
@@ -32,18 +34,21 @@ class CommandTestHandler(CommandHandler):
 class TestRPyCCommandBus(IntegrationTestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        cls.test_env_ready = False
         cls.redis_host = cls.redis["host"]
         cls.redis_port = cls.redis["port"]
         cls.redis_client = Redis(host=cls.redis_host, port=cls.redis_port)
-        cls.test_env_ready = True
 
     def setUp(self) -> None:
-        if self.test_env_ready is False:
-            self.fail("Test environment is not ready")
-        self.in_memory_repository = InMemoryPassengerRecordRepository()
-        self.redis_repository = RedisPassengerRecordRepository(self.redis_client, self.in_memory_repository)
-        self.redis_registry = RedisCommandRegistry(self.redis_repository)
+        self.redis_repository = RedisPassengerRecordRepository(self.redis_client)
+        self.fqn_getter = FQNGetter()
+        self.command_handler_resolver = InMemoryBusStopResolver(fqn_getter=self.fqn_getter)
+        self.passenger_class_resolver = PassengerClassResolver()
+        self.redis_registry = RedisCommandRegistry(
+            redis_repository=self.redis_repository,
+            command_handler_resolver=self.command_handler_resolver,
+            fqn_getter=self.fqn_getter,
+            passenger_class_resolver=self.passenger_class_resolver,
+        )
         self.command_serializer = PassengerJSONSerializer()
         self.command_deserializer = PassengerJSONDeserializer()
         self.bus_host = "localhost"
@@ -64,6 +69,7 @@ class TestRPyCCommandBus(IntegrationTestCase):
         test_command = CommandTest()
         test_command_handler = CommandTestHandler()
         self.redis_registry.register(test_command_handler, f"{self.bus_host}:{self.bus_port}")
+        self.command_handler_resolver.add_bus_stop(test_command_handler)
         self.rpyc_command_bus.start()
         sleep(1)
 
