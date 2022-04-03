@@ -25,6 +25,8 @@ class TestThreadedEventBus(TestCase):
 
         self.threaded_event_bus.transport(test_event)
 
-        thread_mock.assert_called_once_with(target=self.event_receiver_mock.receive, args=(test_event, test_event_consumer))
+        thread_mock.assert_called_once_with(
+            target=self.event_receiver_mock.receive, args=(test_event, test_event_consumer)
+        )
         test_thread.start.assert_called_once_with()
         self.event_registry_mock.get_event_destination_contacts.assert_called_once_with(test_event.__class__)

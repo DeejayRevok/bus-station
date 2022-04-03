@@ -1,7 +1,7 @@
 import os
 import signal
 from multiprocessing import Process
-from typing import ClassVar, Optional, NoReturn
+from typing import ClassVar, NoReturn, Optional
 
 import requests
 from jsonrpcclient import request
@@ -30,7 +30,7 @@ class JsonRPCCommandBus(CommandBus, Runnable):
         command_serializer: PassengerSerializer,
         command_deserializer: PassengerDeserializer,
         command_registry: RemoteCommandRegistry,
-        command_receiver: PassengerReceiver[Command, CommandHandler]
+        command_receiver: PassengerReceiver[Command, CommandHandler],
     ):
         CommandBus.__init__(self, command_receiver)
         Runnable.__init__(self)

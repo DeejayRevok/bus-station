@@ -8,7 +8,6 @@ from kombu.messaging import Queue
 from kombu.mixins import ConsumerMixin
 from kombu.transport.virtual import Channel
 
-from bus_station.passengers.reception.passenger_middleware_receiver import PassengerMiddlewareReceiver
 from bus_station.passengers.passenger import Passenger
 from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer

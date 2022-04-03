@@ -29,7 +29,7 @@ class TestKombuEventBus(TestCase):
             self.event_serializer_mock,
             self.event_deserializer_mock,
             self.event_registry_mock,
-            self.event_receiver_mock
+            self.event_receiver_mock,
         )
 
     @patch("bus_station.event_terminal.bus.asynchronous.distributed.kombu_event_bus.Producer")

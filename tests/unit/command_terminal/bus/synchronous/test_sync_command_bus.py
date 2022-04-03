@@ -1,11 +1,10 @@
 from unittest import TestCase
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
 from bus_station.command_terminal.bus.synchronous.sync_command_bus import SyncCommandBus
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
 from bus_station.command_terminal.handler_not_found_for_command import HandlerNotFoundForCommand
-from bus_station.command_terminal.middleware.command_middleware_receiver import CommandMiddlewareReceiver
 from bus_station.command_terminal.registry.in_memory_command_registry import InMemoryCommandRegistry
 from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
 

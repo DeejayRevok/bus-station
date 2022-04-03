@@ -69,7 +69,7 @@ class TestRPyCQueryBus(IntegrationTestCase):
             self.query_response_serializer,
             self.query_response_deserializer,
             self.redis_registry,
-            self.query_middleware_receiver
+            self.query_middleware_receiver,
         )
 
     def tearDown(self) -> None:

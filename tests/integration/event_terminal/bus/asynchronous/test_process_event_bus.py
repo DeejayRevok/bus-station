@@ -59,7 +59,7 @@ class TestProcessEventBus(IntegrationTestCase):
             self.passenger_serializer,
             self.passenger_deserializer,
             self.in_memory_registry,
-            self.event_middleware_receiver
+            self.event_middleware_receiver,
         )
 
     def tearDown(self) -> None:

@@ -30,7 +30,7 @@ class TestKombuCommandBus(TestCase):
             self.command_serializer_mock,
             self.command_deserializer_mock,
             self.command_registry_mock,
-            self.command_receiver_mock
+            self.command_receiver_mock,
         )
 
     def test_transport_not_registered(self):

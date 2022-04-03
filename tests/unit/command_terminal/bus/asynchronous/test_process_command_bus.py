@@ -25,7 +25,7 @@ class TestProcessCommandBus(TestCase):
             self.command_serializer_mock,
             self.command_deserializer_mock,
             self.command_registry_mock,
-            self.command_receiver_mock
+            self.command_receiver_mock,
         )
 
     @patch.object(Runnable, "running")

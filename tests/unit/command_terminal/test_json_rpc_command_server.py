@@ -16,9 +16,7 @@ class TestJsonRPCCommandServer(TestCase):
     def setUp(self) -> None:
         self.passenger_deserializer_mock = Mock(spec=PassengerDeserializer)
         self.command_receiver_mock = Mock(spec=PassengerReceiver[Command, CommandHandler])
-        self.json_rpc_server = JsonRPCCommandServer(
-            self.passenger_deserializer_mock, self.command_receiver_mock
-        )
+        self.json_rpc_server = JsonRPCCommandServer(self.passenger_deserializer_mock, self.command_receiver_mock)
 
     @patch("bus_station.shared_terminal.json_rpc_server.partial")
     def test_register(self, partial_mock):

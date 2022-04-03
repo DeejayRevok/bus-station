@@ -10,7 +10,9 @@ from bus_station.passengers.reception.passenger_receiver import PassengerReceive
 
 
 class ThreadedCommandBus(CommandBus):
-    def __init__(self, command_registry: InMemoryCommandRegistry, command_receiver: PassengerReceiver[Command, CommandHandler]):
+    def __init__(
+        self, command_registry: InMemoryCommandRegistry, command_receiver: PassengerReceiver[Command, CommandHandler]
+    ):
         super().__init__(command_receiver)
         self.__command_registry = command_registry
 

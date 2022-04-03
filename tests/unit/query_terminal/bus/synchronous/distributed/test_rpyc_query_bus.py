@@ -41,7 +41,7 @@ class TestRPyCQueryBus(TestCase):
             self.query_response_serializer_mock,
             self.query_response_deserializer_mock,
             self.query_registry_mock,
-            self.query_receiver_mock
+            self.query_receiver_mock,
         )
 
     @patch("bus_station.query_terminal.bus.synchronous.distributed.rpyc_query_bus.Process")

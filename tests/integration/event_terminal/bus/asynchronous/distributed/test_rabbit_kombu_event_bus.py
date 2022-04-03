@@ -80,7 +80,7 @@ class TestRabbitKombuEventBus(IntegrationTestCase):
             self.event_serializer,
             self.event_deserializer,
             self.redis_registry,
-            self.event_middleware_receiver
+            self.event_middleware_receiver,
         )
 
     def tearDown(self) -> None:

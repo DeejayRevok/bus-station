@@ -1,5 +1,5 @@
 from multiprocessing import Process, Queue
-from typing import List, Tuple, NoReturn
+from typing import List, NoReturn, Tuple
 
 from bus_station.event_terminal.bus.event_bus import EventBus
 from bus_station.event_terminal.event import Event
@@ -18,7 +18,7 @@ class ProcessEventBus(EventBus, Runnable):
         event_serializer: PassengerSerializer,
         event_deserializer: PassengerDeserializer,
         event_registry: InMemoryEventRegistry,
-        event_receiver: PassengerReceiver[Event, EventConsumer]
+        event_receiver: PassengerReceiver[Event, EventConsumer],
     ):
         EventBus.__init__(self, event_receiver)
         Runnable.__init__(self)

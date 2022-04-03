@@ -33,7 +33,7 @@ class RPyCQueryBus(QueryBus, Runnable):
         query_response_serializer: QueryResponseSerializer,
         query_response_deserializer: QueryResponseDeserializer,
         query_registry: RemoteQueryRegistry,
-        query_receiver: PassengerReceiver[Query, QueryHandler]
+        query_receiver: PassengerReceiver[Query, QueryHandler],
     ):
         QueryBus.__init__(self, query_receiver)
         Runnable.__init__(self)

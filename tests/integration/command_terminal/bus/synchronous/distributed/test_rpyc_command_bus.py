@@ -61,7 +61,7 @@ class TestRPyCCommandBus(IntegrationTestCase):
             self.command_serializer,
             self.command_deserializer,
             self.redis_registry,
-            self.command_receiver
+            self.command_receiver,
         )
 
     def tearDown(self) -> None:

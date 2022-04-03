@@ -36,7 +36,7 @@ class TestJsonRPCCommandBus(TestCase):
             self.command_serializer_mock,
             self.command_deserializer_mock,
             self.command_registry_mock,
-            self.command_receiver_mock
+            self.command_receiver_mock,
         )
 
     @patch("bus_station.command_terminal.bus.synchronous.distributed.json_rpc_command_bus.Process")

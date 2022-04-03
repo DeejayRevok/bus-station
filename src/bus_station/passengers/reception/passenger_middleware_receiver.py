@@ -1,9 +1,9 @@
 from abc import ABC
 from typing import Any, Generic, Iterable, List, Tuple, Type, TypeVar
 
-from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
-from bus_station.passengers.passenger_middleware import PassengerMiddleware
 from bus_station.passengers.passenger import Passenger
+from bus_station.passengers.passenger_middleware import PassengerMiddleware
+from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
 from bus_station.shared_terminal.bus_stop import BusStop
 
 M = TypeVar("M", bound=PassengerMiddleware)

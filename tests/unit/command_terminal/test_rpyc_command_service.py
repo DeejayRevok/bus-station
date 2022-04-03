@@ -12,9 +12,7 @@ class TestRPyCCommandService(TestCase):
     def setUp(self) -> None:
         self.command_deserializer_mock = Mock(spec=PassengerDeserializer)
         self.command_receiver_mock = Mock(spec=PassengerReceiver[Command, CommandHandler])
-        self.rpyc_command_service = RPyCCommandService(
-            self.command_deserializer_mock, self.command_receiver_mock
-        )
+        self.rpyc_command_service = RPyCCommandService(self.command_deserializer_mock, self.command_receiver_mock)
 
     def test_register_success(self):
         test_handler = Mock(spec=CommandHandler)

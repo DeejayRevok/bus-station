@@ -1,5 +1,5 @@
 from multiprocessing import Process
-from typing import ClassVar, List, Optional, Tuple, Type, NoReturn
+from typing import ClassVar, List, NoReturn, Optional, Tuple, Type
 
 from kombu import Connection
 from kombu.messaging import Exchange, Producer, Queue
@@ -27,7 +27,7 @@ class KombuEventBus(EventBus, Runnable):
         event_serializer: PassengerSerializer,
         event_deserializer: PassengerDeserializer,
         event_registry: RemoteEventRegistry,
-        event_receiver: PassengerReceiver[Event, EventConsumer]
+        event_receiver: PassengerReceiver[Event, EventConsumer],
     ):
         EventBus.__init__(self, event_receiver)
         Runnable.__init__(self)

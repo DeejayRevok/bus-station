@@ -68,7 +68,11 @@ class TestRabbitKombuCommandBus(IntegrationTestCase):
         )
         self.command_receiver = CommandMiddlewareReceiver()
         self.kombu_command_bus = KombuCommandBus(
-            self.kombu_connection, self.command_serializer, self.command_deserializer, self.redis_registry, self.command_receiver
+            self.kombu_connection,
+            self.command_serializer,
+            self.command_deserializer,
+            self.redis_registry,
+            self.command_receiver,
         )
 
     def tearDown(self) -> None:

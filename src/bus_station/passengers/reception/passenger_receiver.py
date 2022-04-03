@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import TypeVar, Protocol, Any, NoReturn
+from typing import Any, NoReturn, Protocol, TypeVar
 
 from bus_station.passengers.passenger import Passenger
 from bus_station.shared_terminal.bus_stop import BusStop

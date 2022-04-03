@@ -1,5 +1,5 @@
 from multiprocessing import Process
-from typing import ClassVar, List, Optional, Tuple, Type, NoReturn
+from typing import ClassVar, List, NoReturn, Optional, Tuple, Type
 
 from kombu import Connection
 from kombu.messaging import Exchange, Producer, Queue
@@ -14,7 +14,6 @@ from bus_station.passengers.passenger_kombu_consumer import PassengerKombuConsum
 from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 from bus_station.passengers.serialization.passenger_serializer import PassengerSerializer
-from bus_station.shared_terminal.bus_stop import BusStop
 from bus_station.shared_terminal.runnable import Runnable
 
 
@@ -27,7 +26,7 @@ class KombuCommandBus(CommandBus, Runnable):
         command_serializer: PassengerSerializer,
         command_deserializer: PassengerDeserializer,
         command_registry: RemoteCommandRegistry,
-        command_receiver: PassengerReceiver[Command, CommandHandler]
+        command_receiver: PassengerReceiver[Command, CommandHandler],
     ):
         CommandBus.__init__(self, command_receiver)
         Runnable.__init__(self)
@@ -46,7 +45,7 @@ class KombuCommandBus(CommandBus, Runnable):
         for command in self.__command_registry.get_commands_registered():
             handler = self.__command_registry.get_command_destination(command)
             handler_queue_name = self.__command_registry.get_command_destination_contact(command)
-            if handler_queue_name is None:
+            if handler_queue_name is None or handler is None:
                 continue
             consumer, consumer_process, consumer_queue = self.__create_consumer(handler, handler_queue_name, command)
             self.__command_consumers.append(consumer)
@@ -61,7 +60,7 @@ class KombuCommandBus(CommandBus, Runnable):
         command_failure_exchange.declare()
 
     def __create_consumer(
-        self, command_handler: BusStop, handler_queue_name: str, command_cls: Type[Command]
+        self, command_handler: CommandHandler, handler_queue_name: str, command_cls: Type[Command]
     ) -> Tuple[PassengerKombuConsumer, Process, Queue]:
         handler_queue = Queue(
             handler_queue_name, queue_arguments={"x-dead-letter-exchange": self.__DEAD_LETTER_EXCHANGE_NAME}

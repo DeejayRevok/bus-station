@@ -36,6 +36,8 @@ class TestThreadedCommandBus(TestCase):
 
         self.threaded_command_bus.transport(test_command)
 
-        thread_mock.assert_called_once_with(target=self.command_receiver_mock.receive, args=(test_command, test_command_handler))
+        thread_mock.assert_called_once_with(
+            target=self.command_receiver_mock.receive, args=(test_command, test_command_handler)
+        )
         test_thread.start.assert_called_once_with()
         self.command_registry_mock.get_command_destination_contact.assert_called_once_with(test_command.__class__)

@@ -1,7 +1,7 @@
 import os
 import signal
 from multiprocessing.context import Process
-from typing import ClassVar, Optional, NoReturn
+from typing import ClassVar, NoReturn, Optional
 
 from rpyc import Connection, connect
 
@@ -28,7 +28,7 @@ class RPyCCommandBus(CommandBus, Runnable):
         command_serializer: PassengerSerializer,
         command_deserializer: PassengerDeserializer,
         command_registry: RemoteCommandRegistry,
-        command_receiver: PassengerReceiver[Command, CommandHandler]
+        command_receiver: PassengerReceiver[Command, CommandHandler],
     ):
         CommandBus.__init__(self, command_receiver)
         Runnable.__init__(self)

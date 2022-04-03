@@ -1,5 +1,5 @@
 from multiprocessing import Process, Queue
-from typing import List, Tuple, NoReturn
+from typing import List, NoReturn, Tuple
 
 from bus_station.command_terminal.bus.command_bus import CommandBus
 from bus_station.command_terminal.command import Command
@@ -10,7 +10,6 @@ from bus_station.passengers.process_passenger_worker import ProcessPassengerWork
 from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 from bus_station.passengers.serialization.passenger_serializer import PassengerSerializer
-from bus_station.shared_terminal.bus_stop import BusStop
 from bus_station.shared_terminal.runnable import Runnable, is_running
 
 
@@ -20,7 +19,7 @@ class ProcessCommandBus(CommandBus, Runnable):
         command_serializer: PassengerSerializer,
         command_deserializer: PassengerDeserializer,
         command_registry: InMemoryCommandRegistry,
-        command_receiver: PassengerReceiver[Command, CommandHandler]
+        command_receiver: PassengerReceiver[Command, CommandHandler],
     ):
         CommandBus.__init__(self, command_receiver)
         Runnable.__init__(self)
@@ -34,13 +33,15 @@ class ProcessCommandBus(CommandBus, Runnable):
         for command in self.__command_registry.get_commands_registered():
             handler = self.__command_registry.get_command_destination(command)
             handler_queue = self.__command_registry.get_command_destination_contact(command)
+            if handler_queue is None or handler is None:
+                continue
             worker, process = self.__create_handler(handler, handler_queue)
             self.__command_workers.append(worker)
             self.__command_worker_processes.append(process)
             process.start()
 
     def __create_handler(
-        self, command_handler: BusStop, command_queue: Queue
+        self, command_handler: CommandHandler, command_queue: Queue
     ) -> Tuple[ProcessPassengerWorker, Process]:
         handler_worker = ProcessPassengerWorker(
             command_queue, command_handler, self._command_receiver, self.__command_deserializer
