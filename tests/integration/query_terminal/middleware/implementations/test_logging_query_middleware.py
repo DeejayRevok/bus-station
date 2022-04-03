@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from logging import getLogger
 
 from bus_station.query_terminal.middleware.implementations.logging_query_middleware import LoggingQueryMiddleware
-from bus_station.query_terminal.middleware.query_middleware_executor import QueryMiddlewareExecutor
+from bus_station.query_terminal.middleware.query_middleware_receiver import QueryMiddlewareReceiver
 from bus_station.query_terminal.query import Query
 from bus_station.query_terminal.query_handler import QueryHandler
 from bus_station.query_terminal.query_response import QueryResponse
@@ -26,16 +26,16 @@ class QueryTestHandler(QueryHandler):
 class TestLoggingQueryMiddleware(IntegrationTestCase):
     def setUp(self) -> None:
         self.logger = getLogger()
-        self.query_middleware_executor = QueryMiddlewareExecutor()
-        self.query_middleware_executor.add_middleware_definition(LoggingQueryMiddleware, self.logger, lazy=False)
+        self.query_middleware_receiver = QueryMiddlewareReceiver()
+        self.query_middleware_receiver.add_middleware_definition(LoggingQueryMiddleware, self.logger, lazy=False)
 
-    def test_execute_with_middleware_logs(self):
+    def test_receive_with_middleware_logs(self):
         test_query_value = "test_query_value"
         test_query = QueryTest(test_value=test_query_value)
         test_query_handler = QueryTestHandler()
 
         with self.assertLogs(level="INFO") as logs:
-            query_response = self.query_middleware_executor.execute(test_query, test_query_handler)
+            query_response = self.query_middleware_receiver.receive(test_query, test_query_handler)
 
             self.assertIn(
                 f"Starting handling query {test_query} with {test_query_handler.__class__.__name__}", logs.output[0]

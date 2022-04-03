@@ -1,15 +1,16 @@
 from abc import abstractmethod
+from typing import NoReturn
 
 from bus_station.event_terminal.event import Event
-from bus_station.event_terminal.middleware.event_middleware import EventMiddleware
-from bus_station.event_terminal.middleware.event_middleware_executor import EventMiddlewareExecutor
+from bus_station.event_terminal.event_consumer import EventConsumer
+from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
 from bus_station.shared_terminal.bus import Bus
 
 
-class EventBus(Bus[EventMiddleware]):
-    def __init__(self):
-        super().__init__(EventMiddlewareExecutor)
+class EventBus(Bus[Event]):
+    def __init__(self, event_receiver: PassengerReceiver[Event, EventConsumer]):
+        self._event_receiver = event_receiver
 
     @abstractmethod
-    def publish(self, event: Event) -> None:
+    def transport(self, passenger: Event) -> NoReturn:
         pass

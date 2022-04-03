@@ -5,7 +5,7 @@ from sqlalchemy.orm import clear_mappers, sessionmaker
 
 from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
-from bus_station.event_terminal.middleware.event_middleware_executor import EventMiddlewareExecutor
+from bus_station.event_terminal.middleware.event_middleware_receiver import EventMiddlewareReceiver
 from bus_station.event_terminal.middleware.implementations.tracking_event_middleware import TrackingEventMiddleware
 from bus_station.tracking_terminal.mappers.sqlalchemy.sqlalchemy_event_tracking_mapper import (
     SQLAlchemyEventTrackingMapper,
@@ -65,16 +65,16 @@ class TestSQLAlchemyTrackingEventMiddleware(IntegrationTestCase):
         cls.sqlalchemy_metadata.drop_all()
 
     def setUp(self) -> None:
-        self.event_middleware_executor = EventMiddlewareExecutor()
-        self.event_middleware_executor.add_middleware_definition(
+        self.event_middleware_receiver = EventMiddlewareReceiver()
+        self.event_middleware_receiver.add_middleware_definition(
             TrackingEventMiddleware, self.sqlalchemy_event_tracker, lazy=False
         )
 
-    def test_execute_with_middleware_tracks(self):
+    def test_receive_with_middleware_tracks(self):
         test_event = EventTest(test="test")
         test_event_handler = EventTestConsumer()
 
-        self.event_middleware_executor.execute(test_event, test_event_handler)
+        self.event_middleware_receiver.receive(test_event, test_event_handler)
 
         stored_tracking = self.sqlalchemy_event_tracking_repository.find_by_id(str(id(test_event)))
         self.assertIsNotNone(stored_tracking)

@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, Mock, patch
 from jsonrpcserver import Error, Success
 from jsonrpcserver.codes import ERROR_INTERNAL_ERROR
 
-from bus_station.passengers.middleware.passenger_middleware_executor import PassengerMiddlewareExecutor
+from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 from bus_station.query_terminal.json_rpc_query_server import JsonRPCQueryServer
 from bus_station.query_terminal.query import Query
@@ -17,11 +17,11 @@ from bus_station.query_terminal.serialization.query_response_serializer import Q
 class TestJsonRPCQueryServer(TestCase):
     def setUp(self) -> None:
         self.passenger_deserializer_mock = Mock(spec=PassengerDeserializer)
-        self.passenger_middleware_executor_mock = Mock(spec=PassengerMiddlewareExecutor)
+        self.query_receiver_mock = Mock(spec=PassengerReceiver[Query, QueryHandler])
         self.query_response_serializer_mock = Mock(spec=QueryResponseSerializer)
         self.json_rpc_server = JsonRPCQueryServer(
             self.passenger_deserializer_mock,
-            self.passenger_middleware_executor_mock,
+            self.query_receiver_mock,
             self.query_response_serializer_mock,
         )
 
@@ -34,7 +34,7 @@ class TestJsonRPCQueryServer(TestCase):
         self.json_rpc_server.register(test_query_class, test_query_handler)
 
         partial_mock.assert_called_once_with(
-            self.json_rpc_server.passenger_executor, test_query_handler, test_query_class
+            self.json_rpc_server.passenger_handler, test_query_handler, test_query_class
         )
 
     @patch("bus_station.shared_terminal.json_rpc_server.method")
@@ -53,23 +53,23 @@ class TestJsonRPCQueryServer(TestCase):
         self.json_rpc_server.run(test_port)
 
         partial_mock.assert_called_once_with(
-            self.json_rpc_server.passenger_executor, test_query_handler, test_query_class
+            self.json_rpc_server.passenger_handler, test_query_handler, test_query_class
         )
         method_mock.assert_called_once_with(partial_mock(), name=test_query_class.__name__)
         http_server_mock.assert_called_once_with(("127.0.0.1", test_port), request_handler_mock)
         test_http_server.serve_forever.assert_called_once_with()
 
-    def test_passenger_executor_success(self):
+    def test_passenger_handling_success(self):
         test_serialized_query = "test_serialized_query"
         test_query = Mock(spec=Query)
         test_query_handler = Mock(spec=QueryHandler)
         self.passenger_deserializer_mock.deserialize.return_value = test_query
         test_query_response = Mock(spec=QueryResponse)
-        self.passenger_middleware_executor_mock.execute.return_value = test_query_response
+        self.query_receiver_mock.receive.return_value = test_query_response
         test_query_response_serialized = {"test": "test"}
         self.query_response_serializer_mock.serialize.return_value = test_query_response_serialized
 
-        json_rpc_query_response = self.json_rpc_server.passenger_executor(
+        json_rpc_query_response = self.json_rpc_server.passenger_handler(
             test_query_handler, test_query.__class__, test_serialized_query
         )
 
@@ -78,17 +78,17 @@ class TestJsonRPCQueryServer(TestCase):
         self.passenger_deserializer_mock.deserialize.assert_called_once_with(
             test_serialized_query, passenger_cls=test_query.__class__
         )
-        self.passenger_middleware_executor_mock.execute.assert_called_once_with(test_query, test_query_handler)
+        self.query_receiver_mock.receive.assert_called_once_with(test_query, test_query_handler)
 
-    def test_passenger_executor_error(self):
+    def test_passenger_handling_error(self):
         test_serialized_query = "test_serialized_query"
         test_query = Mock(spec=Query)
         test_query_handler = Mock(spec=QueryHandler)
         self.passenger_deserializer_mock.deserialize.return_value = test_query
         test_exception = Exception("test_exception")
-        self.passenger_middleware_executor_mock.execute.side_effect = test_exception
+        self.query_receiver_mock.receive.side_effect = test_exception
 
-        json_rpc_response = self.json_rpc_server.passenger_executor(
+        json_rpc_response = self.json_rpc_server.passenger_handler(
             test_query_handler, test_query.__class__, test_serialized_query
         )
 
@@ -97,15 +97,15 @@ class TestJsonRPCQueryServer(TestCase):
         self.passenger_deserializer_mock.deserialize.assert_called_once_with(
             test_serialized_query, passenger_cls=test_query.__class__
         )
-        self.passenger_middleware_executor_mock.execute.assert_called_once_with(test_query, test_query_handler)
+        self.query_receiver_mock.receive.assert_called_once_with(test_query, test_query_handler)
 
-    def test_passenger_executor_not_query(self):
+    def test_passenger_handling_not_query(self):
         test_not_query = MagicMock()
         test_query_handler = Mock(spec=QueryHandler)
         test_serialized_not_query = "test_serialized_not_query"
         self.passenger_deserializer_mock.deserialize.return_value = test_not_query
 
-        json_rpc_response = self.json_rpc_server.passenger_executor(
+        json_rpc_response = self.json_rpc_server.passenger_handler(
             test_query_handler, test_not_query.__class__, test_serialized_not_query
         )
 

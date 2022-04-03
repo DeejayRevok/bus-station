@@ -8,6 +8,7 @@ from redis import Redis
 from bus_station.command_terminal.bus.asynchronous.distributed.kombu_command_bus import KombuCommandBus
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
+from bus_station.command_terminal.middleware.command_middleware_receiver import CommandMiddlewareReceiver
 from bus_station.command_terminal.registry.redis_command_registry import RedisCommandRegistry
 from bus_station.passengers.passenger_class_resolver import PassengerClassResolver
 from bus_station.passengers.passenger_record.redis_passenger_record_repository import RedisPassengerRecordRepository
@@ -65,22 +66,23 @@ class TestRabbitKombuCommandBus(IntegrationTestCase):
             fqn_getter=self.fqn_getter,
             passenger_class_resolver=self.passenger_class_resolver,
         )
+        self.command_receiver = CommandMiddlewareReceiver()
         self.kombu_command_bus = KombuCommandBus(
-            self.kombu_connection, self.command_serializer, self.command_deserializer, self.redis_registry
+            self.kombu_connection, self.command_serializer, self.command_deserializer, self.redis_registry, self.command_receiver
         )
 
     def tearDown(self) -> None:
         self.redis_registry.unregister(CommandTest)
         self.kombu_command_bus.stop()
 
-    def test_execute_success(self):
+    def test_transport_success(self):
         test_command = CommandTest()
         test_command_handler = CommandTestHandler()
         self.redis_registry.register(test_command_handler, test_command.__class__.__name__)
         self.command_handler_resolver.add_bus_stop(test_command_handler)
         self.kombu_command_bus.start()
 
-        self.kombu_command_bus.execute(test_command)
+        self.kombu_command_bus.transport(test_command)
 
         sleep(1)
         self.assertEqual(1, test_command_handler.call_count.value)

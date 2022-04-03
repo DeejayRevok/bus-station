@@ -1,15 +1,16 @@
 from abc import abstractmethod
+from typing import NoReturn
 
 from bus_station.command_terminal.command import Command
-from bus_station.command_terminal.middleware.command_middleware import CommandMiddleware
-from bus_station.command_terminal.middleware.command_middleware_executor import CommandMiddlewareExecutor
+from bus_station.command_terminal.command_handler import CommandHandler
+from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
 from bus_station.shared_terminal.bus import Bus
 
 
-class CommandBus(Bus[CommandMiddleware]):
-    def __init__(self):
-        super().__init__(CommandMiddlewareExecutor)
+class CommandBus(Bus[Command]):
+    def __init__(self, command_receiver: PassengerReceiver[Command, CommandHandler]):
+        self._command_receiver = command_receiver
 
     @abstractmethod
-    def execute(self, command: Command) -> None:
+    def transport(self, passenger: Command) -> NoReturn:
         pass

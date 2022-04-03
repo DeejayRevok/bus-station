@@ -1,7 +1,8 @@
-from abc import abstractmethod
-from typing import Any, Generic, Iterable, List, Optional, Tuple, Type, TypeVar
+from abc import ABC
+from typing import Any, Generic, Iterable, List, Tuple, Type, TypeVar
 
-from bus_station.passengers.middleware.passenger_middleware import PassengerMiddleware
+from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
+from bus_station.passengers.passenger_middleware import PassengerMiddleware
 from bus_station.passengers.passenger import Passenger
 from bus_station.shared_terminal.bus_stop import BusStop
 
@@ -10,7 +11,7 @@ S = TypeVar("S", bound=BusStop)
 P = TypeVar("P", bound=Passenger)
 
 
-class PassengerMiddlewareExecutor(Generic[P, M, S]):
+class PassengerMiddlewareReceiver(PassengerReceiver[P, S], Generic[P, S, M], ABC):
     def __init__(self):
         self._middleware_definitions: List[M | Tuple[Type[M], Tuple[Any]]] = list()
 
@@ -29,7 +30,3 @@ class PassengerMiddlewareExecutor(Generic[P, M, S]):
                 yield middleware_cls(*middleware_args)  # pyre-ignore[19]
             else:
                 yield middleware_definition
-
-    @abstractmethod
-    def execute(self, passenger: P, passenger_bus_stop: S) -> Optional[Any]:
-        pass

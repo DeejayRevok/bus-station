@@ -6,13 +6,14 @@ from jsonrpcclient import Error
 from jsonrpcserver import Success
 from requests import Response
 
+from bus_station.command_terminal.bus.command_bus import CommandBus
 from bus_station.command_terminal.bus.synchronous.distributed.json_rpc_command_bus import JsonRPCCommandBus
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_execution_failed import CommandExecutionFailed
 from bus_station.command_terminal.command_handler import CommandHandler
 from bus_station.command_terminal.handler_not_found_for_command import HandlerNotFoundForCommand
 from bus_station.command_terminal.registry.remote_command_registry import RemoteCommandRegistry
-from bus_station.passengers.middleware.passenger_middleware_executor import PassengerMiddlewareExecutor
+from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 from bus_station.passengers.serialization.passenger_serializer import PassengerSerializer
 from bus_station.shared_terminal.json_rpc_server import JsonRPCServer
@@ -24,19 +25,19 @@ class TestJsonRPCCommandBus(TestCase):
         self.command_serializer_mock = Mock(spec=PassengerSerializer)
         self.command_deserializer_mock = Mock(spec=PassengerDeserializer)
         self.command_registry_mock = Mock(spec=RemoteCommandRegistry)
-        self.middleware_executor_mock = Mock(spec=PassengerMiddlewareExecutor)
         self.test_host = "test_host"
         self.test_port = 1234
         self.json_rpc_server_mock = Mock(spec=JsonRPCServer)
         json_rpc_server_builder_mock.return_value = self.json_rpc_server_mock
+        self.command_receiver_mock = Mock(spec=PassengerReceiver[Command, CommandBus])
         self.json_rpc_command_bus = JsonRPCCommandBus(
             self.test_host,
             self.test_port,
             self.command_serializer_mock,
             self.command_deserializer_mock,
             self.command_registry_mock,
+            self.command_receiver_mock
         )
-        self.json_rpc_command_bus._middleware_executor = self.middleware_executor_mock
 
     @patch("bus_station.command_terminal.bus.synchronous.distributed.json_rpc_command_bus.Process")
     def test_start(self, process_mock):
@@ -71,12 +72,12 @@ class TestJsonRPCCommandBus(TestCase):
         os_mock.kill.assert_called_once_with(test_process.pid, signal_mock.SIGINT)
         test_process.join.assert_called_once_with()
 
-    def test_execute_not_registered(self):
+    def test_transport_not_registered(self):
         test_command = Mock(spec=Command, name="TestCommand")
         self.command_registry_mock.get_command_destination_contact.return_value = None
 
         with self.assertRaises(HandlerNotFoundForCommand) as hnffc:
-            self.json_rpc_command_bus.execute(test_command)
+            self.json_rpc_command_bus.transport(test_command)
 
         self.assertEqual(test_command.__class__.__name__, hnffc.exception.command_name)
         self.command_serializer_mock.serialize.assert_not_called()
@@ -85,7 +86,7 @@ class TestJsonRPCCommandBus(TestCase):
     @patch("bus_station.command_terminal.bus.synchronous.distributed.json_rpc_command_bus.to_result")
     @patch("bus_station.command_terminal.bus.synchronous.distributed.json_rpc_command_bus.request")
     @patch("bus_station.command_terminal.bus.synchronous.distributed.json_rpc_command_bus.requests")
-    def test_execute_success(self, requests_mock, request_mock, to_result_mock):
+    def test_transport_success(self, requests_mock, request_mock, to_result_mock):
         test_command = Mock(spec=Command, name="TestCommand")
         test_host = "test_host"
         test_port = "41124"
@@ -102,7 +103,7 @@ class TestJsonRPCCommandBus(TestCase):
         to_result_mock.return_value = test_json_rpc_success_response
         requests_mock.post.return_value = test_requests_response
 
-        self.json_rpc_command_bus.execute(test_command)
+        self.json_rpc_command_bus.transport(test_command)
 
         self.command_serializer_mock.serialize.assert_called_once_with(test_command)
         request_mock.assert_called_once_with(test_command.__class__.__name__, params=(test_serialized_command,))
@@ -112,7 +113,7 @@ class TestJsonRPCCommandBus(TestCase):
     @patch("bus_station.command_terminal.bus.synchronous.distributed.json_rpc_command_bus.to_result")
     @patch("bus_station.command_terminal.bus.synchronous.distributed.json_rpc_command_bus.request")
     @patch("bus_station.command_terminal.bus.synchronous.distributed.json_rpc_command_bus.requests")
-    def test_execute_error(self, requests_mock, request_mock, to_result_mock):
+    def test_transport_error(self, requests_mock, request_mock, to_result_mock):
         test_command = Mock(spec=Command, name="TestCommand")
         test_host = "test_host"
         test_port = "41124"
@@ -131,7 +132,7 @@ class TestJsonRPCCommandBus(TestCase):
         requests_mock.post.return_value = test_requests_response
 
         with self.assertRaises(CommandExecutionFailed) as cef:
-            self.json_rpc_command_bus.execute(test_command)
+            self.json_rpc_command_bus.transport(test_command)
 
         self.assertEqual(test_command, cef.exception.command)
         self.assertEqual(test_error_message, cef.exception.reason)

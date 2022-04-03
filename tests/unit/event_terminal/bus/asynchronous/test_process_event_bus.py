@@ -7,8 +7,8 @@ from bus_station.event_terminal.bus.asynchronous.process_event_bus import Proces
 from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
 from bus_station.event_terminal.registry.in_memory_event_registry import InMemoryEventRegistry
-from bus_station.passengers.middleware.passenger_middleware_executor import PassengerMiddlewareExecutor
 from bus_station.passengers.process_passenger_worker import ProcessPassengerWorker
+from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 from bus_station.passengers.serialization.passenger_serializer import PassengerSerializer
 from bus_station.shared_terminal.runnable import Runnable
@@ -18,15 +18,14 @@ class TestProcessEventBus(TestCase):
     def setUp(self) -> None:
         self.event_serializer_mock = Mock(spec=PassengerSerializer)
         self.event_deserializer_mock = Mock(spec=PassengerDeserializer)
-        self.middleware_executor_mock = Mock(spec=PassengerMiddlewareExecutor)
         self.event_registry_mock = Mock(spec=InMemoryEventRegistry)
+        self.event_receiver_mock = Mock(spec=PassengerReceiver[Event, EventConsumer])
         self.process_event_bus = ProcessEventBus(
-            self.event_serializer_mock, self.event_deserializer_mock, self.event_registry_mock
+            self.event_serializer_mock, self.event_deserializer_mock, self.event_registry_mock, self.event_receiver_mock
         )
-        self.process_event_bus._middleware_executor = self.middleware_executor_mock
 
     @patch.object(Runnable, "running")
-    def test_execute_success(self, running_mock):
+    def test_transport_success(self, running_mock):
         running_mock.return_value = True
         test_queue = Mock(spec=Queue)
         test_event = Mock(spec=Event, name="TestEvent")
@@ -34,7 +33,7 @@ class TestProcessEventBus(TestCase):
         self.event_serializer_mock.serialize.return_value = test_serialized_event
         self.event_registry_mock.get_event_destination_contacts.return_value = [test_queue]
 
-        self.process_event_bus.publish(test_event)
+        self.process_event_bus.transport(test_event)
 
         self.event_serializer_mock.serialize.assert_called_once_with(test_event)
         test_queue.put.assert_called_once_with(test_serialized_event)
@@ -59,7 +58,7 @@ class TestProcessEventBus(TestCase):
         worker_mock.assert_called_once_with(
             test_queue,
             test_event_consumer,
-            self.middleware_executor_mock,
+            self.event_receiver_mock,
             self.event_deserializer_mock,
         )
         process_mock.assert_called_once_with(target=test_worker.work)
@@ -85,7 +84,7 @@ class TestProcessEventBus(TestCase):
         worker_mock.assert_called_once_with(
             test_queue,
             test_event_consumer,
-            self.middleware_executor_mock,
+            self.event_receiver_mock,
             self.event_deserializer_mock,
         )
         process_mock.assert_called_once_with(target=test_worker.work)

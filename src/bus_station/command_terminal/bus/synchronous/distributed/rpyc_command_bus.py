@@ -1,15 +1,17 @@
 import os
 import signal
 from multiprocessing.context import Process
-from typing import ClassVar, Optional
+from typing import ClassVar, Optional, NoReturn
 
 from rpyc import Connection, connect
 
 from bus_station.command_terminal.bus.command_bus import CommandBus
 from bus_station.command_terminal.command import Command
+from bus_station.command_terminal.command_handler import CommandHandler
 from bus_station.command_terminal.handler_not_found_for_command import HandlerNotFoundForCommand
 from bus_station.command_terminal.registry.remote_command_registry import RemoteCommandRegistry
 from bus_station.command_terminal.rpyc_command_service import RPyCCommandService
+from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 from bus_station.passengers.serialization.passenger_serializer import PassengerSerializer
 from bus_station.shared_terminal.rpyc_server import RPyCServer
@@ -26,15 +28,16 @@ class RPyCCommandBus(CommandBus, Runnable):
         command_serializer: PassengerSerializer,
         command_deserializer: PassengerDeserializer,
         command_registry: RemoteCommandRegistry,
+        command_receiver: PassengerReceiver[Command, CommandHandler]
     ):
-        CommandBus.__init__(self)
+        CommandBus.__init__(self, command_receiver)
         Runnable.__init__(self)
         self.__self_host = self_host
         self.__self_port = self_port
         self.__command_serializer = command_serializer
         self.__command_deserializer = command_deserializer
         self.__command_registry = command_registry
-        self.__rpyc_service = RPyCCommandService(self.__command_deserializer, self._middleware_executor)
+        self.__rpyc_service = RPyCCommandService(self.__command_deserializer, self._command_receiver)
         self.__rpyc_server: Optional[RPyCServer] = None
         self.__server_process: Optional[Process] = None
 
@@ -50,13 +53,13 @@ class RPyCCommandBus(CommandBus, Runnable):
         self.__server_process = Process(target=self.__rpyc_server.run)
         self.__server_process.start()
 
-    def execute(self, command: Command) -> None:
-        handler_address = self.__command_registry.get_command_destination_contact(command.__class__)
+    def transport(self, passenger: Command) -> NoReturn:
+        handler_address = self.__command_registry.get_command_destination_contact(passenger.__class__)
         if handler_address is None:
-            raise HandlerNotFoundForCommand(command.__class__.__name__)
+            raise HandlerNotFoundForCommand(passenger.__class__.__name__)
 
         rpyc_client = self.__get_rpyc_client(handler_address)
-        self.__execute_command(rpyc_client, command)
+        self.__execute_command(rpyc_client, passenger)
         rpyc_client.close()
 
     def __get_rpyc_client(self, handler_addr: str) -> Connection:

@@ -8,16 +8,16 @@ from jsonrpcserver.codes import ERROR_INTERNAL_ERROR
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
 from bus_station.command_terminal.json_rpc_command_server import JsonRPCCommandServer
-from bus_station.passengers.middleware.passenger_middleware_executor import PassengerMiddlewareExecutor
+from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 
 
 class TestJsonRPCCommandServer(TestCase):
     def setUp(self) -> None:
         self.passenger_deserializer_mock = Mock(spec=PassengerDeserializer)
-        self.passenger_middleware_executor_mock = Mock(spec=PassengerMiddlewareExecutor)
+        self.command_receiver_mock = Mock(spec=PassengerReceiver[Command, CommandHandler])
         self.json_rpc_server = JsonRPCCommandServer(
-            self.passenger_deserializer_mock, self.passenger_middleware_executor_mock
+            self.passenger_deserializer_mock, self.command_receiver_mock
         )
 
     @patch("bus_station.shared_terminal.json_rpc_server.partial")
@@ -29,7 +29,7 @@ class TestJsonRPCCommandServer(TestCase):
         self.json_rpc_server.register(test_command_class, test_command_handler)
 
         partial_mock.assert_called_once_with(
-            self.json_rpc_server.passenger_executor, test_command_handler, test_command_class
+            self.json_rpc_server.passenger_handler, test_command_handler, test_command_class
         )
 
     @patch("bus_station.shared_terminal.json_rpc_server.method")
@@ -48,19 +48,19 @@ class TestJsonRPCCommandServer(TestCase):
         self.json_rpc_server.run(test_port)
 
         partial_mock.assert_called_once_with(
-            self.json_rpc_server.passenger_executor, test_command_handler, test_command_class
+            self.json_rpc_server.passenger_handler, test_command_handler, test_command_class
         )
         method_mock.assert_called_once_with(partial_mock(), name=test_command_class.__name__)
         http_server_mock.assert_called_once_with(("127.0.0.1", test_port), request_handler_mock)
         test_http_server.serve_forever.assert_called_once_with()
 
-    def test_passenger_executor_success(self):
+    def test_passenger_handling_success(self):
         test_serialized_command = "test_serialized_command"
         test_command = Mock(spec=Command)
         test_command_handler = Mock(spec=CommandHandler)
         self.passenger_deserializer_mock.deserialize.return_value = test_command
 
-        json_rpc_response = self.json_rpc_server.passenger_executor(
+        json_rpc_response = self.json_rpc_server.passenger_handler(
             test_command_handler, test_command.__class__, test_serialized_command
         )
 
@@ -69,17 +69,17 @@ class TestJsonRPCCommandServer(TestCase):
         self.passenger_deserializer_mock.deserialize.assert_called_once_with(
             test_serialized_command, passenger_cls=test_command.__class__
         )
-        self.passenger_middleware_executor_mock.execute.assert_called_once_with(test_command, test_command_handler)
+        self.command_receiver_mock.receive.assert_called_once_with(test_command, test_command_handler)
 
-    def test_passenger_executor_error(self):
+    def test_passenger_handling_error(self):
         test_serialized_command = "test_serialized_command"
         test_command = Mock(spec=Command)
         test_command_handler = Mock(spec=CommandHandler)
         self.passenger_deserializer_mock.deserialize.return_value = test_command
         test_exception = Exception("test_exception")
-        self.passenger_middleware_executor_mock.execute.side_effect = test_exception
+        self.command_receiver_mock.receive.side_effect = test_exception
 
-        json_rpc_response = self.json_rpc_server.passenger_executor(
+        json_rpc_response = self.json_rpc_server.passenger_handler(
             test_command_handler, test_command.__class__, test_serialized_command
         )
 
@@ -88,15 +88,15 @@ class TestJsonRPCCommandServer(TestCase):
         self.passenger_deserializer_mock.deserialize.assert_called_once_with(
             test_serialized_command, passenger_cls=test_command.__class__
         )
-        self.passenger_middleware_executor_mock.execute.assert_called_once_with(test_command, test_command_handler)
+        self.command_receiver_mock.receive.assert_called_once_with(test_command, test_command_handler)
 
-    def test_passenger_executor_not_command(self):
+    def test_passenger_handling_not_command(self):
         test_not_command = MagicMock()
         test_command_handler = Mock(spec=CommandHandler)
         test_serialized_not_command = "test_serialized_not_command"
         self.passenger_deserializer_mock.deserialize.return_value = test_not_command
 
-        json_rpc_response = self.json_rpc_server.passenger_executor(
+        json_rpc_response = self.json_rpc_server.passenger_handler(
             test_command_handler, test_not_command.__class__, test_serialized_not_command
         )
 

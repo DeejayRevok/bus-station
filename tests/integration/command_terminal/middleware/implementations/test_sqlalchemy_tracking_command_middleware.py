@@ -5,7 +5,7 @@ from sqlalchemy.orm import clear_mappers, sessionmaker
 
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
-from bus_station.command_terminal.middleware.command_middleware_executor import CommandMiddlewareExecutor
+from bus_station.command_terminal.middleware.command_middleware_receiver import CommandMiddlewareReceiver
 from bus_station.command_terminal.middleware.implementations.tracking_command_middleware import (
     TrackingCommandMiddleware,
 )
@@ -67,16 +67,16 @@ class TestSQLAlchemyTrackingCommandMiddleware(IntegrationTestCase):
         cls.sqlalchemy_metadata.drop_all()
 
     def setUp(self) -> None:
-        self.command_middleware_executor = CommandMiddlewareExecutor()
-        self.command_middleware_executor.add_middleware_definition(
+        self.command_middleware_receiver = CommandMiddlewareReceiver()
+        self.command_middleware_receiver.add_middleware_definition(
             TrackingCommandMiddleware, self.sqlalchemy_command_tracker, lazy=False
         )
 
-    def test_execute_with_middleware_tracks(self):
+    def test_receive_with_middleware_tracks(self):
         test_command = CommandTest(test="test")
         test_command_handler = CommandTestHandler()
 
-        self.command_middleware_executor.execute(test_command, test_command_handler)
+        self.command_middleware_receiver.receive(test_command, test_command_handler)
 
         stored_tracking = self.sqlalchemy_command_tracking_repository.find_by_id(str(id(test_command)))
         self.assertIsNotNone(stored_tracking)

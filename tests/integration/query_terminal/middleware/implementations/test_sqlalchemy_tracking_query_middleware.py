@@ -4,7 +4,7 @@ from sqlalchemy import MetaData, create_engine
 from sqlalchemy.orm import clear_mappers, sessionmaker
 
 from bus_station.query_terminal.middleware.implementations.tracking_query_middleware import TrackingQueryMiddleware
-from bus_station.query_terminal.middleware.query_middleware_executor import QueryMiddlewareExecutor
+from bus_station.query_terminal.middleware.query_middleware_receiver import QueryMiddlewareReceiver
 from bus_station.query_terminal.query import Query
 from bus_station.query_terminal.query_handler import QueryHandler
 from bus_station.query_terminal.query_response import QueryResponse
@@ -68,16 +68,16 @@ class TestSQLAlchemyTrackingQueryMiddleware(IntegrationTestCase):
         cls.sqlalchemy_metadata.drop_all()
 
     def setUp(self) -> None:
-        self.query_middleware_executor = QueryMiddlewareExecutor()
-        self.query_middleware_executor.add_middleware_definition(
+        self.query_middleware_receiver = QueryMiddlewareReceiver()
+        self.query_middleware_receiver.add_middleware_definition(
             TrackingQueryMiddleware, self.sqlalchemy_query_tracker, lazy=False
         )
 
-    def test_execute_with_middleware_tracks(self):
+    def test_receive_with_middleware_tracks(self):
         test_query = QueryTest(test="test")
         test_query_handler = QueryTestHandler(response_value="test_response")
 
-        self.query_middleware_executor.execute(test_query, test_query_handler)
+        self.query_middleware_receiver.receive(test_query, test_query_handler)
 
         stored_tracking = self.sqlalchemy_query_tracking_repository.find_by_id(str(id(test_query)))
         self.assertIsNotNone(stored_tracking)

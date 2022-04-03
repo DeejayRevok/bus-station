@@ -2,7 +2,7 @@ from abc import abstractmethod
 
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
-from bus_station.passengers.middleware.passenger_middleware import PassengerMiddleware
+from bus_station.passengers.passenger_middleware import PassengerMiddleware
 
 
 class CommandMiddleware(PassengerMiddleware):

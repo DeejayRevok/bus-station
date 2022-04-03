@@ -6,6 +6,7 @@ from time import sleep
 from bus_station.command_terminal.bus.asynchronous.process_command_bus import ProcessCommandBus
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
+from bus_station.command_terminal.middleware.command_middleware_receiver import CommandMiddlewareReceiver
 from bus_station.command_terminal.registry.in_memory_command_registry import InMemoryCommandRegistry
 from bus_station.passengers.passenger_class_resolver import PassengerClassResolver
 from bus_station.passengers.passenger_record.in_memory_passenger_record_repository import (
@@ -46,22 +47,23 @@ class TestProcessCommandBus(IntegrationTestCase):
             passenger_class_resolver=self.passenger_class_resolver,
         )
         self.command_queue = Queue()
+        self.command_receiver = CommandMiddlewareReceiver()
         self.process_command_bus = ProcessCommandBus(
-            self.passenger_serializer, self.passenger_deserializer, self.in_memory_registry
+            self.passenger_serializer, self.passenger_deserializer, self.in_memory_registry, self.command_receiver
         )
 
     def tearDown(self) -> None:
         self.process_command_bus.stop()
         self.command_queue.close()
 
-    def test_execute_success(self):
+    def test_transport_success(self):
         test_command = CommandTest()
         test_command_handler = CommandTestHandler()
         self.in_memory_registry.register(test_command_handler, self.command_queue)
         self.command_handler_resolver.add_bus_stop(test_command_handler)
         self.process_command_bus.start()
 
-        self.process_command_bus.execute(test_command)
+        self.process_command_bus.transport(test_command)
 
         sleep(1)
         self.assertEqual(1, test_command_handler.call_count.value)

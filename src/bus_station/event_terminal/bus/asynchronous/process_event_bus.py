@@ -1,11 +1,12 @@
 from multiprocessing import Process, Queue
-from typing import List, Tuple
+from typing import List, Tuple, NoReturn
 
 from bus_station.event_terminal.bus.event_bus import EventBus
 from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
 from bus_station.event_terminal.registry.in_memory_event_registry import InMemoryEventRegistry
 from bus_station.passengers.process_passenger_worker import ProcessPassengerWorker
+from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 from bus_station.passengers.serialization.passenger_serializer import PassengerSerializer
 from bus_station.shared_terminal.runnable import Runnable, is_running
@@ -17,8 +18,9 @@ class ProcessEventBus(EventBus, Runnable):
         event_serializer: PassengerSerializer,
         event_deserializer: PassengerDeserializer,
         event_registry: InMemoryEventRegistry,
+        event_receiver: PassengerReceiver[Event, EventConsumer]
     ):
-        EventBus.__init__(self)
+        EventBus.__init__(self, event_receiver)
         Runnable.__init__(self)
         self.__event_workers: List[ProcessPassengerWorker] = []
         self.__event_worker_processes: List[Process] = []
@@ -42,19 +44,19 @@ class ProcessEventBus(EventBus, Runnable):
         self, consumer: EventConsumer, consumer_queue: Queue
     ) -> Tuple[ProcessPassengerWorker, Process]:
         consumer_worker = ProcessPassengerWorker(
-            consumer_queue, consumer, self._middleware_executor, self.__event_deserializer
+            consumer_queue, consumer, self._event_receiver, self.__event_deserializer
         )
         consumer_process = Process(target=consumer_worker.work)
         return consumer_worker, consumer_process
 
     @is_running
-    def publish(self, event: Event) -> None:
-        event_consumer_queues = self.__event_registry.get_event_destination_contacts(event.__class__)
+    def transport(self, passenger: Event) -> NoReturn:
+        event_consumer_queues = self.__event_registry.get_event_destination_contacts(passenger.__class__)
         if event_consumer_queues is None:
             return
 
         for event_queue in event_consumer_queues:
-            self.__put_event(event_queue, event)
+            self.__put_event(event_queue, passenger)
 
     def __put_event(self, queue: Queue, event: Event) -> None:
         serialized_event = self.__event_serializer.serialize(event)

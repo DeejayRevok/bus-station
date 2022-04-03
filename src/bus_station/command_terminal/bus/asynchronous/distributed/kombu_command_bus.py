@@ -1,5 +1,5 @@
 from multiprocessing import Process
-from typing import ClassVar, List, Optional, Tuple, Type
+from typing import ClassVar, List, Optional, Tuple, Type, NoReturn
 
 from kombu import Connection
 from kombu.messaging import Exchange, Producer, Queue
@@ -7,9 +7,11 @@ from kombu.transport.virtual import Channel
 
 from bus_station.command_terminal.bus.command_bus import CommandBus
 from bus_station.command_terminal.command import Command
+from bus_station.command_terminal.command_handler import CommandHandler
 from bus_station.command_terminal.handler_not_found_for_command import HandlerNotFoundForCommand
 from bus_station.command_terminal.registry.remote_command_registry import RemoteCommandRegistry
 from bus_station.passengers.passenger_kombu_consumer import PassengerKombuConsumer
+from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 from bus_station.passengers.serialization.passenger_serializer import PassengerSerializer
 from bus_station.shared_terminal.bus_stop import BusStop
@@ -25,8 +27,9 @@ class KombuCommandBus(CommandBus, Runnable):
         command_serializer: PassengerSerializer,
         command_deserializer: PassengerDeserializer,
         command_registry: RemoteCommandRegistry,
+        command_receiver: PassengerReceiver[Command, CommandHandler]
     ):
-        CommandBus.__init__(self)
+        CommandBus.__init__(self, command_receiver)
         Runnable.__init__(self)
         self.__broker_connection = broker_connection
         self.__command_consumers: List[PassengerKombuConsumer] = list()
@@ -68,18 +71,18 @@ class KombuCommandBus(CommandBus, Runnable):
             handler_queue,
             command_handler,
             command_cls,
-            self._middleware_executor,
+            self._command_receiver,
             self.__command_deserializer,
         )
         handler_process = Process(target=handler_consumer.run)
         return handler_consumer, handler_process, handler_queue
 
-    def execute(self, command: Command) -> None:
-        handler_queue_name = self.__command_registry.get_command_destination_contact(command.__class__)
+    def transport(self, passenger: Command) -> NoReturn:
+        handler_queue_name = self.__command_registry.get_command_destination_contact(passenger.__class__)
         if handler_queue_name is None:
-            raise HandlerNotFoundForCommand(command.__class__.__name__)
+            raise HandlerNotFoundForCommand(passenger.__class__.__name__)
 
-        self.__publish_command(command, handler_queue_name)
+        self.__publish_command(passenger, handler_queue_name)
 
     def __publish_command(self, command: Command, routing_key: str) -> None:
         serialized_command = self.__command_serializer.serialize(command)

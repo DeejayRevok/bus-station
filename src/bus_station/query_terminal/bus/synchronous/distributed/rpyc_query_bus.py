@@ -5,11 +5,13 @@ from typing import ClassVar, Optional
 
 from rpyc import Connection, connect
 
+from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 from bus_station.passengers.serialization.passenger_serializer import PassengerSerializer
 from bus_station.query_terminal.bus.query_bus import QueryBus
 from bus_station.query_terminal.handler_not_found_for_query import HandlerNotFoundForQuery
 from bus_station.query_terminal.query import Query
+from bus_station.query_terminal.query_handler import QueryHandler
 from bus_station.query_terminal.query_response import QueryResponse
 from bus_station.query_terminal.registry.remote_query_registry import RemoteQueryRegistry
 from bus_station.query_terminal.rpyc_query_service import RPyCQueryService
@@ -31,8 +33,9 @@ class RPyCQueryBus(QueryBus, Runnable):
         query_response_serializer: QueryResponseSerializer,
         query_response_deserializer: QueryResponseDeserializer,
         query_registry: RemoteQueryRegistry,
+        query_receiver: PassengerReceiver[Query, QueryHandler]
     ):
-        QueryBus.__init__(self)
+        QueryBus.__init__(self, query_receiver)
         Runnable.__init__(self)
         self.__self_host = self_host
         self.__self_port = self_port
@@ -42,7 +45,7 @@ class RPyCQueryBus(QueryBus, Runnable):
         self.__query_response_deserializer = query_response_deserializer
         self.__query_registry = query_registry
         self.__rpyc_service = RPyCQueryService(
-            self.__query_deserializer, self.__query_response_serializer, self._middleware_executor
+            self.__query_deserializer, self.__query_response_serializer, self._query_receiver
         )
         self.__rpyc_server: Optional[RPyCServer] = None
         self.__server_process: Optional[Process] = None
@@ -59,13 +62,13 @@ class RPyCQueryBus(QueryBus, Runnable):
         self.__server_process = Process(target=self.__rpyc_server.run)
         self.__server_process.start()
 
-    def execute(self, query: Query) -> QueryResponse:
-        query_handler_addr = self.__query_registry.get_query_destination_contact(query.__class__)
+    def transport(self, passenger: Query) -> QueryResponse:
+        query_handler_addr = self.__query_registry.get_query_destination_contact(passenger.__class__)
         if query_handler_addr is None:
-            raise HandlerNotFoundForQuery(query.__class__.__name__)
+            raise HandlerNotFoundForQuery(passenger.__class__.__name__)
 
         rpyc_client = self.__get_rpyc_client(query_handler_addr)
-        query_response = self.__execute_query(rpyc_client, query)
+        query_response = self.__execute_query(rpyc_client, passenger)
         rpyc_client.close()
         return query_response
 
