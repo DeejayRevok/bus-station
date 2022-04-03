@@ -1,5 +1,5 @@
 from multiprocessing import Process
-from typing import ClassVar, List, Optional, Tuple, Type
+from typing import ClassVar, List, NoReturn, Optional, Tuple, Type
 
 from kombu import Connection
 from kombu.messaging import Exchange, Producer, Queue
@@ -7,9 +7,11 @@ from kombu.transport.virtual import Channel
 
 from bus_station.event_terminal.bus.event_bus import EventBus
 from bus_station.event_terminal.event import Event
+from bus_station.event_terminal.event_consumer import EventConsumer
 from bus_station.event_terminal.registry.remote_event_registry import RemoteEventRegistry
 from bus_station.passengers.passenger import Passenger
 from bus_station.passengers.passenger_kombu_consumer import PassengerKombuConsumer
+from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 from bus_station.passengers.serialization.passenger_serializer import PassengerSerializer
 from bus_station.shared_terminal.bus_stop import BusStop
@@ -25,8 +27,9 @@ class KombuEventBus(EventBus, Runnable):
         event_serializer: PassengerSerializer,
         event_deserializer: PassengerDeserializer,
         event_registry: RemoteEventRegistry,
+        event_receiver: PassengerReceiver[Event, EventConsumer],
     ):
-        EventBus.__init__(self)
+        EventBus.__init__(self, event_receiver)
         Runnable.__init__(self)
         self.__broker_connection = broker_connection
         self.__event_kombu_consumers: List[PassengerKombuConsumer] = []
@@ -79,14 +82,14 @@ class KombuEventBus(EventBus, Runnable):
             consumer_queue,
             event_consumer,
             event_cls,
-            self._middleware_executor,
+            self._event_receiver,
             self.__event_deserializer,
         )
         consumer_process = Process(target=consumer_consumer.run)
         return consumer_consumer, consumer_process, consumer_queue
 
-    def publish(self, event: Event) -> None:
-        event_exchange_names = self.__event_registry.get_event_destination_contacts(event.__class__)
+    def transport(self, passenger: Event) -> NoReturn:
+        event_exchange_names = self.__event_registry.get_event_destination_contacts(passenger.__class__)
         if event_exchange_names is None:
             return
 
@@ -94,7 +97,7 @@ class KombuEventBus(EventBus, Runnable):
         for event_exchange_name in event_exchange_names:
             if event_exchange_name in published_exchanges:
                 continue
-            self.__publish_event(event, event_exchange_name)
+            self.__publish_event(passenger, event_exchange_name)
             published_exchanges.append(event_exchange_name)
 
     def __publish_event(self, event: Event, event_exchange_name: str) -> None:

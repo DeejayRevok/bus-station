@@ -9,8 +9,8 @@ from bus_station.event_terminal.bus.asynchronous.distributed.kombu_event_bus imp
 from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
 from bus_station.event_terminal.registry.event_registry import EventRegistry
-from bus_station.passengers.middleware.passenger_middleware_executor import PassengerMiddlewareExecutor
 from bus_station.passengers.passenger_kombu_consumer import PassengerKombuConsumer
+from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 from bus_station.passengers.serialization.passenger_serializer import PassengerSerializer
 
@@ -22,15 +22,18 @@ class TestKombuEventBus(TestCase):
         self.connection_mock.channel.return_value = self.channel_mock
         self.event_serializer_mock = Mock(spec=PassengerSerializer)
         self.event_deserializer_mock = Mock(spec=PassengerDeserializer)
-        self.middleware_executor_mock = Mock(spec=PassengerMiddlewareExecutor)
         self.event_registry_mock = Mock(spec=EventRegistry)
+        self.event_receiver_mock = Mock(spec=PassengerReceiver[Event, EventConsumer])
         self.kombu_event_bus = KombuEventBus(
-            self.connection_mock, self.event_serializer_mock, self.event_deserializer_mock, self.event_registry_mock
+            self.connection_mock,
+            self.event_serializer_mock,
+            self.event_deserializer_mock,
+            self.event_registry_mock,
+            self.event_receiver_mock,
         )
-        self.kombu_event_bus._middleware_executor = self.middleware_executor_mock
 
     @patch("bus_station.event_terminal.bus.asynchronous.distributed.kombu_event_bus.Producer")
-    def test_execute_success(self, producer_mock):
+    def test_transport_success(self, producer_mock):
         test_producer = Mock(spec=Producer)
         producer_mock.return_value = test_producer
         test_event = Mock(spec=Event)
@@ -40,7 +43,7 @@ class TestKombuEventBus(TestCase):
         self.event_registry_mock.get_event_destination_contacts.return_value = [test_event.__class__.__name__]
         self.kombu_event_bus.start()
 
-        self.kombu_event_bus.publish(test_event)
+        self.kombu_event_bus.transport(test_event)
 
         self.event_serializer_mock.serialize.assert_called_once_with(test_event)
         test_producer.publish.assert_called_once_with(
@@ -96,7 +99,7 @@ class TestKombuEventBus(TestCase):
             test_queue,
             test_event_consumer,
             test_event.__class__,
-            self.middleware_executor_mock,
+            self.event_receiver_mock,
             self.event_deserializer_mock,
         )
         process_mock.assert_called_once_with(target=test_consumer.run)

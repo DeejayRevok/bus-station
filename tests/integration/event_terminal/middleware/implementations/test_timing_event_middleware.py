@@ -3,7 +3,7 @@ from logging import getLogger
 
 from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
-from bus_station.event_terminal.middleware.event_middleware_executor import EventMiddlewareExecutor
+from bus_station.event_terminal.middleware.event_middleware_receiver import EventMiddlewareReceiver
 from bus_station.event_terminal.middleware.implementations.timing_event_middleware import TimingEventMiddleware
 from tests.integration.integration_test_case import IntegrationTestCase
 
@@ -24,15 +24,15 @@ class EventTestConsumer(EventConsumer):
 class TestTimingEventMiddleware(IntegrationTestCase):
     def setUp(self) -> None:
         self.logger = getLogger()
-        self.event_middleware_executor = EventMiddlewareExecutor()
-        self.event_middleware_executor.add_middleware_definition(TimingEventMiddleware, self.logger, lazy=True)
+        self.event_middleware_receiver = EventMiddlewareReceiver()
+        self.event_middleware_receiver.add_middleware_definition(TimingEventMiddleware, self.logger, lazy=True)
 
-    def test_publish_with_middleware_logs_timing(self):
+    def test_transport_with_middleware_logs_timing(self):
         test_event = EventTest()
         test_event_consumer = EventTestConsumer()
 
         with self.assertLogs(level="INFO") as logs:
-            self.event_middleware_executor.execute(test_event, test_event_consumer)
+            self.event_middleware_receiver.receive(test_event, test_event_consumer)
 
             self.assertIn(f"Event {test_event} consumed by {test_event_consumer.__class__.__name__} in", logs.output[0])
         self.assertEqual(1, test_event_consumer.call_count)

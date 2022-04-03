@@ -10,6 +10,7 @@ from bus_station.passengers.passenger_record.redis_passenger_record_repository i
 from bus_station.passengers.serialization.passenger_json_deserializer import PassengerJSONDeserializer
 from bus_station.passengers.serialization.passenger_json_serializer import PassengerJSONSerializer
 from bus_station.query_terminal.bus.synchronous.distributed.rpyc_query_bus import RPyCQueryBus
+from bus_station.query_terminal.middleware.query_middleware_receiver import QueryMiddlewareReceiver
 from bus_station.query_terminal.query import Query
 from bus_station.query_terminal.query_handler import QueryHandler
 from bus_station.query_terminal.query_response import QueryResponse
@@ -59,6 +60,7 @@ class TestRPyCQueryBus(IntegrationTestCase):
         self.query_deserializer = PassengerJSONDeserializer()
         self.query_response_serializer = QueryResponseJSONSerializer()
         self.query_response_deserializer = QueryResponseJSONDeserializer()
+        self.query_middleware_receiver = QueryMiddlewareReceiver()
         self.rpyc_query_bus = RPyCQueryBus(
             "localhost",
             self.bus_port,
@@ -67,13 +69,14 @@ class TestRPyCQueryBus(IntegrationTestCase):
             self.query_response_serializer,
             self.query_response_deserializer,
             self.redis_registry,
+            self.query_middleware_receiver,
         )
 
     def tearDown(self) -> None:
         self.redis_registry.unregister(QueryTest)
         self.rpyc_query_bus.stop()
 
-    def test_execute_success(self):
+    def test_transport_success(self):
         test_query_value = "test_query_value"
         test_query = QueryTest(test_value=test_query_value)
         test_query_handler = QueryTestHandler()
@@ -82,7 +85,7 @@ class TestRPyCQueryBus(IntegrationTestCase):
         self.rpyc_query_bus.start()
         sleep(2)
 
-        test_query_response = self.rpyc_query_bus.execute(test_query)
+        test_query_response = self.rpyc_query_bus.transport(test_query)
 
         self.assertEqual(1, test_query_handler.call_count.value)
         self.assertEqual(test_query_value, test_query_response.data)

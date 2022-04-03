@@ -4,9 +4,9 @@ from unittest.mock import Mock
 from kombu import Connection, Consumer, Message, Queue
 from kombu.transport.virtual import Channel
 
-from bus_station.passengers.middleware.passenger_middleware_executor import PassengerMiddlewareExecutor
 from bus_station.passengers.passenger import Passenger
 from bus_station.passengers.passenger_kombu_consumer import PassengerKombuConsumer
+from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 from bus_station.shared_terminal.bus_stop import BusStop
 
@@ -17,14 +17,14 @@ class TestPassengerKombuConsumer(TestCase):
         self.queue_mock = Mock(spec=Queue)
         self.bus_stop_mock = Mock(spec=BusStop)
         self.class_mock = Passenger
-        self.middleware_executor_mock = Mock(spec=PassengerMiddlewareExecutor)
+        self.passenger_receiver_mock = Mock(spec=PassengerReceiver)
         self.deserializer_mock = Mock(spec=PassengerDeserializer)
         self.passenger_kombu_consumer = PassengerKombuConsumer(
             self.connection_mock,
             self.queue_mock,
             self.bus_stop_mock,
             self.class_mock,
-            self.middleware_executor_mock,
+            self.passenger_receiver_mock,
             self.deserializer_mock,
         )
 
@@ -50,7 +50,7 @@ class TestPassengerKombuConsumer(TestCase):
         self.passenger_kombu_consumer.on_message(test_body, test_message_mock)
 
         self.deserializer_mock.deserialize.assert_called_once_with(test_body, passenger_cls=self.class_mock)
-        self.middleware_executor_mock.execute.assert_called_once_with(test_passenger, self.bus_stop_mock)
+        self.passenger_receiver_mock.receive.assert_called_once_with(test_passenger, self.bus_stop_mock)
         test_message_mock.ack.assert_called_once_with()
         test_message_mock.reject.assert_not_called()
 
@@ -59,11 +59,11 @@ class TestPassengerKombuConsumer(TestCase):
         self.deserializer_mock.deserialize.return_value = test_passenger
         test_message_mock = Mock(spec=Message)
         test_body = "test_body"
-        self.middleware_executor_mock.execute.side_effect = Exception("test_exception")
+        self.passenger_receiver_mock.receive.side_effect = Exception("test_exception")
 
         self.passenger_kombu_consumer.on_message(test_body, test_message_mock)
 
         self.deserializer_mock.deserialize.assert_called_once_with(test_body, passenger_cls=self.class_mock)
-        self.middleware_executor_mock.execute.assert_called_once_with(test_passenger, self.bus_stop_mock)
+        self.passenger_receiver_mock.receive.assert_called_once_with(test_passenger, self.bus_stop_mock)
         test_message_mock.ack.assert_not_called()
         test_message_mock.reject.assert_called_once_with(requeue=False)

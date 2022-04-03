@@ -1,5 +1,5 @@
-from typing import Protocol
+from abc import ABC
 
 
-class BusStop(Protocol):
+class BusStop(ABC):
     pass

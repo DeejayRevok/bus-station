@@ -10,6 +10,7 @@ from bus_station.passengers.passenger_record.redis_passenger_record_repository i
 from bus_station.passengers.serialization.passenger_json_deserializer import PassengerJSONDeserializer
 from bus_station.passengers.serialization.passenger_json_serializer import PassengerJSONSerializer
 from bus_station.query_terminal.bus.synchronous.distributed.json_rpc_query_bus import JsonRPCQueryBus
+from bus_station.query_terminal.middleware.query_middleware_receiver import QueryMiddlewareReceiver
 from bus_station.query_terminal.query import Query
 from bus_station.query_terminal.query_handler import QueryHandler
 from bus_station.query_terminal.query_response import QueryResponse
@@ -59,6 +60,7 @@ class TestJsonRPCQueryBus(IntegrationTestCase):
         self.query_deserializer = PassengerJSONDeserializer()
         self.query_response_serializer = QueryResponseJSONSerializer()
         self.query_response_deserializer = QueryResponseJSONDeserializer()
+        self.query_middleware_receiver = QueryMiddlewareReceiver()
         self.json_rpc_query_bus = JsonRPCQueryBus(
             "localhost",
             self.bus_port,
@@ -67,13 +69,14 @@ class TestJsonRPCQueryBus(IntegrationTestCase):
             self.query_response_serializer,
             self.query_response_deserializer,
             self.redis_registry,
+            self.query_middleware_receiver,
         )
 
     def tearDown(self) -> None:
         self.redis_registry.unregister(QueryTest)
         self.json_rpc_query_bus.stop()
 
-    def test_execute_success(self):
+    def test_transport_success(self):
         test_value = "test_value"
         test_query = QueryTest(test_value=test_value)
         test_query_handler = QueryTestHandler()
@@ -83,7 +86,7 @@ class TestJsonRPCQueryBus(IntegrationTestCase):
         sleep(2)
 
         for i in range(10):
-            query_response = self.json_rpc_query_bus.execute(test_query)
+            query_response = self.json_rpc_query_bus.transport(test_query)
 
             self.assertEqual(i + 1, test_query_handler.call_count.value)
             expected_query_response = QueryResponse(data=test_value)

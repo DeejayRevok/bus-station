@@ -7,6 +7,7 @@ import requests
 from jsonrpcclient import request
 from jsonrpcclient.responses import Error, to_result
 
+from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 from bus_station.passengers.serialization.passenger_serializer import PassengerSerializer
 from bus_station.query_terminal.bus.query_bus import QueryBus
@@ -14,6 +15,7 @@ from bus_station.query_terminal.handler_not_found_for_query import HandlerNotFou
 from bus_station.query_terminal.json_rpc_query_server import JsonRPCQueryServer
 from bus_station.query_terminal.query import Query
 from bus_station.query_terminal.query_execution_failed import QueryExecutionFailed
+from bus_station.query_terminal.query_handler import QueryHandler
 from bus_station.query_terminal.query_response import QueryResponse
 from bus_station.query_terminal.registry.remote_query_registry import RemoteQueryRegistry
 from bus_station.query_terminal.serialization.query_response_deserializer import QueryResponseDeserializer
@@ -33,8 +35,9 @@ class JsonRPCQueryBus(QueryBus, Runnable):
         query_response_serializer: QueryResponseSerializer,
         query_response_deserializer: QueryResponseDeserializer,
         query_registry: RemoteQueryRegistry,
+        query_receiver: PassengerReceiver[Query, QueryHandler],
     ):
-        QueryBus.__init__(self)
+        QueryBus.__init__(self, query_receiver)
         Runnable.__init__(self)
         self.__self_host = self_host
         self.__self_port = self_port
@@ -45,7 +48,7 @@ class JsonRPCQueryBus(QueryBus, Runnable):
         self.__query_response_deserializer = query_response_deserializer
         self.__json_rpc_query_server = JsonRPCQueryServer(
             passenger_deserializer=self.__query_deserializer,
-            passenger_middleware_executor=self._middleware_executor,
+            passenger_receiver=self._query_receiver,
             query_response_serializer=self.__query_response_serializer,
         )
         self.__server_process: Optional[Process] = None
@@ -58,12 +61,12 @@ class JsonRPCQueryBus(QueryBus, Runnable):
         self.__server_process = Process(target=self.__json_rpc_query_server.run, args=(self.__self_port,))
         self.__server_process.start()
 
-    def execute(self, query: Query) -> QueryResponse:
-        handler_address = self.__query_registry.get_query_destination_contact(query.__class__)
+    def transport(self, passenger: Query) -> QueryResponse:
+        handler_address = self.__query_registry.get_query_destination_contact(passenger.__class__)
         if handler_address is None:
-            raise HandlerNotFoundForQuery(query.__class__.__name__)
+            raise HandlerNotFoundForQuery(passenger.__class__.__name__)
 
-        return self.__execute_query(query, handler_address)
+        return self.__execute_query(passenger, handler_address)
 
     def __execute_query(self, query: Query, query_handler_addr: str) -> QueryResponse:
         serialized_query = self.__query_serializer.serialize(query)

@@ -10,8 +10,8 @@ from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
 from bus_station.command_terminal.handler_not_found_for_command import HandlerNotFoundForCommand
 from bus_station.command_terminal.registry.remote_command_registry import RemoteCommandRegistry
-from bus_station.passengers.middleware.passenger_middleware_executor import PassengerMiddlewareExecutor
 from bus_station.passengers.passenger_kombu_consumer import PassengerKombuConsumer
+from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 from bus_station.passengers.serialization.passenger_serializer import PassengerSerializer
 
@@ -23,22 +23,22 @@ class TestKombuCommandBus(TestCase):
         self.connection_mock.channel.return_value = self.channel_mock
         self.command_serializer_mock = Mock(spec=PassengerSerializer)
         self.command_deserializer_mock = Mock(spec=PassengerDeserializer)
-        self.middleware_executor_mock = Mock(spec=PassengerMiddlewareExecutor)
         self.command_registry_mock = Mock(spec=RemoteCommandRegistry)
+        self.command_receiver_mock = Mock(spec=PassengerReceiver[Command, CommandHandler])
         self.kombu_command_bus = KombuCommandBus(
             self.connection_mock,
             self.command_serializer_mock,
             self.command_deserializer_mock,
             self.command_registry_mock,
+            self.command_receiver_mock,
         )
-        self.kombu_command_bus._middleware_executor = self.middleware_executor_mock
 
-    def test_execute_not_registered(self):
+    def test_transport_not_registered(self):
         test_command = Mock(spec=Command)
         self.command_registry_mock.get_command_destination_contact.return_value = None
 
         with self.assertRaises(HandlerNotFoundForCommand) as hnffc:
-            self.kombu_command_bus.execute(test_command)
+            self.kombu_command_bus.transport(test_command)
 
         self.assertEqual(test_command.__class__.__name__, hnffc.exception.command_name)
         self.command_serializer_mock.serialize.assert_not_called()
@@ -46,7 +46,7 @@ class TestKombuCommandBus(TestCase):
 
     @patch("bus_station.command_terminal.bus.asynchronous.distributed.kombu_command_bus.Process")
     @patch("bus_station.command_terminal.bus.asynchronous.distributed.kombu_command_bus.Producer")
-    def test_execute_success(self, producer_mock, _):
+    def test_receive_success(self, producer_mock, _):
         test_producer = Mock(spec=Producer)
         producer_mock.return_value = test_producer
         test_command = Mock(spec=Command)
@@ -56,7 +56,7 @@ class TestKombuCommandBus(TestCase):
         self.command_registry_mock.get_command_destination_contact.return_value = test_command.__class__.__name__
         self.kombu_command_bus.start()
 
-        self.kombu_command_bus.execute(test_command)
+        self.kombu_command_bus.transport(test_command)
 
         self.command_serializer_mock.serialize.assert_called_once_with(test_command)
         test_producer.publish.assert_called_once_with(
@@ -100,7 +100,7 @@ class TestKombuCommandBus(TestCase):
             test_queue,
             test_command_handler,
             test_command.__class__,
-            self.middleware_executor_mock,
+            self.command_receiver_mock,
             self.command_deserializer_mock,
         )
         process_mock.assert_called_once_with(target=test_consumer.run)
@@ -134,7 +134,7 @@ class TestKombuCommandBus(TestCase):
             test_queue,
             test_command_handler,
             test_command.__class__,
-            self.middleware_executor_mock,
+            self.command_receiver_mock,
             self.command_deserializer_mock,
         )
         process_mock.assert_called_once_with(target=test_consumer.run)

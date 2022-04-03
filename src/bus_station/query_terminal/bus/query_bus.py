@@ -1,16 +1,16 @@
 from abc import abstractmethod
 
-from bus_station.query_terminal.middleware.query_middleware import QueryMiddleware
-from bus_station.query_terminal.middleware.query_middleware_executor import QueryMiddlewareExecutor
+from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
 from bus_station.query_terminal.query import Query
+from bus_station.query_terminal.query_handler import QueryHandler
 from bus_station.query_terminal.query_response import QueryResponse
 from bus_station.shared_terminal.bus import Bus
 
 
-class QueryBus(Bus[QueryMiddleware]):
-    def __init__(self):
-        super().__init__(QueryMiddlewareExecutor)
+class QueryBus(Bus[Query]):
+    def __init__(self, query_receiver: PassengerReceiver[Query, QueryHandler]):
+        self._query_receiver = query_receiver
 
     @abstractmethod
-    def execute(self, query: Query) -> QueryResponse:
+    def transport(self, passenger: Query) -> QueryResponse:
         pass

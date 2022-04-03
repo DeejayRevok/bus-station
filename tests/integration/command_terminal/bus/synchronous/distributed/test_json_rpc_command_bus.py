@@ -8,6 +8,7 @@ from redis import Redis
 from bus_station.command_terminal.bus.synchronous.distributed.json_rpc_command_bus import JsonRPCCommandBus
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
+from bus_station.command_terminal.middleware.command_middleware_receiver import CommandMiddlewareReceiver
 from bus_station.command_terminal.registry.redis_command_registry import RedisCommandRegistry
 from bus_station.passengers.passenger_class_resolver import PassengerClassResolver
 from bus_station.passengers.passenger_record.redis_passenger_record_repository import RedisPassengerRecordRepository
@@ -53,19 +54,21 @@ class TestJsonRPCCommandBus(IntegrationTestCase):
         self.command_deserializer = PassengerJSONDeserializer()
         self.bus_host = "localhost"
         self.bus_port = 1234
+        self.command_receiver = CommandMiddlewareReceiver()
         self.json_rpc_command_bus = JsonRPCCommandBus(
             self.bus_host,
             self.bus_port,
             self.command_serializer,
             self.command_deserializer,
             self.redis_registry,
+            self.command_receiver,
         )
 
     def tearDown(self) -> None:
         self.redis_registry.unregister(CommandTest)
         self.json_rpc_command_bus.stop()
 
-    def test_execute_success(self):
+    def test_transport_success(self):
         test_command = CommandTest()
         test_command_handler = CommandTestHandler()
         self.redis_registry.register(test_command_handler, f"http://{self.bus_host}:{self.bus_port}")
@@ -74,6 +77,6 @@ class TestJsonRPCCommandBus(IntegrationTestCase):
         sleep(2)
 
         for i in range(10):
-            self.json_rpc_command_bus.execute(test_command)
+            self.json_rpc_command_bus.transport(test_command)
 
             self.assertEqual(i + 1, test_command_handler.call_count.value)

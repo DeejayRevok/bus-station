@@ -5,6 +5,7 @@ from bus_station.passengers.passenger_record.in_memory_passenger_record_reposito
     InMemoryPassengerRecordRepository,
 )
 from bus_station.query_terminal.bus.synchronous.sync_query_bus import SyncQueryBus
+from bus_station.query_terminal.middleware.query_middleware_receiver import QueryMiddlewareReceiver
 from bus_station.query_terminal.query import Query
 from bus_station.query_terminal.query_handler import QueryHandler
 from bus_station.query_terminal.query_response import QueryResponse
@@ -40,16 +41,17 @@ class TestSyncQueryBus(IntegrationTestCase):
             fqn_getter=self.fqn_getter,
             passenger_class_resolver=self.passenger_class_resolver,
         )
-        self.sync_query_bus = SyncQueryBus(self.in_memory_registry)
+        self.query_middleware_receiver = QueryMiddlewareReceiver()
+        self.sync_query_bus = SyncQueryBus(self.in_memory_registry, self.query_middleware_receiver)
 
-    def test_execute_success(self):
+    def test_transport_success(self):
         test_query_value = "test_query_value"
         test_query = QueryTest(test_value=test_query_value)
         test_query_handler = QueryTestHandler()
         self.in_memory_registry.register(test_query_handler, test_query_handler)
         self.query_handler_resolver.add_bus_stop(test_query_handler)
 
-        test_query_response = self.sync_query_bus.execute(test_query)
+        test_query_response = self.sync_query_bus.transport(test_query)
 
         self.assertEqual(1, test_query_handler.call_count)
         self.assertEqual(test_query_value, test_query_response.data)

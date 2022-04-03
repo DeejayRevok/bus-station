@@ -2,11 +2,13 @@ from abc import abstractmethod
 from typing import Any, NoReturn, Protocol, TypeVar
 
 from bus_station.passengers.passenger import Passenger
+from bus_station.shared_terminal.bus_stop import BusStop
 
+S = TypeVar("S", bound=BusStop)
 P = TypeVar("P", bound=Passenger)
 
 
-class Bus(Protocol[P]):
+class PassengerReceiver(Protocol[P, S]):
     @abstractmethod
-    def transport(self, passenger: P) -> Any | NoReturn:
+    def receive(self, passenger: P, passenger_bus_stop: S) -> Any | NoReturn:
         pass

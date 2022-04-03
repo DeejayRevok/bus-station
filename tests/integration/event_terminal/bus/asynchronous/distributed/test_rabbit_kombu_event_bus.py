@@ -8,6 +8,7 @@ from redis import Redis
 from bus_station.event_terminal.bus.asynchronous.distributed.kombu_event_bus import KombuEventBus
 from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
+from bus_station.event_terminal.middleware.event_middleware_receiver import EventMiddlewareReceiver
 from bus_station.event_terminal.registry.redis_event_registry import RedisEventRegistry
 from bus_station.passengers.passenger_class_resolver import PassengerClassResolver
 from bus_station.passengers.passenger_record.redis_passenger_record_repository import RedisPassengerRecordRepository
@@ -73,15 +74,20 @@ class TestRabbitKombuEventBus(IntegrationTestCase):
             fqn_getter=self.fqn_getter,
             passenger_class_resolver=self.passenger_class_resolver,
         )
+        self.event_middleware_receiver = EventMiddlewareReceiver()
         self.kombu_event_bus = KombuEventBus(
-            self.kombu_connection, self.event_serializer, self.event_deserializer, self.redis_registry
+            self.kombu_connection,
+            self.event_serializer,
+            self.event_deserializer,
+            self.redis_registry,
+            self.event_middleware_receiver,
         )
 
     def tearDown(self) -> None:
         self.redis_registry.unregister(EventTest)
         self.kombu_event_bus.stop()
 
-    def test_publish_success(self):
+    def test_transport_success(self):
         test_event = EventTest()
         test_event_consumer1 = EventTestConsumer1()
         test_event_consumer2 = EventTestConsumer2()
@@ -93,7 +99,7 @@ class TestRabbitKombuEventBus(IntegrationTestCase):
         self.kombu_event_bus.start()
 
         for _ in range(test_iterations):
-            self.kombu_event_bus.publish(test_event)
+            self.kombu_event_bus.transport(test_event)
 
         sleep(1)
         self.assertEqual(test_iterations, test_event_consumer1.call_count.value)

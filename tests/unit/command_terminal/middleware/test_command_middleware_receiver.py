@@ -5,14 +5,30 @@ from unittest.mock import Mock, call
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
 from bus_station.command_terminal.middleware.command_middleware import CommandMiddleware
-from bus_station.command_terminal.middleware.command_middleware_executor import CommandMiddlewareExecutor
+from bus_station.command_terminal.middleware.command_middleware_receiver import CommandMiddlewareReceiver
 
 
-class TestCommandMiddlewareExecutor(TestCase):
+class TestCommandMiddlewareReceiver(TestCase):
     def setUp(self) -> None:
-        self.command_middleware_executor = CommandMiddlewareExecutor()
+        self.command_middleware_receiver = CommandMiddlewareReceiver()
 
-    def test_execute_success(self):
+    def test_add_middleware_definition_lazy(self):
+        test_middleware_class = Mock(spec=CommandMiddleware.__class__)
+        test_arg = "test_arg"
+
+        self.command_middleware_receiver.add_middleware_definition(test_middleware_class, test_arg, lazy=True)
+
+        test_middleware_class.assert_not_called()
+
+    def test_add_middleware_definition_not_lazy(self):
+        test_middleware_class = Mock(spec=CommandMiddleware.__class__)
+        test_arg = "test_arg"
+
+        self.command_middleware_receiver.add_middleware_definition(test_middleware_class, test_arg, lazy=False)
+
+        test_middleware_class.assert_called_once_with(test_arg)
+
+    def test_receive_success(self):
         parent_mock = Mock()
         test_middleware1_class = Mock(spec=Type[CommandMiddleware])
         test_middleware2_class = Mock(spec=Type[CommandMiddleware])
@@ -22,9 +38,9 @@ class TestCommandMiddlewareExecutor(TestCase):
         parent_mock.middleware2_class = test_middleware2_class
         parent_mock.handler = test_command_handler
 
-        self.command_middleware_executor.add_middleware_definition(test_middleware1_class)
-        self.command_middleware_executor.add_middleware_definition(test_middleware2_class)
-        self.command_middleware_executor.execute(test_command, test_command_handler)
+        self.command_middleware_receiver.add_middleware_definition(test_middleware1_class)
+        self.command_middleware_receiver.add_middleware_definition(test_middleware2_class)
+        self.command_middleware_receiver.receive(test_command, test_command_handler)
 
         parent_mock.assert_has_calls(
             [

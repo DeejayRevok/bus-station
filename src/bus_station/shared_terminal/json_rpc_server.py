@@ -8,8 +8,8 @@ from jsonrpcserver.codes import ERROR_INTERNAL_ERROR
 from jsonrpcserver.result import Result
 from jsonrpcserver.server import RequestHandler
 
-from bus_station.passengers.middleware.passenger_middleware_executor import PassengerMiddlewareExecutor
 from bus_station.passengers.passenger import Passenger
+from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 from bus_station.shared_terminal.bus_stop import BusStop
 
@@ -24,14 +24,14 @@ class JsonRPCServer(Generic[P, S]):
     def __init__(
         self,
         passenger_deserializer: PassengerDeserializer,
-        passenger_middleware_executor: PassengerMiddlewareExecutor,
+        passenger_receiver: PassengerReceiver[P, S],
     ):
         self._passenger_deserializer = passenger_deserializer
-        self._passenger_middleware_executor = passenger_middleware_executor
+        self._passenger_receiver = passenger_receiver
         self.__internal_registry: Dict[str, Callable] = {}
 
     def register(self, passenger_class: Type[P], bus_stop: S) -> None:
-        exposed_callable = partial(self.passenger_executor, bus_stop, passenger_class)
+        exposed_callable = partial(self.passenger_handler, bus_stop, passenger_class)
         exposed_callable_name = passenger_class.__name__
         self.__internal_registry[exposed_callable_name] = exposed_callable
 
@@ -48,13 +48,13 @@ class JsonRPCServer(Generic[P, S]):
         for exposed_callable_name, exposed_callable in self.__internal_registry.items():
             method(exposed_callable, name=exposed_callable_name)
 
-    def passenger_executor(self, bus_stop: S, passenger_class: Type[P], serialized_passenger: str) -> Result:
+    def passenger_handler(self, bus_stop: S, passenger_class: Type[P], serialized_passenger: str) -> Result:
         try:
-            serialized_response = self._passenger_executor(bus_stop, passenger_class, serialized_passenger)
+            serialized_response = self._passenger_handler(bus_stop, passenger_class, serialized_passenger)
         except Exception as ex:
             return Error(code=ERROR_INTERNAL_ERROR, message=str(ex))
         return Success(result=serialized_response)
 
     @abstractmethod
-    def _passenger_executor(self, bus_stop: S, passenger_class: Type[P], serialized_passenger: str) -> Optional[str]:
+    def _passenger_handler(self, bus_stop: S, passenger_class: Type[P], serialized_passenger: str) -> Optional[str]:
         pass

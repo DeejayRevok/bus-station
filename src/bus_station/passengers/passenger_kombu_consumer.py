@@ -8,8 +8,8 @@ from kombu.messaging import Queue
 from kombu.mixins import ConsumerMixin
 from kombu.transport.virtual import Channel
 
-from bus_station.passengers.middleware.passenger_middleware_executor import PassengerMiddlewareExecutor
 from bus_station.passengers.passenger import Passenger
+from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 from bus_station.shared_terminal.bus_stop import BusStop
 
@@ -21,7 +21,7 @@ class PassengerKombuConsumer(ConsumerMixin):
         passenger_queue: Queue,
         passenger_bus_stop: BusStop,
         passenger_class: Type[Passenger],
-        passenger_middleware_executor: PassengerMiddlewareExecutor,
+        passenger_receiver: PassengerReceiver,
         passenger_deserializer: PassengerDeserializer,
     ):
         self.connection = connection
@@ -29,7 +29,7 @@ class PassengerKombuConsumer(ConsumerMixin):
         self.__queue = passenger_queue
         self.__passenger_bus_stop = passenger_bus_stop
         self.__passenger_class = passenger_class
-        self.__passenger_middleware_executor = passenger_middleware_executor
+        self.__passenger_receiver = passenger_receiver
         self.__passenger_deserializer = passenger_deserializer
 
     @property
@@ -48,7 +48,7 @@ class PassengerKombuConsumer(ConsumerMixin):
     def on_message(self, body: str, message: Message) -> None:
         passenger = self.__passenger_deserializer.deserialize(body, passenger_cls=self.__passenger_class)
         try:
-            self.__passenger_middleware_executor.execute(passenger, self.__passenger_bus_stop)
+            self.__passenger_receiver.receive(passenger, self.__passenger_bus_stop)
             message.ack()
         except Exception:
             message.reject(requeue=False)

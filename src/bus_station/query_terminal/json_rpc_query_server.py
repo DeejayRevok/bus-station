@@ -1,6 +1,6 @@
 from typing import Type
 
-from bus_station.passengers.middleware.passenger_middleware_executor import PassengerMiddlewareExecutor
+from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 from bus_station.query_terminal.query import Query
 from bus_station.query_terminal.query_handler import QueryHandler
@@ -12,17 +12,17 @@ class JsonRPCQueryServer(JsonRPCServer[Query, QueryHandler]):
     def __init__(
         self,
         passenger_deserializer: PassengerDeserializer,
-        passenger_middleware_executor: PassengerMiddlewareExecutor,
+        passenger_receiver: PassengerReceiver[Query, QueryHandler],
         query_response_serializer: QueryResponseSerializer,
     ):
-        JsonRPCServer.__init__(self, passenger_deserializer, passenger_middleware_executor)
+        JsonRPCServer.__init__(self, passenger_deserializer, passenger_receiver)
         self.__query_response_serializer = query_response_serializer
 
-    def _passenger_executor(
+    def _passenger_handler(
         self, bus_stop: QueryHandler, passenger_class: Type[Query], serialized_passenger: str
     ) -> str:
         query = self._passenger_deserializer.deserialize(serialized_passenger, passenger_cls=passenger_class)
         if not isinstance(query, Query):
             raise TypeError("Input serialized query is not a Query")
-        query_response = self._passenger_middleware_executor.execute(query, bus_stop)
+        query_response = self._passenger_receiver.receive(query, bus_stop)
         return self.__query_response_serializer.serialize(query_response)

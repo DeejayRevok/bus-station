@@ -3,7 +3,7 @@ from logging import getLogger
 
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
-from bus_station.command_terminal.middleware.command_middleware_executor import CommandMiddlewareExecutor
+from bus_station.command_terminal.middleware.command_middleware_receiver import CommandMiddlewareReceiver
 from bus_station.command_terminal.middleware.implementations.timing_command_middleware import TimingCommandMiddleware
 from tests.integration.integration_test_case import IntegrationTestCase
 
@@ -24,15 +24,15 @@ class CommandTestHandler(CommandHandler):
 class TestTimingCommandMiddleware(IntegrationTestCase):
     def setUp(self) -> None:
         self.logger = getLogger()
-        self.command_middleware_executor = CommandMiddlewareExecutor()
-        self.command_middleware_executor.add_middleware_definition(TimingCommandMiddleware, self.logger, lazy=True)
+        self.command_middleware_receiver = CommandMiddlewareReceiver()
+        self.command_middleware_receiver.add_middleware_definition(TimingCommandMiddleware, self.logger, lazy=True)
 
-    def test_execute_with_middleware_logs_timing(self):
+    def test_receive_with_middleware_logs_timing(self):
         test_command = CommandTest()
         test_command_handler = CommandTestHandler()
 
         with self.assertLogs(level="INFO") as logs:
-            self.command_middleware_executor.execute(test_command, test_command_handler)
+            self.command_middleware_receiver.receive(test_command, test_command_handler)
 
             self.assertIn(
                 f"Command {test_command} handled by {test_command_handler.__class__.__name__} in", logs.output[0]
