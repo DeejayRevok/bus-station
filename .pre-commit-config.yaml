@@ -1,0 +1,22 @@
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.2.0
+    hooks:
+    -   id: trailing-whitespace
+    -   id: end-of-file-fixer
+-   repo: local
+    hooks:
+      - id: isort
+        name: Sort imports
+        entry: docker exec bus-station poetry run tox -e isort
+        language: system
+        types: [ python ]
+        pass_filenames: false
+        additional_dependencies: [ ]
+      - id: black
+        name: Apply black formatting
+        entry: docker exec bus-station poetry run tox -e black
+        language: system
+        types: [ python ]
+        pass_filenames: false
+        additional_dependencies: [ ]
