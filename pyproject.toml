@@ -15,6 +15,7 @@ pymongo = "4.0.1"
 jsonrpcserver = "^5.0.6"
 jsonrpcclient = "^4.0.2"
 requests = "^2.27.1"
+pypendency = "^0.1.0"
 
 [tool.poetry.dev-dependencies]
 black = "22.1.0"
