@@ -1,5 +1,5 @@
 from multiprocessing import Process, Queue
-from typing import List, NoReturn, Tuple
+from typing import List, Tuple
 
 from bus_station.command_terminal.bus.command_bus import CommandBus
 from bus_station.command_terminal.command import Command
@@ -50,7 +50,7 @@ class ProcessCommandBus(CommandBus, Runnable):
         return handler_worker, handler_process
 
     @is_running
-    def transport(self, passenger: Command) -> NoReturn:
+    def transport(self, passenger: Command) -> None:
         handler_queue = self.__command_registry.get_command_destination_contact(passenger.__class__)
         if handler_queue is None:
             raise HandlerNotFoundForCommand(passenger.__class__.__name__)

@@ -1,5 +1,5 @@
 from multiprocessing import Process
-from typing import ClassVar, List, NoReturn, Optional, Tuple, Type
+from typing import ClassVar, List, Optional, Tuple, Type
 
 from kombu import Connection
 from kombu.messaging import Exchange, Producer, Queue
@@ -76,7 +76,7 @@ class KombuCommandBus(CommandBus, Runnable):
         handler_process = Process(target=handler_consumer.run)
         return handler_consumer, handler_process, handler_queue
 
-    def transport(self, passenger: Command) -> NoReturn:
+    def transport(self, passenger: Command) -> None:
         handler_queue_name = self.__command_registry.get_command_destination_contact(passenger.__class__)
         if handler_queue_name is None:
             raise HandlerNotFoundForCommand(passenger.__class__.__name__)

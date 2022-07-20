@@ -1,5 +1,4 @@
 from abc import abstractmethod
-from typing import NoReturn
 
 from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
@@ -12,5 +11,5 @@ class EventBus(Bus[Event]):
         self._event_receiver = event_receiver
 
     @abstractmethod
-    def transport(self, passenger: Event) -> NoReturn:
+    def transport(self, passenger: Event) -> None:
         pass

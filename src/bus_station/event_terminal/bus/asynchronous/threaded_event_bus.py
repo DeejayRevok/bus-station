@@ -1,5 +1,4 @@
 from threading import Thread
-from typing import NoReturn
 
 from bus_station.event_terminal.bus.event_bus import EventBus
 from bus_station.event_terminal.event import Event
@@ -13,7 +12,7 @@ class ThreadedEventBus(EventBus):
         super().__init__(event_receiver)
         self.__event_registry = event_registry
 
-    def transport(self, passenger: Event) -> NoReturn:
+    def transport(self, passenger: Event) -> None:
         event_consumers = self.__event_registry.get_event_destination_contacts(passenger.__class__)
         if event_consumers is None:
             return

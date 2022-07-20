@@ -1,7 +1,7 @@
 import os
 import signal
 from multiprocessing.context import Process
-from typing import ClassVar, NoReturn, Optional
+from typing import ClassVar, Optional
 
 from rpyc import Connection, connect
 
@@ -53,7 +53,7 @@ class RPyCCommandBus(CommandBus, Runnable):
         self.__server_process = Process(target=self.__rpyc_server.run)
         self.__server_process.start()
 
-    def transport(self, passenger: Command) -> NoReturn:
+    def transport(self, passenger: Command) -> None:
         handler_address = self.__command_registry.get_command_destination_contact(passenger.__class__)
         if handler_address is None:
             raise HandlerNotFoundForCommand(passenger.__class__.__name__)

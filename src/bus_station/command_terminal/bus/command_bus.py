@@ -1,5 +1,4 @@
 from abc import abstractmethod
-from typing import NoReturn
 
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
@@ -12,5 +11,5 @@ class CommandBus(Bus[Command]):
         self._command_receiver = command_receiver
 
     @abstractmethod
-    def transport(self, passenger: Command) -> NoReturn:
+    def transport(self, passenger: Command) -> None:
         pass
