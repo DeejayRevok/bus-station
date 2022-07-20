@@ -1,7 +1,7 @@
 import os
 import signal
 from multiprocessing import Process
-from typing import ClassVar, NoReturn, Optional
+from typing import ClassVar, Optional
 
 import requests
 from jsonrpcclient import request
@@ -52,7 +52,7 @@ class JsonRPCCommandBus(CommandBus, Runnable):
         self.__server_process = Process(target=self.__json_rpc_command_server.run, args=(self.__self_port,))
         self.__server_process.start()
 
-    def transport(self, passenger: Command) -> NoReturn:
+    def transport(self, passenger: Command) -> None:
         handler_address = self.__command_registry.get_command_destination_contact(passenger.__class__)
         if handler_address is None:
             raise HandlerNotFoundForCommand(passenger.__class__.__name__)

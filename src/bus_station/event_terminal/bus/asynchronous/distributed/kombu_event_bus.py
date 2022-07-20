@@ -1,5 +1,5 @@
 from multiprocessing import Process
-from typing import ClassVar, List, NoReturn, Optional, Tuple, Type
+from typing import ClassVar, List, Optional, Tuple, Type
 
 from kombu import Connection
 from kombu.messaging import Exchange, Producer, Queue
@@ -88,7 +88,7 @@ class KombuEventBus(EventBus, Runnable):
         consumer_process = Process(target=consumer_consumer.run)
         return consumer_consumer, consumer_process, consumer_queue
 
-    def transport(self, passenger: Event) -> NoReturn:
+    def transport(self, passenger: Event) -> None:
         event_exchange_names = self.__event_registry.get_event_destination_contacts(passenger.__class__)
         if event_exchange_names is None:
             return

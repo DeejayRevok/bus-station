@@ -1,5 +1,4 @@
 from threading import Thread
-from typing import NoReturn
 
 from bus_station.command_terminal.bus.command_bus import CommandBus
 from bus_station.command_terminal.command import Command
@@ -16,7 +15,7 @@ class ThreadedCommandBus(CommandBus):
         super().__init__(command_receiver)
         self.__command_registry = command_registry
 
-    def transport(self, passenger: Command) -> NoReturn:
+    def transport(self, passenger: Command) -> None:
         command_handler = self.__command_registry.get_command_destination_contact(passenger.__class__)
         if command_handler is None:
             raise HandlerNotFoundForCommand(passenger.__class__.__name__)

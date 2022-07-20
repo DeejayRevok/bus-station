@@ -1,5 +1,5 @@
 from multiprocessing import Process, Queue
-from typing import List, NoReturn, Tuple
+from typing import List, Tuple
 
 from bus_station.event_terminal.bus.event_bus import EventBus
 from bus_station.event_terminal.event import Event
@@ -50,7 +50,7 @@ class ProcessEventBus(EventBus, Runnable):
         return consumer_worker, consumer_process
 
     @is_running
-    def transport(self, passenger: Event) -> NoReturn:
+    def transport(self, passenger: Event) -> None:
         event_consumer_queues = self.__event_registry.get_event_destination_contacts(passenger.__class__)
         if event_consumer_queues is None:
             return
