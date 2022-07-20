@@ -12,17 +12,20 @@ jobs:
         run: docker-compose up -d
       - name: Build the package
         run: docker exec bus-station poetry build
+      - name: Get version
+        id: version
+        run: echo "::set-output name=VERSION::$(docker exec bus-station poetry version -s)"
       - name: Check if version exists
         uses: mukunku/tag-exists-action@v1.0.0
         id: checkTag
         with:
-          tag: docker exec bus-station poetry version -s
+          tag: ${{ steps.version.outputs.VERSION }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish the package
         run: docker exec bus-station poetry publish -u ${{ secrets.PYPI_USER }} -p ${{ secrets.PYPI_PASSWORD }}
       - uses: avakar/tag-and-release@v1
         with:
-          tag_name: docker exec bus-station poetry version -s
+          tag_name: ${{ steps.version.outputs.VERSION }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
