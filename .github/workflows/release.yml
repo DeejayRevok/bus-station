@@ -1,0 +1,28 @@
+name: Bus station release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  bus-station-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup environment
+        run: docker-compose up -d
+      - name: Build the package
+        run: docker exec bus-station poetry build
+      - name: Check if version exists
+        uses: mukunku/tag-exists-action@v1.0.0
+        id: checkTag
+        with:
+          tag: docker exec bus-station poetry version -s
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish the package
+        run: docker exec bus-station poetry publish -u ${{ secrets.PYPI_USER }} -p ${{ secrets.PYPI_PASSWORD }}
+      - uses: avakar/tag-and-release@v1
+        with:
+          tag_name: docker exec bus-station poetry version -s
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
