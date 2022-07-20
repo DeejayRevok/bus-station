@@ -22,6 +22,9 @@ jobs:
           tag: ${{ steps.version.outputs.VERSION }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Fail if tag exists
+        if: steps.checkTag.outputs.exists == 'true'
+        run: exit 1
       - name: Publish the package
         run: docker exec bus-station poetry publish -u ${{ secrets.PYPI_USER }} -p ${{ secrets.PYPI_PASSWORD }}
       - uses: avakar/tag-and-release@v1
