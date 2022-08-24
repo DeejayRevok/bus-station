@@ -9,11 +9,11 @@ from bus_station.query_terminal.registry.in_memory_query_registry import InMemor
 
 class SyncQueryBus(QueryBus):
     def __init__(self, query_registry: InMemoryQueryRegistry, query_receiver: PassengerReceiver[Query, QueryHandler]):
-        super().__init__(query_receiver)
+        self.__query_receiver = query_receiver
         self.__query_registry = query_registry
 
     def transport(self, passenger: Query) -> QueryResponse:
         query_handler = self.__query_registry.get_query_destination_contact(passenger.__class__)
         if query_handler is None:
             raise HandlerNotFoundForQuery(passenger.__class__.__name__)
-        return self._query_receiver.receive(passenger, query_handler)
+        return self.__query_receiver.receive(passenger, query_handler)

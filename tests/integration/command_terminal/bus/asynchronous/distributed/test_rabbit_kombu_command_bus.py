@@ -1,11 +1,14 @@
+import os
+import signal
 from ctypes import c_int
 from dataclasses import dataclass
-from multiprocessing import Value
+from multiprocessing import Process, Value
 from time import sleep
 
 from redis import Redis
 
 from bus_station.command_terminal.bus.asynchronous.distributed.kombu_command_bus import KombuCommandBus
+from bus_station.command_terminal.bus_engine.kombu_command_bus_engine import KombuCommandBusEngine
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
 from bus_station.command_terminal.middleware.command_middleware_receiver import CommandMiddlewareReceiver
@@ -18,6 +21,8 @@ from bus_station.shared_terminal.broker_connection.connection_parameters.rabbitm
     RabbitMQConnectionParameters,
 )
 from bus_station.shared_terminal.bus_stop_resolver.in_memory_bus_stop_resolver import InMemoryBusStopResolver
+from bus_station.shared_terminal.engine.runner.process_engine_runner import ProcessEngineRunner
+from bus_station.shared_terminal.engine.runner.self_process_engine_runner import SelfProcessEngineRunner
 from bus_station.shared_terminal.factories.kombu_connection_factory import KombuConnectionFactory
 from bus_station.shared_terminal.fqn_getter import FQNGetter
 from tests.integration.integration_test_case import IntegrationTestCase
@@ -53,40 +58,61 @@ class TestRabbitKombuCommandBus(IntegrationTestCase):
         cls.kombu_connection = kombu_connection_factory.get_connection(test_connection_params)
         cls.kombu_connection.connect()
 
+    @classmethod
+    def tearDownClass(cls) -> None:
+        cls.kombu_connection.release()
+
     def setUp(self) -> None:
-        self.command_serializer = PassengerJSONSerializer()
-        self.command_deserializer = PassengerJSONDeserializer()
-        self.redis_repository = RedisPassengerRecordRepository(self.redis_client)
-        self.fqn_getter = FQNGetter()
-        self.command_handler_resolver = InMemoryBusStopResolver(fqn_getter=self.fqn_getter)
-        self.passenger_class_resolver = PassengerClassResolver()
+        command_serializer = PassengerJSONSerializer()
+        command_deserializer = PassengerJSONDeserializer()
+        redis_repository = RedisPassengerRecordRepository(self.redis_client)
+        fqn_getter = FQNGetter()
+        command_handler_resolver = InMemoryBusStopResolver(fqn_getter=fqn_getter)
+        passenger_class_resolver = PassengerClassResolver()
         self.redis_registry = RedisCommandRegistry(
-            redis_repository=self.redis_repository,
-            command_handler_resolver=self.command_handler_resolver,
-            fqn_getter=self.fqn_getter,
-            passenger_class_resolver=self.passenger_class_resolver,
+            redis_repository=redis_repository,
+            command_handler_resolver=command_handler_resolver,
+            fqn_getter=fqn_getter,
+            passenger_class_resolver=passenger_class_resolver,
         )
-        self.command_receiver = CommandMiddlewareReceiver()
+        command_receiver = CommandMiddlewareReceiver()
+        self.test_command_handler = CommandTestHandler()
+        self.redis_registry.register(self.test_command_handler, CommandTest.__name__)
+        command_handler_resolver.add_bus_stop(self.test_command_handler)
+        self.kombu_command_bus_engine = KombuCommandBusEngine(
+            self.kombu_connection, self.redis_registry, command_receiver, command_deserializer, CommandTest
+        )
         self.kombu_command_bus = KombuCommandBus(
             self.kombu_connection,
-            self.command_serializer,
-            self.command_deserializer,
+            command_serializer,
             self.redis_registry,
-            self.command_receiver,
         )
 
     def tearDown(self) -> None:
+        self.kombu_command_bus.shutdown()
         self.redis_registry.unregister(CommandTest)
-        self.kombu_command_bus.stop()
 
-    def test_transport_success(self):
+    def test_process_transport_success(self):
         test_command = CommandTest()
-        test_command_handler = CommandTestHandler()
-        self.redis_registry.register(test_command_handler, test_command.__class__.__name__)
-        self.command_handler_resolver.add_bus_stop(test_command_handler)
-        self.kombu_command_bus.start()
+        with ProcessEngineRunner(engine=self.kombu_command_bus_engine, should_interrupt=False):
 
-        self.kombu_command_bus.transport(test_command)
+            self.kombu_command_bus.transport(test_command)
 
+            sleep(1)
+            self.assertEqual(1, self.test_command_handler.call_count.value)
+
+    def test_self_process_engine_transport_success(self):
+        test_command = CommandTest()
+        engine_runner = SelfProcessEngineRunner(engine=self.kombu_command_bus_engine)
+        runner_process = Process(target=engine_runner.run)
+        runner_process.start()
         sleep(1)
-        self.assertEqual(1, test_command_handler.call_count.value)
+
+        try:
+            for i in range(10):
+                self.kombu_command_bus.transport(test_command)
+
+                sleep(1)
+                self.assertEqual(i + 1, self.test_command_handler.call_count.value)
+        finally:
+            os.kill(runner_process.pid, signal.SIGINT)

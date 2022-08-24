@@ -17,6 +17,19 @@ class InMemoryPassengerRecordRepository(PassengerRecordRepository):
     def find_by_passenger_name(self, passenger_name: str) -> Optional[List[PassengerRecord]]:
         return self.__passenger_records.get(passenger_name)
 
+    def find_by_passenger_name_and_destination(
+        self, passenger_name: str, passenger_destination_fqn: str
+    ) -> Optional[PassengerRecord]:
+        passenger_records = self.__passenger_records.get(passenger_name)
+        if passenger_records is None:
+            return None
+
+        for passenger_record in passenger_records:
+            if passenger_record.destination_fqn == passenger_destination_fqn:
+                return passenger_record
+
+        return None
+
     def all(self) -> Iterable[PassengerRecord[Any]]:
         for passenger_records in self.__passenger_records.values():
             for passenger_record in passenger_records:

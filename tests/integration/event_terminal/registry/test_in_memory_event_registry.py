@@ -43,7 +43,7 @@ class TestInMemoryEventRegistry(IntegrationTestCase):
         self.in_memory_registry.register(test_event_handler, test_destination_contact)
 
         self.assertCountEqual([test_event_handler], self.in_memory_registry.get_event_destinations(EventTest))
-        self.assertEqual([test_destination_contact], self.in_memory_registry.get_event_destination_contacts(EventTest))
+        self.assertEqual({test_destination_contact}, self.in_memory_registry.get_event_destination_contacts(EventTest))
 
     def test_unregister(self):
         test_event_handler = EventTestConsumer()

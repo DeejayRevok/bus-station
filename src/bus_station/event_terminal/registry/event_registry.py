@@ -34,6 +34,10 @@ class EventRegistry(metaclass=ABCMeta):
         pass
 
     @abstractmethod
+    def get_event_destination_contact(self, event: Type[Event], event_destination: EventConsumer) -> Optional[Any]:
+        pass
+
+    @abstractmethod
     def get_events_registered(self) -> Iterable[Type[Event]]:
         pass
 

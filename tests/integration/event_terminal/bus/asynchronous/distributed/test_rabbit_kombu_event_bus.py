@@ -1,11 +1,14 @@
+import os
+import signal
 from ctypes import c_int
 from dataclasses import dataclass
-from multiprocessing import Value
+from multiprocessing import Process, Value
 from time import sleep
 
 from redis import Redis
 
 from bus_station.event_terminal.bus.asynchronous.distributed.kombu_event_bus import KombuEventBus
+from bus_station.event_terminal.bus_engine.kombu_event_bus_engine import KombuEventBusEngine
 from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
 from bus_station.event_terminal.middleware.event_middleware_receiver import EventMiddlewareReceiver
@@ -18,6 +21,8 @@ from bus_station.shared_terminal.broker_connection.connection_parameters.rabbitm
     RabbitMQConnectionParameters,
 )
 from bus_station.shared_terminal.bus_stop_resolver.in_memory_bus_stop_resolver import InMemoryBusStopResolver
+from bus_station.shared_terminal.engine.runner.process_engine_runner import ProcessEngineRunner
+from bus_station.shared_terminal.engine.runner.self_process_engine_runner import SelfProcessEngineRunner
 from bus_station.shared_terminal.factories.kombu_connection_factory import KombuConnectionFactory
 from bus_station.shared_terminal.fqn_getter import FQNGetter
 from tests.integration.integration_test_case import IntegrationTestCase
@@ -38,7 +43,7 @@ class EventTestConsumer1(EventConsumer):
 
 class EventTestConsumer2(EventConsumer):
     def __init__(self):
-        self.call_count = Value(c_int, 0)
+        self.call_count = Value(c_int, 2)
 
     def consume(self, event: EventTest) -> None:
         self.call_count.value = self.call_count.value - 1
@@ -62,45 +67,80 @@ class TestRabbitKombuEventBus(IntegrationTestCase):
         cls.kombu_connection.connect()
 
     def setUp(self) -> None:
-        self.event_serializer = PassengerJSONSerializer()
-        self.event_deserializer = PassengerJSONDeserializer()
-        self.redis_repository = RedisPassengerRecordRepository(self.redis_client)
-        self.fqn_getter = FQNGetter()
-        self.event_consumer_resolver = InMemoryBusStopResolver[EventConsumer](fqn_getter=self.fqn_getter)
-        self.passenger_class_resolver = PassengerClassResolver()
+        event_serializer = PassengerJSONSerializer()
+        event_deserializer = PassengerJSONDeserializer()
+        redis_repository = RedisPassengerRecordRepository(self.redis_client)
+        fqn_getter = FQNGetter()
+        event_consumer_resolver = InMemoryBusStopResolver[EventConsumer](fqn_getter=fqn_getter)
+        passenger_class_resolver = PassengerClassResolver()
         self.redis_registry = RedisEventRegistry(
-            redis_repository=self.redis_repository,
-            event_consumer_resolver=self.event_consumer_resolver,
-            fqn_getter=self.fqn_getter,
-            passenger_class_resolver=self.passenger_class_resolver,
+            redis_repository=redis_repository,
+            event_consumer_resolver=event_consumer_resolver,
+            fqn_getter=fqn_getter,
+            passenger_class_resolver=passenger_class_resolver,
         )
-        self.event_middleware_receiver = EventMiddlewareReceiver()
+        event_middleware_receiver = EventMiddlewareReceiver()
+
+        self.test_event_consumer1 = EventTestConsumer1()
+        self.test_event_consumer2 = EventTestConsumer2()
+        self.redis_registry.register(self.test_event_consumer1, EventTest.__name__)
+        self.redis_registry.register(self.test_event_consumer2, EventTest.__name__)
+        event_consumer_resolver.add_bus_stop(self.test_event_consumer1)
+        event_consumer_resolver.add_bus_stop(self.test_event_consumer2)
+
         self.kombu_event_bus = KombuEventBus(
             self.kombu_connection,
-            self.event_serializer,
-            self.event_deserializer,
+            event_serializer,
             self.redis_registry,
-            self.event_middleware_receiver,
+        )
+        self.kombu_event_bus_engine1 = KombuEventBusEngine(
+            self.kombu_connection,
+            self.redis_registry,
+            event_middleware_receiver,
+            event_deserializer,
+            EventTest,
+            self.test_event_consumer1,
+        )
+        self.kombu_event_bus_engine2 = KombuEventBusEngine(
+            self.kombu_connection,
+            self.redis_registry,
+            event_middleware_receiver,
+            event_deserializer,
+            EventTest,
+            self.test_event_consumer2,
         )
 
     def tearDown(self) -> None:
+        self.kombu_event_bus.shutdown()
         self.redis_registry.unregister(EventTest)
-        self.kombu_event_bus.stop()
 
-    def test_transport_success(self):
+    def test_process_transport_success(self):
         test_event = EventTest()
-        test_event_consumer1 = EventTestConsumer1()
-        test_event_consumer2 = EventTestConsumer2()
-        test_iterations = 20
-        self.redis_registry.register(test_event_consumer1, test_event.__class__.__name__)
-        self.redis_registry.register(test_event_consumer2, test_event.__class__.__name__)
-        self.event_consumer_resolver.add_bus_stop(test_event_consumer1)
-        self.event_consumer_resolver.add_bus_stop(test_event_consumer2)
-        self.kombu_event_bus.start()
+        with ProcessEngineRunner(self.kombu_event_bus_engine1, should_interrupt=False):
+            with ProcessEngineRunner(self.kombu_event_bus_engine2, should_interrupt=False):
+                for i in range(10):
+                    self.kombu_event_bus.transport(test_event)
 
-        for _ in range(test_iterations):
-            self.kombu_event_bus.transport(test_event)
+                    sleep(1)
+                    self.assertEqual(i + 1, self.test_event_consumer1.call_count.value)
+                    self.assertEqual(1 - i, self.test_event_consumer2.call_count.value)
 
-        sleep(1)
-        self.assertEqual(test_iterations, test_event_consumer1.call_count.value)
-        self.assertEqual(-1 * test_iterations, test_event_consumer2.call_count.value)
+    def test_self_process_transport_success(self):
+        test_event = EventTest()
+        engine_runner1 = SelfProcessEngineRunner(engine=self.kombu_event_bus_engine1)
+        engine_runner2 = SelfProcessEngineRunner(engine=self.kombu_event_bus_engine2)
+        runner_process1 = Process(target=engine_runner1.run)
+        runner_process2 = Process(target=engine_runner2.run)
+        runner_process1.start()
+        runner_process2.start()
+
+        try:
+            for i in range(10):
+                self.kombu_event_bus.transport(test_event)
+
+                sleep(1)
+                self.assertEqual(i + 1, self.test_event_consumer1.call_count.value)
+                self.assertEqual(1 - i, self.test_event_consumer2.call_count.value)
+        finally:
+            os.kill(runner_process1.pid, signal.SIGINT)
+            os.kill(runner_process2.pid, signal.SIGINT)

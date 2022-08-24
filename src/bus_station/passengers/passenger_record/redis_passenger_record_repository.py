@@ -24,6 +24,15 @@ class RedisPassengerRecordRepository(PassengerRecordRepository):
             return None
         return redis_records
 
+    def find_by_passenger_name_and_destination(
+        self, passenger_name: str, passenger_destination_fqn: str
+    ) -> Optional[PassengerRecord]:
+        for redis_value in self.__client.lrange(passenger_name, 0, -1):
+            passenger_record = PassengerRecord.from_str(redis_value.decode("UTF-8"))
+            if passenger_record.destination_fqn == passenger_destination_fqn:
+                return passenger_record
+        return None
+
     def all(self) -> Iterable[PassengerRecord]:
         for passenger_name in self.__client.scan_iter("*"):
             passenger_records = self.find_by_passenger_name(passenger_name)
