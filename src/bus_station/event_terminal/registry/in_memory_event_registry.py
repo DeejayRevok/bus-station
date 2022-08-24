@@ -35,30 +35,41 @@ class InMemoryEventRegistry(EventRegistry):
             )
         )
 
-    def get_event_destinations(self, event: Type[Event]) -> Optional[List[EventConsumer]]:
+    def get_event_destinations(self, event: Type[Event]) -> Optional[Set[EventConsumer]]:
         event_records: Optional[List[PassengerRecord[Any]]] = self.__in_memory_repository.find_by_passenger_name(
             event.__name__
         )
         if event_records is None:
             return None
 
-        event_destinations = []
+        event_destinations = set()
         for event_record in event_records:
             if event_record.destination_fqn is None:
                 continue
-            event_destinations.append(self.__event_consumer_resolver.resolve_from_fqn(event_record.destination_fqn))
+            event_destinations.add(self.__event_consumer_resolver.resolve_from_fqn(event_record.destination_fqn))
         return event_destinations
 
-    def get_event_destination_contacts(self, event: Type[Event]) -> Optional[List[Any]]:
+    def get_event_destination_contact(self, event: Type[Event], event_destination: EventConsumer) -> Optional[Any]:
+        event_record = self.__in_memory_repository.find_by_passenger_name_and_destination(
+            passenger_name=event.__name__, passenger_destination_fqn=self.__fqn_getter.get(event_destination)
+        )
+        if event_record is None:
+            return None
+
+        return event_record.destination_contact
+
+    def get_event_destination_contacts(self, event: Type[Event]) -> Optional[Set[Any]]:
         event_records: Optional[List[PassengerRecord[Any]]] = self.__in_memory_repository.find_by_passenger_name(
             event.__name__
         )
         if event_records is None:
             return None
 
-        event_destination_contacts = []
+        event_destination_contacts = set()
         for event_record in event_records:
-            event_destination_contacts.append(event_record.destination_contact)
+            if event_record.destination_contact in event_destination_contacts:
+                continue
+            event_destination_contacts.add(event_record.destination_contact)
         return event_destination_contacts
 
     def get_events_registered(self) -> Set[Type[Event]]:

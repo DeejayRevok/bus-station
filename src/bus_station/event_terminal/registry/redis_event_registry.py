@@ -1,4 +1,4 @@
-from typing import Iterable, List, Optional, Type
+from typing import List, Optional, Set, Type
 
 from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
@@ -33,17 +33,27 @@ class RedisEventRegistry(RemoteEventRegistry):
             )
         )
 
-    def get_event_destination_contacts(self, event: Type[Event]) -> Optional[List[str]]:
+    def get_event_destination_contacts(self, event: Type[Event]) -> Optional[Set[str]]:
         event_records = self.__redis_repository.find_by_passenger_name(event.__name__)
         if event_records is None:
             return None
 
-        event_destination_contacts = []
+        event_destination_contacts = set()
         for event_record in event_records:
-            event_destination_contacts.append(event_record.destination_contact)
+            if event_record.destination_contact in event_destination_contacts:
+                continue
+            event_destination_contacts.add(event_record.destination_contact)
         return event_destination_contacts
 
-    def get_events_registered(self) -> Iterable[Type[Event]]:
+    def get_event_destination_contact(self, event: Type[Event], event_destination: EventConsumer) -> Optional[str]:
+        event_record = self.__redis_repository.find_by_passenger_name_and_destination(
+            passenger_name=event.__name__, passenger_destination_fqn=self.__fqn_getter.get(event_destination)
+        )
+        if event_record is None:
+            return None
+        return event_record.destination_contact
+
+    def get_events_registered(self) -> Set[Type[Event]]:
         events_registered = set()
         for event_record in self.__redis_repository.all():
             event = self.__passenger_class_resolver.resolve_from_fqn(event_record.passenger_fqn)
@@ -52,18 +62,18 @@ class RedisEventRegistry(RemoteEventRegistry):
             events_registered.add(event)
         return events_registered
 
-    def get_event_destinations(self, event: Type[Event]) -> Optional[List[EventConsumer]]:
+    def get_event_destinations(self, event: Type[Event]) -> Optional[Set[EventConsumer]]:
         event_records: Optional[List[PassengerRecord[str]]] = self.__redis_repository.find_by_passenger_name(
             event.__name__
         )
         if event_records is None:
             return None
 
-        event_destinations = []
+        event_destinations = set()
         for event_record in event_records:
             if event_record.destination_fqn is None:
                 continue
-            event_destinations.append(self.__event_consumer_resolver.resolve_from_fqn(event_record.destination_fqn))
+            event_destinations.add(self.__event_consumer_resolver.resolve_from_fqn(event_record.destination_fqn))
         return event_destinations
 
     def unregister(self, event: Type[Event]) -> None:

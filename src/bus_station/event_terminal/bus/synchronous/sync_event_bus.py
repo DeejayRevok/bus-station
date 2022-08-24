@@ -7,7 +7,7 @@ from bus_station.passengers.reception.passenger_receiver import PassengerReceive
 
 class SyncEventBus(EventBus):
     def __init__(self, event_registry: InMemoryEventRegistry, event_receiver: PassengerReceiver[Event, EventConsumer]):
-        super().__init__(event_receiver)
+        self.__event_receiver = event_receiver
         self.__event_registry = event_registry
 
     def transport(self, passenger: Event) -> None:
@@ -16,4 +16,4 @@ class SyncEventBus(EventBus):
             return
 
         for event_consumer in event_consumers:
-            self._event_receiver.receive(passenger, event_consumer)
+            self.__event_receiver.receive(passenger, event_consumer)
