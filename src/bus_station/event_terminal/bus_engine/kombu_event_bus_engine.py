@@ -1,10 +1,10 @@
-from typing import ClassVar, Type, TypeVar
+from typing import ClassVar, TypeVar
 
 from kombu import Connection
 from kombu.messaging import Exchange, Queue
 from kombu.transport.virtual import Channel
 
-from bus_station.event_terminal.contact_not_found_for_event import ContactNotFoundForEvent
+from bus_station.event_terminal.contact_not_found_for_consumer import ContactNotFoundForConsumer
 from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
 from bus_station.event_terminal.registry.remote_event_registry import RemoteEventRegistry
@@ -25,13 +25,12 @@ class KombuEventBusEngine(Engine):
         event_registry: RemoteEventRegistry,
         event_receiver: PassengerReceiver[Event, EventConsumer],
         event_deserializer: PassengerDeserializer,
-        event_type: Type[E],
         event_consumer: EventConsumer,
     ):
         super().__init__()
-        event_exchange_name = event_registry.get_event_destination_contact(event_type, event_consumer)
+        event_exchange_name = event_registry.get_event_destination_contact(event_consumer)
         if event_exchange_name is None:
-            raise ContactNotFoundForEvent(event_type.__name__)
+            raise ContactNotFoundForConsumer(event_consumer.__class__.__name__)
 
         broker_connection = broker_connection
         channel = broker_connection.channel()
@@ -44,7 +43,7 @@ class KombuEventBusEngine(Engine):
             broker_connection,
             event_consumer_queue,
             event_consumer,
-            event_type,
+            event_registry.get_consumer_event(event_consumer),
             event_receiver,
             event_deserializer,
         )
