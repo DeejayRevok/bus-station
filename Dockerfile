@@ -17,5 +17,5 @@ WORKDIR /app
 
 ENV PYTHONPATH /app/src:/app/tests
 
-RUN pip install poetry
+RUN pip install poetry==1.1.15
 RUN poetry install
