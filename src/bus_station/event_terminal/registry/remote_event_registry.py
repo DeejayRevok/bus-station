@@ -16,5 +16,5 @@ class RemoteEventRegistry(EventRegistry, ABC):
         pass
 
     @abstractmethod
-    def get_event_destination_contact(self, event: Type[Event], event_destination: EventConsumer) -> Optional[str]:
+    def get_event_destination_contact(self, event_destination: EventConsumer) -> Optional[str]:
         pass

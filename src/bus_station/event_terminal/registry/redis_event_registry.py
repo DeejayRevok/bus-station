@@ -45,7 +45,8 @@ class RedisEventRegistry(RemoteEventRegistry):
             event_destination_contacts.add(event_record.destination_contact)
         return event_destination_contacts
 
-    def get_event_destination_contact(self, event: Type[Event], event_destination: EventConsumer) -> Optional[str]:
+    def get_event_destination_contact(self, event_destination: EventConsumer) -> Optional[str]:
+        event = self.get_consumer_event(event_destination)
         event_record = self.__redis_repository.find_by_passenger_name_and_destination(
             passenger_name=event.__name__, passenger_destination_fqn=self.__fqn_getter.get(event_destination)
         )

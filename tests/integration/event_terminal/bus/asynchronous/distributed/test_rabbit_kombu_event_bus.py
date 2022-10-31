@@ -98,7 +98,6 @@ class TestRabbitKombuEventBus(IntegrationTestCase):
             self.redis_registry,
             event_middleware_receiver,
             event_deserializer,
-            EventTest,
             self.test_event_consumer1,
         )
         self.kombu_event_bus_engine2 = KombuEventBusEngine(
@@ -106,7 +105,6 @@ class TestRabbitKombuEventBus(IntegrationTestCase):
             self.redis_registry,
             event_middleware_receiver,
             event_deserializer,
-            EventTest,
             self.test_event_consumer2,
         )
 

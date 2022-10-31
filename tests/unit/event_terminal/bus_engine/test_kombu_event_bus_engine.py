@@ -5,7 +5,7 @@ from kombu import Connection, Exchange, Queue
 from kombu.transport.virtual import Channel
 
 from bus_station.event_terminal.bus_engine.kombu_event_bus_engine import KombuEventBusEngine
-from bus_station.event_terminal.contact_not_found_for_event import ContactNotFoundForEvent
+from bus_station.event_terminal.contact_not_found_for_consumer import ContactNotFoundForConsumer
 from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
 from bus_station.event_terminal.registry.event_registry import EventRegistry
@@ -22,8 +22,8 @@ class TestKombuEventBusEngine(TestCase):
         self.event_registry_mock = Mock(spec=EventRegistry)
         self.event_receiver_mock = Mock(spec=PassengerReceiver)
         self.event_deserializer_mock = Mock(spec=PassengerDeserializer)
-        self.event_type_mock = Mock(spec=Event)
         self.event_consumer_mock = Mock(spec=EventConsumer)
+        self.event_type_mock = Mock(spec=Event)
 
     @patch("bus_station.event_terminal.bus_engine.kombu_event_bus_engine.Queue")
     @patch("bus_station.event_terminal.bus_engine.kombu_event_bus_engine.Exchange")
@@ -31,20 +31,17 @@ class TestKombuEventBusEngine(TestCase):
     def test_init_contact_not_found(self, consumer_builder_mock, exchange_builder_mock, queue_builder_mock):
         self.event_registry_mock.get_event_destination_contact.return_value = None
 
-        with self.assertRaises(ContactNotFoundForEvent) as cnffe:
+        with self.assertRaises(ContactNotFoundForConsumer) as cnffe:
             KombuEventBusEngine(
                 self.broker_connection_mock,
                 self.event_registry_mock,
                 self.event_receiver_mock,
                 self.event_deserializer_mock,
-                self.event_type_mock.__class__,
                 self.event_consumer_mock,
             )
 
-        self.assertEqual(self.event_type_mock.__class__.__name__, cnffe.exception.event_name)
-        self.event_registry_mock.get_event_destination_contact.assert_called_once_with(
-            self.event_type_mock.__class__, self.event_consumer_mock
-        )
+        self.assertEqual(self.event_consumer_mock.__class__.__name__, cnffe.exception.event_consumer_name)
+        self.event_registry_mock.get_event_destination_contact.assert_called_once_with(self.event_consumer_mock)
         consumer_builder_mock.assert_not_called()
         exchange_builder_mock.assert_not_called()
         queue_builder_mock.assert_not_called()
@@ -59,13 +56,13 @@ class TestKombuEventBusEngine(TestCase):
         exchange_builder_mock.return_value = test_exchange
         test_queue_name = "test_queue"
         self.event_registry_mock.get_event_destination_contact.return_value = test_queue_name
+        self.event_registry_mock.get_consumer_event.return_value = self.event_type_mock
 
         KombuEventBusEngine(
             self.broker_connection_mock,
             self.event_registry_mock,
             self.event_receiver_mock,
             self.event_deserializer_mock,
-            self.event_type_mock.__class__,
             self.event_consumer_mock,
         )
 
@@ -80,7 +77,7 @@ class TestKombuEventBusEngine(TestCase):
             self.broker_connection_mock,
             test_queue,
             self.event_consumer_mock,
-            self.event_type_mock.__class__,
+            self.event_type_mock,
             self.event_receiver_mock,
             self.event_deserializer_mock,
         )
@@ -96,7 +93,6 @@ class TestKombuEventBusEngine(TestCase):
             self.event_registry_mock,
             self.event_receiver_mock,
             self.event_deserializer_mock,
-            self.event_type_mock.__class__,
             self.event_consumer_mock,
         )
 
@@ -115,7 +111,6 @@ class TestKombuEventBusEngine(TestCase):
             self.event_registry_mock,
             self.event_receiver_mock,
             self.event_deserializer_mock,
-            self.event_type_mock.__class__,
             self.event_consumer_mock,
         )
 

@@ -1,6 +1,6 @@
-from typing import Type, TypeVar
+from typing import TypeVar
 
-from bus_station.event_terminal.contact_not_found_for_event import ContactNotFoundForEvent
+from bus_station.event_terminal.contact_not_found_for_consumer import ContactNotFoundForConsumer
 from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
 from bus_station.event_terminal.registry.event_registry import EventRegistry
@@ -18,13 +18,12 @@ class MemoryQueueEventBusEngine(Engine):
         event_registry: EventRegistry,
         event_receiver: PassengerReceiver[Event, EventConsumer],
         event_deserializer: PassengerDeserializer,
-        event_type: Type[E],
         event_consumer: EventConsumer,
     ):
         super().__init__()
-        event_queue = event_registry.get_event_destination_contact(event_type, event_consumer)
+        event_queue = event_registry.get_event_destination_contact(event_consumer)
         if event_queue is None:
-            raise ContactNotFoundForEvent(event_type.__name__)
+            raise ContactNotFoundForConsumer(event_consumer.__class__.__name__)
 
         self.__event_worker = MemoryQueuePassengerWorker(
             event_queue, event_consumer, event_receiver, event_deserializer
