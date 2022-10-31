@@ -49,7 +49,8 @@ class InMemoryEventRegistry(EventRegistry):
             event_destinations.add(self.__event_consumer_resolver.resolve_from_fqn(event_record.destination_fqn))
         return event_destinations
 
-    def get_event_destination_contact(self, event: Type[Event], event_destination: EventConsumer) -> Optional[Any]:
+    def get_event_destination_contact(self, event_destination: EventConsumer) -> Optional[Any]:
+        event = self.get_consumer_event(event_destination)
         event_record = self.__in_memory_repository.find_by_passenger_name_and_destination(
             passenger_name=event.__name__, passenger_destination_fqn=self.__fqn_getter.get(event_destination)
         )

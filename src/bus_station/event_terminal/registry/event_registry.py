@@ -7,10 +7,10 @@ from bus_station.event_terminal.event_consumer import EventConsumer
 
 class EventRegistry(metaclass=ABCMeta):
     def register(self, consumer: EventConsumer, consumer_contact: Any) -> None:
-        consumer_event = self.__get_consumer_event(consumer)
+        consumer_event = self.get_consumer_event(consumer)
         self._register(consumer_event, consumer, consumer_contact)
 
-    def __get_consumer_event(self, consumer: EventConsumer) -> Type[Event]:
+    def get_consumer_event(self, consumer: EventConsumer) -> Type[Event]:
         consumer_typing = get_type_hints(consumer.consume)
 
         if "event" not in consumer_typing:
@@ -34,7 +34,7 @@ class EventRegistry(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def get_event_destination_contact(self, event: Type[Event], event_destination: EventConsumer) -> Optional[Any]:
+    def get_event_destination_contact(self, event_destination: EventConsumer) -> Optional[Any]:
         pass
 
     @abstractmethod
