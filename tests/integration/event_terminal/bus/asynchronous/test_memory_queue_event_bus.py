@@ -74,10 +74,10 @@ class TestMemoryQueueEventBus(IntegrationTestCase):
             in_memory_registry,
         )
         self.memory_queue_event_bus_engine1 = MemoryQueueEventBusEngine(
-            in_memory_registry, event_middleware_receiver, passenger_deserializer, EventTest, self.test_event_consumer1
+            in_memory_registry, event_middleware_receiver, passenger_deserializer, self.test_event_consumer1
         )
         self.memory_queue_event_bus_engine2 = MemoryQueueEventBusEngine(
-            in_memory_registry, event_middleware_receiver, passenger_deserializer, EventTest, self.test_event_consumer2
+            in_memory_registry, event_middleware_receiver, passenger_deserializer, self.test_event_consumer2
         )
 
     def tearDown(self) -> None:
