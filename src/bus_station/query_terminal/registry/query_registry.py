@@ -9,11 +9,15 @@ from bus_station.query_terminal.query_handler import QueryHandler
 class QueryRegistry(metaclass=ABCMeta):
     def register(self, handler: QueryHandler, handler_contact: Any) -> None:
         handler_query = self.__get_handler_query(handler)
-        self.__check_query_already_registered(handler_query)
-        self._register(handler_query, handler, handler_contact)
+        existing_handler_contact = self.get_query_destination_contact(handler_query)
+        self.__check_query_already_registered(handler_query, handler_contact, existing_handler_contact)
+        if existing_handler_contact is None:
+            self._register(handler_query, handler, handler_contact)
 
-    def __check_query_already_registered(self, query: Type[Query]) -> None:
-        if self.get_query_destination_contact(query) is not None:
+    def __check_query_already_registered(
+        self, query: Type[Query], handler_contact: Any, existing_handler_contact: Optional[Any]
+    ) -> None:
+        if existing_handler_contact is not None and handler_contact != existing_handler_contact:
             raise HandlerForQueryAlreadyRegistered(query.__name__)
 
     def __get_handler_query(self, handler: QueryHandler) -> Type[Query]:
