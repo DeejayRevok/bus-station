@@ -9,11 +9,15 @@ from bus_station.command_terminal.handler_for_command_already_registered import 
 class CommandRegistry(metaclass=ABCMeta):
     def register(self, handler: CommandHandler, handler_contact: Any) -> None:
         handler_command = self.__get_handler_command(handler)
-        self.__check_command_already_registered(handler_command)
-        self._register(handler_command, handler, handler_contact)
+        existing_handler_contact = self.get_command_destination_contact(handler_command)
+        self.__check_command_already_registered(handler_command, handler_contact, existing_handler_contact)
+        if existing_handler_contact is None:
+            self._register(handler_command, handler, handler_contact)
 
-    def __check_command_already_registered(self, command: Type[Command]) -> None:
-        if self.get_command_destination_contact(command) is not None:
+    def __check_command_already_registered(
+        self, command: Type[Command], handler_contact: Any, existing_handler_contact: Optional[Any]
+    ) -> None:
+        if existing_handler_contact is not None and handler_contact != existing_handler_contact:
             raise HandlerForCommandAlreadyRegistered(command.__name__)
 
     def __get_handler_command(self, handler: CommandHandler) -> Type[Command]:
