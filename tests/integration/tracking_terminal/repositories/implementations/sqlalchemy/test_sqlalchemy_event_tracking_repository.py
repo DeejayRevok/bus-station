@@ -60,6 +60,7 @@ class TestSQLAlchemyEventTrackingRepository(IntegrationTestCase):
             executor_name="test_command_executor",
             execution_start=datetime.now(),
             execution_end=datetime.now(),
+            success=False,
         )
 
         self.sqlalchemy_event_tracking_repository.save(event_tracking)
@@ -78,6 +79,7 @@ class TestSQLAlchemyEventTrackingRepository(IntegrationTestCase):
             executor_name="test_command_executor",
             execution_start=datetime.now(),
             execution_end=datetime.now(),
+            success=True,
         )
         self.sqlalchemy_session.add(event_tracking_proxy)
         self.sqlalchemy_session.commit()

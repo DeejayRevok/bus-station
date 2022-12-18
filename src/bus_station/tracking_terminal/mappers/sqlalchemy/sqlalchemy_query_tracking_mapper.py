@@ -1,6 +1,6 @@
 from typing import Type
 
-from sqlalchemy import JSON, Column, DateTime, String, Table
+from sqlalchemy import JSON, Boolean, Column, DateTime, String, Table
 
 from bus_station.tracking_terminal.mappers.sqlalchemy.sqlalchemy_mapper import SQLAlchemyMapper
 from bus_station.tracking_terminal.models.proxy_definitions import SAQueryTrackingProxy
@@ -20,6 +20,7 @@ class SQLAlchemyQueryTrackingMapper(SQLAlchemyMapper):
             Column("response_data", JSON, nullable=True),
             Column("execution_start", DateTime, nullable=False),
             Column("execution_end", DateTime, nullable=True),
+            Column("success", Boolean, nullable=True),
         )
 
     @property

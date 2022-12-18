@@ -11,3 +11,4 @@ class PassengerTracking:
     data: dict
     execution_start: Optional[datetime]
     execution_end: Optional[datetime]
+    success: Optional[bool]

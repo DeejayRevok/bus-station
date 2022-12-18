@@ -61,6 +61,7 @@ class TestSQLAlchemyEventTrackingRepository(IntegrationTestCase):
             execution_start=datetime.now(),
             execution_end=datetime.now(),
             response_data={"test_response": "test_response"},
+            success=True,
         )
 
         self.sqlalchemy_query_tracking_repository.save(query_tracking)
@@ -80,6 +81,7 @@ class TestSQLAlchemyEventTrackingRepository(IntegrationTestCase):
             execution_start=datetime.now(),
             execution_end=datetime.now(),
             response_data={"test_response": "test_response"},
+            success=False,
         )
         self.sqlalchemy_session.add(query_tracking_proxy)
         self.sqlalchemy_session.commit()

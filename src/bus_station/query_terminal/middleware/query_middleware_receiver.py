@@ -1,3 +1,5 @@
+from typing import Optional
+
 from bus_station.passengers.reception.passenger_middleware_receiver import PassengerMiddlewareReceiver
 from bus_station.query_terminal.middleware.query_middleware import QueryMiddleware
 from bus_station.query_terminal.query import Query
@@ -11,9 +13,16 @@ class QueryMiddlewareReceiver(PassengerMiddlewareReceiver[Query, QueryHandler, Q
         for middleware in middlewares:
             middleware.before_handle(passenger, passenger_bus_stop)
 
-        query_response = passenger_bus_stop.handle(passenger)
+        query_response = QueryResponse(data=None)
+        handling_exception = None
+        try:
+            query_response = passenger_bus_stop.handle(passenger)
+        except Exception as ex:
+            handling_exception = ex
 
         for middleware in reversed(middlewares):
-            query_response = middleware.after_handle(passenger, passenger_bus_stop, query_response)
+            query_response = middleware.after_handle(
+                passenger, passenger_bus_stop, query_response, handling_exception=handling_exception
+            )
 
         return query_response

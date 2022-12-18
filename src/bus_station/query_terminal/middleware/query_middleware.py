@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from typing import Optional
 
 from bus_station.passengers.passenger_middleware import PassengerMiddleware
 from bus_station.query_terminal.query import Query
@@ -12,5 +13,11 @@ class QueryMiddleware(PassengerMiddleware):
         pass
 
     @abstractmethod
-    def after_handle(self, passenger: Query, bus_stop: QueryHandler, query_response: QueryResponse) -> QueryResponse:
+    def after_handle(
+        self,
+        passenger: Query,
+        bus_stop: QueryHandler,
+        query_response: QueryResponse,
+        handling_exception: Optional[Exception] = None,
+    ) -> QueryResponse:
         pass

@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from typing import Optional
 
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
@@ -11,5 +12,7 @@ class CommandMiddleware(PassengerMiddleware):
         pass
 
     @abstractmethod
-    def after_handle(self, passenger: Command, bus_stop: CommandHandler) -> None:
+    def after_handle(
+        self, passenger: Command, bus_stop: CommandHandler, handling_exception: Optional[Exception] = None
+    ) -> None:
         pass

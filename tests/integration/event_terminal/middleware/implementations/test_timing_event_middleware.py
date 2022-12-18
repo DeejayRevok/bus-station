@@ -34,5 +34,8 @@ class TestTimingEventMiddleware(IntegrationTestCase):
         with self.assertLogs(level="INFO") as logs:
             self.event_middleware_receiver.receive(test_event, test_event_consumer)
 
-            self.assertIn(f"Event {test_event} consumed by {test_event_consumer.__class__.__name__} in", logs.output[0])
+            self.assertIn(
+                f"Event {test_event} consumed successfully by {test_event_consumer.__class__.__name__} in",
+                logs.output[0],
+            )
         self.assertEqual(1, test_event_consumer.call_count)

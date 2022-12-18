@@ -41,6 +41,7 @@ class TestPyMongoPassengerTracker(TestCase):
             data=test_dict,
             execution_start=test_datetime,
             execution_end=None,
+            success=None,
         )
         self.pymongo_passenger_tracking_repository_mock.save.assert_called_once_with(test_passenger_tracking)
 
@@ -49,7 +50,7 @@ class TestPyMongoPassengerTracker(TestCase):
         self.pymongo_passenger_tracking_repository_mock.find_by_id.return_value = None
 
         with self.assertRaises(PassengerTrackingNotFound) as ptnf:
-            self.pymongo_passenger_tracker.end_tracking(test_passenger)
+            self.pymongo_passenger_tracker.end_tracking(test_passenger, success=False)
 
         self.assertEqual(test_passenger.__class__.__name__, ptnf.exception.passenger_name)
         self.assertEqual(str(id(test_passenger)), ptnf.exception.passenger_tracking_id)
@@ -64,8 +65,9 @@ class TestPyMongoPassengerTracker(TestCase):
         test_passenger_tracking = Mock(spec=PassengerTracking)
         self.pymongo_passenger_tracking_repository_mock.find_by_id.return_value = test_passenger_tracking
 
-        self.pymongo_passenger_tracker.end_tracking(test_passenger, test="test")
+        self.pymongo_passenger_tracker.end_tracking(test_passenger, success=True, test="test")
 
         self.assertEqual(test_datetime, test_passenger_tracking.execution_end)
         self.assertEqual("test", test_passenger_tracking.test)
         self.pymongo_passenger_tracking_repository_mock.save.assert_called_once_with(test_passenger_tracking)
+        self.assertTrue(test_passenger_tracking.success)

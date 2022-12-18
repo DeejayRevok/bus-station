@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from typing import Optional
 
 from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
@@ -11,5 +12,7 @@ class EventMiddleware(PassengerMiddleware):
         pass
 
     @abstractmethod
-    def after_consume(self, passenger: Event, bus_stop: EventConsumer) -> None:
+    def after_consume(
+        self, passenger: Event, bus_stop: EventConsumer, consume_exception: Optional[Exception] = None
+    ) -> None:
         pass

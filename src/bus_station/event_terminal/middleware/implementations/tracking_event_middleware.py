@@ -1,3 +1,5 @@
+from typing import Optional
+
 from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
 from bus_station.event_terminal.middleware.event_middleware import EventMiddleware
@@ -11,5 +13,8 @@ class TrackingEventMiddleware(EventMiddleware):
     def before_consume(self, passenger: Event, bus_stop: EventConsumer) -> None:
         self.__tracker.start_tracking(passenger, bus_stop)
 
-    def after_consume(self, passenger: Event, bus_stop: EventConsumer) -> None:
-        self.__tracker.end_tracking(passenger)
+    def after_consume(
+        self, passenger: Event, bus_stop: EventConsumer, consume_exception: Optional[Exception] = None
+    ) -> None:
+        success = consume_exception is None
+        self.__tracker.end_tracking(passenger, success)

@@ -85,7 +85,7 @@ class TestSQLAlchemyPassengerTracker(IntegrationTestCase):
         test_event_consumer = EventTestConsumer()
         self.sqlalchemy_passenger_tracker.start_tracking(test_event, test_event_consumer)
 
-        self.sqlalchemy_passenger_tracker.end_tracking(test_event)
+        self.sqlalchemy_passenger_tracker.end_tracking(test_event, success=False)
 
         stored_tracking = self.sqlalchemy_event_tracking_repository.find_by_id(str(id(test_event)))
         self.assertIsNotNone(stored_tracking)
@@ -95,12 +95,13 @@ class TestSQLAlchemyPassengerTracker(IntegrationTestCase):
         self.assertIsNotNone(stored_tracking.execution_start)
         self.assertIsNotNone(stored_tracking.execution_end)
         self.assertGreater(stored_tracking.execution_end, stored_tracking.execution_start)
+        self.assertFalse(stored_tracking.success)
 
     def test_end_tracking_error(self):
         test_event = EventTest(test="test")
 
         with self.assertRaises(PassengerTrackingNotFound) as ptnf:
-            self.sqlalchemy_passenger_tracker.end_tracking(test_event)
+            self.sqlalchemy_passenger_tracker.end_tracking(test_event, success=True)
 
         self.assertEqual(test_event.__class__.__name__, ptnf.exception.passenger_name)
         self.assertEqual(str(id(test_event)), ptnf.exception.passenger_tracking_id)

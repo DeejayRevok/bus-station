@@ -48,6 +48,7 @@ class TestPyMongoCommandTrackingRepository(IntegrationTestCase):
             executor_name="test_command_executor",
             execution_start=datetime.now(),
             execution_end=datetime.now(),
+            success=False,
         )
 
         self.pymongo_command_tracking_repository.save(command_tracking)
@@ -70,6 +71,7 @@ class TestPyMongoCommandTrackingRepository(IntegrationTestCase):
             executor_name="test_command_executor",
             execution_start=datetime.now().timestamp(),
             execution_end=datetime.now().timestamp(),
+            success=True,
         )
         self.pymongo_db.get_collection("command_tracking").insert_one(command_tracking_serialized)
 
