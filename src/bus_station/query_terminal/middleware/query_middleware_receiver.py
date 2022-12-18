@@ -1,5 +1,3 @@
-from typing import Optional
-
 from bus_station.passengers.reception.passenger_middleware_receiver import PassengerMiddlewareReceiver
 from bus_station.query_terminal.middleware.query_middleware import QueryMiddleware
 from bus_station.query_terminal.query import Query
