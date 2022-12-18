@@ -28,7 +28,7 @@ class TestCommandMiddlewareReceiver(TestCase):
 
         test_middleware_class.assert_called_once_with(test_arg)
 
-    def test_receive_success(self):
+    def test_receive_successful_handle(self):
         parent_mock = Mock()
         test_middleware1_class = Mock(spec=Type[CommandMiddleware])
         test_middleware2_class = Mock(spec=Type[CommandMiddleware])
@@ -47,7 +47,37 @@ class TestCommandMiddlewareReceiver(TestCase):
                 call.middleware1_class().before_handle(test_command, test_command_handler),
                 call.middleware2_class().before_handle(test_command, test_command_handler),
                 call.handler.handle(test_command),
-                call.middleware2_class().after_handle(test_command, test_command_handler),
-                call.middleware1_class().after_handle(test_command, test_command_handler),
+                call.middleware2_class().after_handle(test_command, test_command_handler, handling_exception=None),
+                call.middleware1_class().after_handle(test_command, test_command_handler, handling_exception=None),
+            ]
+        )
+
+    def test_receive_handle_exception(self):
+        parent_mock = Mock()
+        test_middleware1_class = Mock(spec=Type[CommandMiddleware])
+        test_middleware2_class = Mock(spec=Type[CommandMiddleware])
+        test_command = Mock(spec=Command)
+        test_command_handler = Mock(spec=CommandHandler)
+        parent_mock.middleware1_class = test_middleware1_class
+        parent_mock.middleware2_class = test_middleware2_class
+        parent_mock.handler = test_command_handler
+        handle_exception = Exception("Test handle exception")
+        test_command_handler.handle.side_effect = handle_exception
+
+        self.command_middleware_receiver.add_middleware_definition(test_middleware1_class)
+        self.command_middleware_receiver.add_middleware_definition(test_middleware2_class)
+        self.command_middleware_receiver.receive(test_command, test_command_handler)
+
+        parent_mock.assert_has_calls(
+            [
+                call.middleware1_class().before_handle(test_command, test_command_handler),
+                call.middleware2_class().before_handle(test_command, test_command_handler),
+                call.handler.handle(test_command),
+                call.middleware2_class().after_handle(
+                    test_command, test_command_handler, handling_exception=handle_exception
+                ),
+                call.middleware1_class().after_handle(
+                    test_command, test_command_handler, handling_exception=handle_exception
+                ),
             ]
         )

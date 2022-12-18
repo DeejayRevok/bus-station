@@ -1,4 +1,5 @@
 from logging import Logger
+from typing import Optional
 
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
@@ -12,5 +13,9 @@ class LoggingCommandMiddleware(CommandMiddleware):
     def before_handle(self, passenger: Command, bus_stop: CommandHandler) -> None:
         self.__logger.info(f"Starting handling command {passenger} with {bus_stop.__class__.__name__}")
 
-    def after_handle(self, passenger: Command, bus_stop: CommandHandler) -> None:
+    def after_handle(
+        self, passenger: Command, bus_stop: CommandHandler, handling_exception: Optional[Exception] = None
+    ) -> None:
+        if handling_exception is not None:
+            self.__logger.exception(handling_exception)
         self.__logger.info(f"Finished handling command {passenger} with {bus_stop.__class__.__name__}")

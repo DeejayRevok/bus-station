@@ -25,15 +25,17 @@ class PassengerTracker:
             data=asdict(passenger),
             execution_start=datetime.now(),
             execution_end=None,
+            success=None,
         )
         self.__repository.save(tracking)
 
-    def end_tracking(self, passenger: Passenger, **track_data: Any) -> None:
+    def end_tracking(self, passenger: Passenger, success: bool, **track_data: Any) -> None:
         passenger_id = str(id(passenger))
         tracking = self.__repository.find_by_id(passenger_id)
         if tracking is None:
             raise PassengerTrackingNotFound(passenger.__class__.__name__, passenger_id)
         tracking.execution_end = datetime.now()
+        tracking.success = success
         self.__set_track_data(tracking, **track_data)
         self.__repository.save(tracking)
 

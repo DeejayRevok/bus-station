@@ -48,6 +48,7 @@ class TestPyMongoEventTrackingRepository(IntegrationTestCase):
             executor_name="test_event_executor",
             execution_start=datetime.now(),
             execution_end=datetime.now(),
+            success=False,
         )
 
         self.pymongo_event_tracking_repository.save(event_tracking)
@@ -70,6 +71,7 @@ class TestPyMongoEventTrackingRepository(IntegrationTestCase):
             executor_name="test_event_executor",
             execution_start=datetime.now().timestamp(),
             execution_end=datetime.now().timestamp(),
+            success=True,
         )
         self.pymongo_db.get_collection("event_tracking").insert_one(event_tracking_serialized)
 

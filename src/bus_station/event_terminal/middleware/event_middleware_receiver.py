@@ -10,7 +10,11 @@ class EventMiddlewareReceiver(PassengerMiddlewareReceiver[Event, EventConsumer, 
         for middleware in middlewares:
             middleware.before_consume(passenger, passenger_bus_stop)
 
-        passenger_bus_stop.consume(passenger)
+        consume_exception = None
+        try:
+            passenger_bus_stop.consume(passenger)
+        except Exception as ex:
+            consume_exception = ex
 
         for middleware in reversed(middlewares):
-            middleware.after_consume(passenger, passenger_bus_stop)
+            middleware.after_consume(passenger, passenger_bus_stop, consume_exception=consume_exception)

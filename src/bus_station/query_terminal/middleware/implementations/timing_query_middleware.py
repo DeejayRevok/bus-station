@@ -1,5 +1,6 @@
 import time
 from logging import Logger
+from typing import Optional
 
 from bus_station.query_terminal.middleware.query_middleware import QueryMiddleware
 from bus_station.query_terminal.query import Query
@@ -15,7 +16,17 @@ class TimingQueryMiddleware(QueryMiddleware):
     def before_handle(self, passenger: Query, bus_stop: QueryHandler) -> None:
         self.__start_time = time.time()
 
-    def after_handle(self, passenger: Query, bus_stop: QueryHandler, query_response: QueryResponse) -> QueryResponse:
+    def after_handle(
+        self,
+        passenger: Query,
+        bus_stop: QueryHandler,
+        query_response: QueryResponse,
+        handling_exception: Optional[Exception] = None,
+    ) -> QueryResponse:
         execution_time = time.time() - self.__start_time
-        self.__logger.info(f"Query {passenger} handled by {bus_stop.__class__.__name__} in {execution_time} seconds")
+        execution_result_hint = "successfully" if handling_exception is None else "wrongly"
+        self.__logger.info(
+            f"Query {passenger} handled {execution_result_hint} "
+            f"by {bus_stop.__class__.__name__} in {execution_time} seconds"
+        )
         return query_response

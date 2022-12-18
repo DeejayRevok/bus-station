@@ -54,6 +54,7 @@ class TestSQLAlchemyPassengerTracker(TestCase):
             data=test_dict,
             execution_start=test_datetime,
             execution_end=None,
+            success=None,
         )
         self.passenger_tracking_repository_mock.save.assert_called_once_with(test_passenger_tracking)
 
@@ -62,7 +63,7 @@ class TestSQLAlchemyPassengerTracker(TestCase):
         self.passenger_tracking_repository_mock.find_by_id.return_value = None
 
         with self.assertRaises(PassengerTrackingNotFound) as ptnf:
-            self.sqlalchemy_passenger_tracker.end_tracking(test_passenger)
+            self.sqlalchemy_passenger_tracker.end_tracking(test_passenger, success=True)
 
         self.assertEqual(test_passenger.__class__.__name__, ptnf.exception.passenger_name)
         self.assertEqual(str(id(test_passenger)), ptnf.exception.passenger_tracking_id)
@@ -77,8 +78,9 @@ class TestSQLAlchemyPassengerTracker(TestCase):
         test_passenger_tracking = Mock(spec=PassengerTracking)
         self.passenger_tracking_repository_mock.find_by_id.return_value = test_passenger_tracking
 
-        self.sqlalchemy_passenger_tracker.end_tracking(test_passenger, test="test")
+        self.sqlalchemy_passenger_tracker.end_tracking(test_passenger, success=False, test="test")
 
         self.assertEqual(test_datetime, test_passenger_tracking.execution_end)
         self.assertEqual("test", test_passenger_tracking.test)
         self.passenger_tracking_repository_mock.save.assert_called_once_with(test_passenger_tracking)
+        self.assertFalse(test_passenger_tracking.success)

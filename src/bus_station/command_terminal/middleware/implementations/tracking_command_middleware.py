@@ -1,3 +1,5 @@
+from typing import Optional
+
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
 from bus_station.command_terminal.middleware.command_middleware import CommandMiddleware
@@ -11,5 +13,8 @@ class TrackingCommandMiddleware(CommandMiddleware):
     def before_handle(self, passenger: Command, bus_stop: CommandHandler) -> None:
         self.__tracker.start_tracking(passenger, bus_stop)
 
-    def after_handle(self, passenger: Command, bus_stop: CommandHandler) -> None:
-        self.__tracker.end_tracking(passenger)
+    def after_handle(
+        self, passenger: Command, bus_stop: CommandHandler, handling_exception: Optional[Exception] = None
+    ) -> None:
+        success = handling_exception is None
+        self.__tracker.end_tracking(passenger, success)

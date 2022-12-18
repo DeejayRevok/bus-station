@@ -60,6 +60,7 @@ class TestSQLAlchemyCommandTrackingRepository(IntegrationTestCase):
             executor_name="test_command_executor",
             execution_start=datetime.now(),
             execution_end=datetime.now(),
+            success=True,
         )
 
         self.sqlalchemy_command_tracking_repository.save(command_tracking)
@@ -79,6 +80,7 @@ class TestSQLAlchemyCommandTrackingRepository(IntegrationTestCase):
             executor_name="test_command_executor",
             execution_start=datetime.now(),
             execution_end=datetime.now(),
+            success=False,
         )
         self.sqlalchemy_session.add(proxy_command_tracking)
         self.sqlalchemy_session.commit()

@@ -1,5 +1,6 @@
 import time
 from logging import Logger
+from typing import Optional
 
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
@@ -14,6 +15,12 @@ class TimingCommandMiddleware(CommandMiddleware):
     def before_handle(self, passenger: Command, bus_stop: CommandHandler) -> None:
         self.__start_time = time.time()
 
-    def after_handle(self, passenger: Command, bus_stop: CommandHandler) -> None:
+    def after_handle(
+        self, passenger: Command, bus_stop: CommandHandler, handling_exception: Optional[Exception] = None
+    ) -> None:
         execution_time = time.time() - self.__start_time
-        self.__logger.info(f"Command {passenger} handled by {bus_stop.__class__.__name__} in {execution_time} seconds")
+        execution_result_hint = "successfully" if handling_exception is None else "wrongly"
+        self.__logger.info(
+            f"Command {passenger} handled {execution_result_hint} "
+            f"by {bus_stop.__class__.__name__} in {execution_time} seconds"
+        )

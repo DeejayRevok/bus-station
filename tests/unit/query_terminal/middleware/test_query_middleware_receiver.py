@@ -29,7 +29,7 @@ class TestQueryMiddlewareReceiver(TestCase):
 
         test_middleware_class.assert_called_once_with(test_arg)
 
-    def test_receive_success(self):
+    def test_receive_successful_handle(self):
         parent_mock = Mock()
         test_query_response = Mock(spec=QueryResponse)
         test_middleware1_class = Mock(spec=Type[QueryMiddleware])
@@ -52,8 +52,46 @@ class TestQueryMiddlewareReceiver(TestCase):
                 call.middleware1_class().before_handle(test_query, test_query_handler),
                 call.middleware2_class().before_handle(test_query, test_query_handler),
                 call.handler.handle(test_query),
-                call.middleware2_class().after_handle(test_query, test_query_handler, test_query_response),
-                call.middleware1_class().after_handle(test_query, test_query_handler, test_query_response),
+                call.middleware2_class().after_handle(
+                    test_query, test_query_handler, test_query_response, handling_exception=None
+                ),
+                call.middleware1_class().after_handle(
+                    test_query, test_query_handler, test_query_response, handling_exception=None
+                ),
+            ]
+        )
+        self.assertEqual(test_query_response, query_response)
+
+    def test_receive_handle_exception(self):
+        parent_mock = Mock()
+        test_query_response = Mock(spec=QueryResponse)
+        test_middleware1_class = Mock(spec=Type[QueryMiddleware])
+        test_middleware2_class = Mock(spec=Type[QueryMiddleware])
+        test_query = Mock(spec=Query)
+        test_query_handler = Mock(spec=QueryHandler)
+        test_middleware1_class().after_handle.return_value = test_query_response
+        test_middleware2_class().after_handle.return_value = test_query_response
+        parent_mock.middleware1_class = test_middleware1_class
+        parent_mock.middleware2_class = test_middleware2_class
+        parent_mock.handler = test_query_handler
+        test_exception = Exception("Test exception")
+        test_query_handler.handle.side_effect = test_exception
+
+        self.query_middleware_receiver.add_middleware_definition(test_middleware1_class)
+        self.query_middleware_receiver.add_middleware_definition(test_middleware2_class)
+        query_response = self.query_middleware_receiver.receive(test_query, test_query_handler)
+
+        parent_mock.assert_has_calls(
+            [
+                call.middleware1_class().before_handle(test_query, test_query_handler),
+                call.middleware2_class().before_handle(test_query, test_query_handler),
+                call.handler.handle(test_query),
+                call.middleware2_class().after_handle(
+                    test_query, test_query_handler, QueryResponse(data=None), handling_exception=test_exception
+                ),
+                call.middleware1_class().after_handle(
+                    test_query, test_query_handler, test_query_response, handling_exception=test_exception
+                ),
             ]
         )
         self.assertEqual(test_query_response, query_response)

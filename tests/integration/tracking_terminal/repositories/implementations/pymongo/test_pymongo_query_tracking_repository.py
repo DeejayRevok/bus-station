@@ -48,6 +48,7 @@ class TestPyMongoQueryTrackingRepository(IntegrationTestCase):
             executor_name="test_query_executor",
             execution_start=datetime.now(),
             execution_end=datetime.now(),
+            success=True,
         )
 
         self.pymongo_query_tracking_repository.save(query_tracking)
@@ -70,6 +71,7 @@ class TestPyMongoQueryTrackingRepository(IntegrationTestCase):
             executor_name="test_query_executor",
             execution_start=datetime.now().timestamp(),
             execution_end=datetime.now().timestamp(),
+            success=False,
         )
         self.pymongo_db.get_collection("query_tracking").insert_one(query_tracking_serialized)
 

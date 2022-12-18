@@ -37,6 +37,8 @@ class TestTimingQueryMiddleware(IntegrationTestCase):
         with self.assertLogs(level="INFO") as logs:
             query_response = self.query_middleware_receiver.receive(test_query, test_query_handler)
 
-            self.assertIn(f"Query {test_query} handled by {test_query_handler.__class__.__name__} in", logs.output[0])
+            self.assertIn(
+                f"Query {test_query} handled successfully by {test_query_handler.__class__.__name__} in", logs.output[0]
+            )
         self.assertEqual(1, test_query_handler.call_count)
         self.assertEqual(test_query_value, query_response.data)

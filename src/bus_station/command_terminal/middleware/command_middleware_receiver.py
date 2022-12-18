@@ -10,7 +10,11 @@ class CommandMiddlewareReceiver(PassengerMiddlewareReceiver[Command, CommandHand
         for middleware in middlewares:
             middleware.before_handle(passenger, passenger_bus_stop)
 
-        passenger_bus_stop.handle(passenger)
+        handling_exception = None
+        try:
+            passenger_bus_stop.handle(passenger)
+        except Exception as ex:
+            handling_exception = ex
 
         for middleware in reversed(middlewares):
-            middleware.after_handle(passenger, passenger_bus_stop)
+            middleware.after_handle(passenger, passenger_bus_stop, handling_exception=handling_exception)
