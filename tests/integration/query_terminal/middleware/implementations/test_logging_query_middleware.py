@@ -12,6 +12,7 @@ from tests.integration.integration_test_case import IntegrationTestCase
 @dataclass(frozen=True)
 class QueryTest(Query):
     test_value: str
+    raise_exception: bool
 
 
 class QueryTestHandler(QueryHandler):
@@ -20,6 +21,8 @@ class QueryTestHandler(QueryHandler):
 
     def handle(self, query: QueryTest) -> QueryResponse:
         self.call_count += 1
+        if query.raise_exception is True:
+            raise Exception("Test exception")
         return QueryResponse(data=query.test_value)
 
 
@@ -29,9 +32,9 @@ class TestLoggingQueryMiddleware(IntegrationTestCase):
         self.query_middleware_receiver = QueryMiddlewareReceiver()
         self.query_middleware_receiver.add_middleware_definition(LoggingQueryMiddleware, self.logger, lazy=False)
 
-    def test_receive_with_middleware_logs(self):
+    def test_receive_with_middleware_logs_without_exception(self):
         test_query_value = "test_query_value"
-        test_query = QueryTest(test_value=test_query_value)
+        test_query = QueryTest(test_value=test_query_value, raise_exception=False)
         test_query_handler = QueryTestHandler()
 
         with self.assertLogs(level="INFO") as logs:
@@ -45,3 +48,14 @@ class TestLoggingQueryMiddleware(IntegrationTestCase):
             )
         self.assertEqual(1, test_query_handler.call_count)
         self.assertEqual(test_query_value, query_response.data)
+
+    def test_receive_with_middleware_logs_with_exception(self):
+        test_query = QueryTest(test_value="test", raise_exception=True)
+        test_query_handler = QueryTestHandler()
+
+        with self.assertLogs(level="ERROR") as logs:
+            self.query_middleware_receiver.receive(test_query, test_query_handler)
+
+            self.assertIn("Test exception", logs.output[0])
+            self.assertIn("Traceback", logs.output[0])
+        self.assertEqual(1, test_query_handler.call_count)

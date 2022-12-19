@@ -10,7 +10,7 @@ from tests.integration.integration_test_case import IntegrationTestCase
 
 @dataclass(frozen=True)
 class EventTest(Event):
-    pass
+    raise_exception: bool
 
 
 class EventTestConsumer(EventConsumer):
@@ -19,6 +19,8 @@ class EventTestConsumer(EventConsumer):
 
     def consume(self, event: EventTest) -> None:
         self.call_count += 1
+        if event.raise_exception is True:
+            raise Exception("Test exception")
 
 
 class TestLoggingEventMiddleware(IntegrationTestCase):
@@ -27,8 +29,8 @@ class TestLoggingEventMiddleware(IntegrationTestCase):
         self.event_middleware_receiver = EventMiddlewareReceiver()
         self.event_middleware_receiver.add_middleware_definition(LoggingEventMiddleware, self.logger, lazy=False)
 
-    def test_transport_with_middleware_logs(self):
-        test_event = EventTest()
+    def test_transport_with_middleware_logs_without_exception(self):
+        test_event = EventTest(raise_exception=False)
         test_event_consumer = EventTestConsumer()
 
         with self.assertLogs(level="INFO") as logs:
@@ -40,4 +42,15 @@ class TestLoggingEventMiddleware(IntegrationTestCase):
             self.assertIn(
                 f"Finished consuming event {test_event} with {test_event_consumer.__class__.__name__}", logs.output[1]
             )
+        self.assertEqual(1, test_event_consumer.call_count)
+
+    def test_receive_with_middleware_logs_with_exception(self):
+        test_event = EventTest(raise_exception=True)
+        test_event_consumer = EventTestConsumer()
+
+        with self.assertLogs(level="ERROR") as logs:
+            self.event_middleware_receiver.receive(test_event, test_event_consumer)
+
+            self.assertIn("Test exception", logs.output[0])
+            self.assertIn("Traceback", logs.output[0])
         self.assertEqual(1, test_event_consumer.call_count)
