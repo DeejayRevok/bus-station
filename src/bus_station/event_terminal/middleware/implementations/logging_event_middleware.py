@@ -17,5 +17,8 @@ class LoggingEventMiddleware(EventMiddleware):
         self, passenger: Event, bus_stop: EventConsumer, consume_exception: Optional[Exception] = None
     ) -> None:
         if consume_exception is not None:
-            self.__logger.exception(consume_exception)
+            self.__logger.exception(
+                consume_exception,
+                exc_info=(consume_exception.__class__, consume_exception, consume_exception.__traceback__),
+            )
         self.__logger.info(f"Finished consuming event {passenger} with {bus_stop.__class__.__name__}")

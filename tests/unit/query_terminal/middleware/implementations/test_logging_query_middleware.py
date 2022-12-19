@@ -54,4 +54,6 @@ class TestLoggingQueryMiddleware(TestCase):
             f"with response: {test_query_response}"
         )
         self.assertEqual(test_query_response, query_response)
-        self.logger_mock.exception.assert_called_once_with(test_exception)
+        self.logger_mock.exception.assert_called_once_with(
+            test_exception, exc_info=(test_exception.__class__, test_exception, test_exception.__traceback__)
+        )

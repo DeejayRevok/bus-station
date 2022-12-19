@@ -22,7 +22,10 @@ class LoggingQueryMiddleware(QueryMiddleware):
         handling_exception: Optional[Exception] = None,
     ) -> QueryResponse:
         if handling_exception is not None:
-            self.__logger.exception(handling_exception)
+            self.__logger.exception(
+                handling_exception,
+                exc_info=(handling_exception.__class__, handling_exception, handling_exception.__traceback__),
+            )
         self.__logger.info(
             f"Finished handling query {passenger} with {bus_stop.__class__.__name__} with response: {query_response}"
         )

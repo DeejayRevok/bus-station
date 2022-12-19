@@ -45,4 +45,6 @@ class TestLoggingCommandMiddleware(TestCase):
         self.logger_mock.info.assert_called_once_with(
             f"Finished handling command {test_command} with {test_command_handler.__class__.__name__}"
         )
-        self.logger_mock.exception.assert_called_once_with(test_exception)
+        self.logger_mock.exception.assert_called_once_with(
+            test_exception, exc_info=(test_exception.__class__, test_exception, test_exception.__traceback__)
+        )
