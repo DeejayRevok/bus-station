@@ -31,7 +31,7 @@ class KombuCommandBusEngine(Engine):
         super().__init__()
         command_handler = command_registry.get_command_destination(command_type)
         if command_handler is None:
-            raise HandlerNotFoundForCommand(command_type.__name__)
+            raise HandlerNotFoundForCommand(command_type.passenger_name())
 
         broker_connection = broker_connection
         channel = broker_connection.channel()
@@ -39,7 +39,7 @@ class KombuCommandBusEngine(Engine):
 
         command_queue_name = command_registry.get_command_destination_contact(command_type)
         if command_queue_name is None:
-            raise ContactNotFoundForCommand(command_type.__name__)
+            raise ContactNotFoundForCommand(command_type.passenger_name())
 
         command_queue = self.__create_command_handler_queue(command_queue_name, channel)
 

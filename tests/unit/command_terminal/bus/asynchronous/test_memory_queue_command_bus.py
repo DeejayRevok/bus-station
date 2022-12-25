@@ -25,7 +25,7 @@ class TestMemoryQueueCommandBus(TestCase):
         with self.assertRaises(HandlerNotFoundForCommand) as hnffc:
             self.process_command_bus.transport(test_command)
 
-        self.assertEqual(test_command.__class__.__name__, hnffc.exception.command_name)
+        self.assertEqual(test_command.passenger_name(), hnffc.exception.command_name)
         self.command_serializer_mock.serialize.assert_not_called()
         self.command_registry_mock.get_command_destination_contact.assert_called_once_with(test_command.__class__)
 

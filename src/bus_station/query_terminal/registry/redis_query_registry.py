@@ -26,7 +26,7 @@ class RedisQueryRegistry(RemoteQueryRegistry):
     def _register(self, query: Type[Query], handler: QueryHandler, handler_contact: str) -> None:
         self.__redis_repository.save(
             PassengerRecord(
-                passenger_name=query.__name__,
+                passenger_name=query.passenger_name(),
                 passenger_fqn=self.__fqn_getter.get(query),
                 destination_fqn=self.__fqn_getter.get(handler),
                 destination_contact=handler_contact,
@@ -34,7 +34,7 @@ class RedisQueryRegistry(RemoteQueryRegistry):
         )
 
     def get_query_destination_contact(self, query: Type[Query]) -> Optional[str]:
-        query_records = self.__redis_repository.find_by_passenger_name(query.__name__)
+        query_records = self.__redis_repository.find_by_passenger_name(query.passenger_name())
         if query_records is None:
             return None
 
@@ -50,7 +50,7 @@ class RedisQueryRegistry(RemoteQueryRegistry):
         return queries_registered
 
     def get_query_destination(self, query: Type[Query]) -> Optional[QueryHandler]:
-        query_records = self.__redis_repository.find_by_passenger_name(query.__name__)
+        query_records = self.__redis_repository.find_by_passenger_name(query.passenger_name())
         if query_records is None:
             return None
 
@@ -58,4 +58,4 @@ class RedisQueryRegistry(RemoteQueryRegistry):
         return self.__query_handler_resolver.resolve_from_fqn(query_handler_fqn)
 
     def unregister(self, query: Type[Query]) -> None:
-        self.__redis_repository.delete_by_passenger_name(query.__name__)
+        self.__redis_repository.delete_by_passenger_name(query.passenger_name())

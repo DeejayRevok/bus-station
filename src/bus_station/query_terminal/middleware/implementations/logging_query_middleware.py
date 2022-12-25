@@ -12,7 +12,7 @@ class LoggingQueryMiddleware(QueryMiddleware):
         self.__logger = logger
 
     def before_handle(self, passenger: Query, bus_stop: QueryHandler) -> None:
-        self.__logger.info(f"Starting handling query {passenger} with {bus_stop.__class__.__name__}")
+        self.__logger.info(f"Starting handling query {passenger} with {bus_stop.bus_stop_name()}")
 
     def after_handle(
         self,
@@ -27,6 +27,6 @@ class LoggingQueryMiddleware(QueryMiddleware):
                 exc_info=(handling_exception.__class__, handling_exception, handling_exception.__traceback__),
             )
         self.__logger.info(
-            f"Finished handling query {passenger} with {bus_stop.__class__.__name__} with response: {query_response}"
+            f"Finished handling query {passenger} with {bus_stop.bus_stop_name()} with response: {query_response}"
         )
         return query_response

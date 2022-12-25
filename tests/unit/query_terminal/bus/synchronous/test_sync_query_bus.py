@@ -23,7 +23,7 @@ class TestSyncQueryBus(TestCase):
         with self.assertRaises(HandlerNotFoundForQuery) as hnffq:
             self.sync_query_bus.transport(test_query)
 
-        self.assertEqual(test_query.__class__.__name__, hnffq.exception.query_name)
+        self.assertEqual(test_query.passenger_name(), hnffq.exception.query_name)
         self.query_registry_mock.get_query_destination_contact.assert_called_once_with(test_query.__class__)
 
     def test_transport_success(self):

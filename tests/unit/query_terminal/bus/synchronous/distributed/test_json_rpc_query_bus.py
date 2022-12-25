@@ -33,7 +33,7 @@ class TestJsonRPCQueryBus(TestCase):
         with self.assertRaises(HandlerNotFoundForQuery) as hnffq:
             self.json_rpc_query_bus.transport(test_query)
 
-        self.assertEqual(test_query.__class__.__name__, hnffq.exception.query_name)
+        self.assertEqual(test_query.passenger_name(), hnffq.exception.query_name)
         self.query_serializer_mock.serialize.assert_not_called()
         self.query_registry_mock.get_query_destination_contact.assert_called_once_with(test_query.__class__)
 
@@ -64,7 +64,7 @@ class TestJsonRPCQueryBus(TestCase):
 
         self.assertEqual(test_query_response, query_response)
         self.query_serializer_mock.serialize.assert_called_once_with(test_query)
-        request_mock.assert_called_once_with(test_query.__class__.__name__, params=(test_serialized_query,))
+        request_mock.assert_called_once_with(test_query.passenger_name(), params=(test_serialized_query,))
         requests_mock.post.assert_called_once_with(test_query_handler_addr, json=test_json_rpc_request)
         to_result_mock.assert_called_once_with(test_json_requests_response)
         self.query_response_deserializer_mock.deserialize.assert_called_once_with(test_query_response_serialized)
@@ -96,6 +96,6 @@ class TestJsonRPCQueryBus(TestCase):
         self.assertEqual(test_query, qef.exception.query)
         self.assertEqual(test_error_message, qef.exception.reason)
         self.query_serializer_mock.serialize.assert_called_once_with(test_query)
-        request_mock.assert_called_once_with(test_query.__class__.__name__, params=(test_serialized_query,))
+        request_mock.assert_called_once_with(test_query.passenger_name(), params=(test_serialized_query,))
         requests_mock.post.assert_called_once_with(test_query_handler_addr, json=test_json_rpc_request)
         to_result_mock.assert_called_once_with(test_json_requests_response)

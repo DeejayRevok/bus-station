@@ -23,7 +23,7 @@ class KombuCommandBus(CommandBus):
     def transport(self, passenger: Command) -> None:
         handler_queue_name = self.__command_registry.get_command_destination_contact(passenger.__class__)
         if handler_queue_name is None:
-            raise HandlerNotFoundForCommand(passenger.__class__.__name__)
+            raise HandlerNotFoundForCommand(passenger.passenger_name())
 
         self.__publish_command(passenger, handler_queue_name)
 

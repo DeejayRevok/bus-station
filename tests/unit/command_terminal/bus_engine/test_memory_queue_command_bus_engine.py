@@ -31,7 +31,7 @@ class TestMemoryQueueCommandBusEngine(TestCase):
                 self.command_type_mock.__class__,
             )
 
-        self.assertEqual(self.command_type_mock.__class__.__name__, hnffc.exception.command_name)
+        self.assertEqual("command.bus_station.command_terminal.command.Command", hnffc.exception.command_name)
         self.command_registry_mock.get_command_destination.assert_called_once_with(self.command_type_mock.__class__)
         passenger_worker_builder.assert_not_called()
 

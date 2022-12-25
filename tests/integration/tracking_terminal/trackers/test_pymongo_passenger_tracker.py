@@ -66,8 +66,8 @@ class TestPyMongoPassengerTracker(IntegrationTestCase):
 
         stored_tracking = self.pymongo_query_tracking_repository.find_by_id(str(id(test_query)))
         self.assertIsNotNone(stored_tracking)
-        self.assertEqual(test_query.__class__.__name__, stored_tracking.name)
-        self.assertEqual(test_query_handler.__class__.__name__, stored_tracking.executor_name)
+        self.assertEqual(test_query.passenger_name(), stored_tracking.name)
+        self.assertEqual(test_query_handler.bus_stop_name(), stored_tracking.executor_name)
         self.assertEqual(asdict(test_query), stored_tracking.data)
         self.assertIsNotNone(stored_tracking.execution_start)
         self.assertIsNone(stored_tracking.execution_end)
@@ -82,8 +82,8 @@ class TestPyMongoPassengerTracker(IntegrationTestCase):
 
         stored_tracking = self.pymongo_query_tracking_repository.find_by_id(str(id(test_query)))
         self.assertIsNotNone(stored_tracking)
-        self.assertEqual(test_query.__class__.__name__, stored_tracking.name)
-        self.assertEqual(test_query_handler.__class__.__name__, stored_tracking.executor_name)
+        self.assertEqual(test_query.passenger_name(), stored_tracking.name)
+        self.assertEqual(test_query_handler.bus_stop_name(), stored_tracking.executor_name)
         self.assertEqual(asdict(test_query), stored_tracking.data)
         self.assertEqual(test_response, stored_tracking.response_data)
         self.assertIsNotNone(stored_tracking.execution_start)
@@ -97,5 +97,5 @@ class TestPyMongoPassengerTracker(IntegrationTestCase):
         with self.assertRaises(PassengerTrackingNotFound) as ptnf:
             self.pymongo_passenger_tracker.end_tracking(test_query, success=False)
 
-        self.assertEqual(test_query.__class__.__name__, ptnf.exception.passenger_name)
+        self.assertEqual(test_query.passenger_name(), ptnf.exception.passenger_name)
         self.assertEqual(str(id(test_query)), ptnf.exception.passenger_tracking_id)

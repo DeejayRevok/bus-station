@@ -31,14 +31,14 @@ class TestKombuEventBus(TestCase):
         test_event_serialized = "test_event_serialized"
         self.event_serializer_mock.serialize.return_value = test_event_serialized
         self.event_registry_mock.get_events_registered.return_value = [test_event.__class__]
-        self.event_registry_mock.get_event_destination_contacts.return_value = [test_event.__class__.__name__]
+        self.event_registry_mock.get_event_destination_contacts.return_value = [test_event.passenger_name()]
 
         self.kombu_event_bus.transport(test_event)
 
         self.event_serializer_mock.serialize.assert_called_once_with(test_event)
         self.producer_mock.publish.assert_called_once_with(
             test_event_serialized,
-            exchange=test_event.__class__.__name__,
+            exchange=test_event.passenger_name(),
             retry=True,
             retry_policy={
                 "interval_start": 0,

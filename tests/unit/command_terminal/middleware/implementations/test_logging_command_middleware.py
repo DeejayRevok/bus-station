@@ -19,7 +19,7 @@ class TestLoggingCommandMiddleware(TestCase):
         self.logging_command_middleware.before_handle(test_command, test_command_handler)
 
         self.logger_mock.info.assert_called_once_with(
-            f"Starting handling command {test_command} with {test_command_handler.__class__.__name__}"
+            f"Starting handling command {test_command} with {test_command_handler.bus_stop_name()}"
         )
 
     def test_after_handle_without_exception(self):
@@ -29,7 +29,7 @@ class TestLoggingCommandMiddleware(TestCase):
         self.logging_command_middleware.after_handle(test_command, test_command_handler)
 
         self.logger_mock.info.assert_called_once_with(
-            f"Finished handling command {test_command} with {test_command_handler.__class__.__name__}"
+            f"Finished handling command {test_command} with {test_command_handler.bus_stop_name()}"
         )
         self.logger_mock.exception.assert_not_called()
 
@@ -43,7 +43,7 @@ class TestLoggingCommandMiddleware(TestCase):
         )
 
         self.logger_mock.info.assert_called_once_with(
-            f"Finished handling command {test_command} with {test_command_handler.__class__.__name__}"
+            f"Finished handling command {test_command} with {test_command_handler.bus_stop_name()}"
         )
         self.logger_mock.exception.assert_called_once_with(
             test_exception, exc_info=(test_exception.__class__, test_exception, test_exception.__traceback__)

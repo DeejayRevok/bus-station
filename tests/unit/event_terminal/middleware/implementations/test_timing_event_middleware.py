@@ -32,7 +32,7 @@ class TestTimingEventMiddleware(TestCase):
 
         time_mock.time.assert_has_calls([call(), call()])
         self.logger_mock.info.assert_called_once_with(
-            f"Event {test_event} consumed successfully by {test_event_consumer.__class__.__name__} in 1 seconds"
+            f"Event {test_event} consumed successfully by {test_event_consumer.bus_stop_name()} in 1 seconds"
         )
 
     @patch("bus_station.event_terminal.middleware.implementations.timing_event_middleware.time")
@@ -46,5 +46,5 @@ class TestTimingEventMiddleware(TestCase):
 
         time_mock.time.assert_has_calls([call(), call()])
         self.logger_mock.info.assert_called_once_with(
-            f"Event {test_event} consumed wrongly by {test_event_consumer.__class__.__name__} in 1 seconds"
+            f"Event {test_event} consumed wrongly by {test_event_consumer.bus_stop_name()} in 1 seconds"
         )

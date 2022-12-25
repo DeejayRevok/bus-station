@@ -1,4 +1,4 @@
-from typing import ClassVar, TypeVar
+from typing import ClassVar
 
 from kombu import Connection
 from kombu.messaging import Exchange, Queue
@@ -12,8 +12,6 @@ from bus_station.passengers.passenger_kombu_consumer import PassengerKombuConsum
 from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 from bus_station.shared_terminal.engine.engine import Engine
-
-E = TypeVar("E", bound=Event)
 
 
 class KombuEventBusEngine(Engine):
@@ -30,7 +28,7 @@ class KombuEventBusEngine(Engine):
         super().__init__()
         event_exchange_name = event_registry.get_event_destination_contact(event_consumer)
         if event_exchange_name is None:
-            raise ContactNotFoundForConsumer(event_consumer.__class__.__name__)
+            raise ContactNotFoundForConsumer(event_consumer.bus_stop_name())
 
         broker_connection = broker_connection
         channel = broker_connection.channel()
@@ -70,7 +68,7 @@ class KombuEventBusEngine(Engine):
         self, event_consumer: EventConsumer, event_exchange: Exchange, broker_channel: Channel
     ) -> Queue:
         consumer_queue = Queue(
-            name=event_consumer.__class__.__name__,
+            name=event_consumer.bus_stop_name(),
             exchange=event_exchange,
             queue_arguments={"x-dead-letter-exchange": self.__DEAD_LETTER_EXCHANGE_NAME},
         )

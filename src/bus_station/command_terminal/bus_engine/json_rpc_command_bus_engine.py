@@ -28,7 +28,7 @@ class JsonRPCCommandBusEngine(Engine):
     def __register_command_in_server(self, command_registry: RemoteCommandRegistry, command_type: Type[C]) -> None:
         handler = command_registry.get_command_destination(command_type)
         if handler is None:
-            raise HandlerNotFoundForCommand(command_type.__name__)
+            raise HandlerNotFoundForCommand(command_type.passenger_name())
         self.__server.register(command_type, handler)
 
     def start(self) -> None:

@@ -22,7 +22,7 @@ class JsonRPCCommandBus(CommandBus):
     def transport(self, passenger: Command) -> None:
         handler_address = self.__command_registry.get_command_destination_contact(passenger.__class__)
         if handler_address is None:
-            raise HandlerNotFoundForCommand(passenger.__class__.__name__)
+            raise HandlerNotFoundForCommand(passenger.passenger_name())
 
         self.__execute_command(passenger, handler_address)
 
@@ -30,7 +30,7 @@ class JsonRPCCommandBus(CommandBus):
         serialized_command = self.__command_serializer.serialize(command)
 
         request_response = requests.post(
-            command_handler_addr, json=request(command.__class__.__name__, params=(serialized_command,))
+            command_handler_addr, json=request(command.__class__.passenger_name(), params=(serialized_command,))
         )
         json_rpc_response = to_result(request_response.json())
 

@@ -29,7 +29,7 @@ class TestJsonRPCCommandBus(TestCase):
         with self.assertRaises(HandlerNotFoundForCommand) as hnffc:
             self.json_rpc_command_bus.transport(test_command)
 
-        self.assertEqual(test_command.__class__.__name__, hnffc.exception.command_name)
+        self.assertEqual(test_command.passenger_name(), hnffc.exception.command_name)
         self.command_serializer_mock.serialize.assert_not_called()
         self.command_registry_mock.get_command_destination_contact.assert_called_once_with(test_command.__class__)
 
@@ -56,7 +56,9 @@ class TestJsonRPCCommandBus(TestCase):
         self.json_rpc_command_bus.transport(test_command)
 
         self.command_serializer_mock.serialize.assert_called_once_with(test_command)
-        request_mock.assert_called_once_with(test_command.__class__.__name__, params=(test_serialized_command,))
+        request_mock.assert_called_once_with(
+            "command.bus_station.command_terminal.command.Command", params=(test_serialized_command,)
+        )
         requests_mock.post.assert_called_once_with(test_command_handler_addr, json=test_json_rpc_request)
         to_result_mock.assert_called_once_with(test_json_requests_response)
 
@@ -87,6 +89,8 @@ class TestJsonRPCCommandBus(TestCase):
         self.assertEqual(test_command, cef.exception.command)
         self.assertEqual(test_error_message, cef.exception.reason)
         self.command_serializer_mock.serialize.assert_called_once_with(test_command)
-        request_mock.assert_called_once_with(test_command.__class__.__name__, params=(test_serialized_command,))
+        request_mock.assert_called_once_with(
+            "command.bus_station.command_terminal.command.Command", params=(test_serialized_command,)
+        )
         requests_mock.post.assert_called_once_with(test_command_handler_addr, json=test_json_rpc_request)
         to_result_mock.assert_called_once_with(test_json_requests_response)

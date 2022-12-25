@@ -23,7 +23,7 @@ class MemoryQueueEventBusEngine(Engine):
         super().__init__()
         event_queue = event_registry.get_event_destination_contact(event_consumer)
         if event_queue is None:
-            raise ContactNotFoundForConsumer(event_consumer.__class__.__name__)
+            raise ContactNotFoundForConsumer(event_consumer.bus_stop_name())
 
         self.__event_worker = MemoryQueuePassengerWorker(
             event_queue, event_consumer, event_receiver, event_deserializer

@@ -26,7 +26,7 @@ class RedisEventRegistry(RemoteEventRegistry):
     def _register(self, event: Type[Event], consumer: EventConsumer, consumer_contact: str) -> None:
         self.__redis_repository.save(
             PassengerRecord(
-                passenger_name=event.__name__,
+                passenger_name=event.passenger_name(),
                 passenger_fqn=self.__fqn_getter.get(event),
                 destination_fqn=self.__fqn_getter.get(consumer),
                 destination_contact=consumer_contact,
@@ -34,7 +34,7 @@ class RedisEventRegistry(RemoteEventRegistry):
         )
 
     def get_event_destination_contacts(self, event: Type[Event]) -> Optional[Set[str]]:
-        event_records = self.__redis_repository.find_by_passenger_name(event.__name__)
+        event_records = self.__redis_repository.find_by_passenger_name(event.passenger_name())
         if event_records is None:
             return None
 
@@ -48,7 +48,7 @@ class RedisEventRegistry(RemoteEventRegistry):
     def get_event_destination_contact(self, event_destination: EventConsumer) -> Optional[str]:
         event = self.get_consumer_event(event_destination)
         event_record = self.__redis_repository.find_by_passenger_name_and_destination(
-            passenger_name=event.__name__, passenger_destination_fqn=self.__fqn_getter.get(event_destination)
+            passenger_name=event.passenger_name(), passenger_destination_fqn=self.__fqn_getter.get(event_destination)
         )
         if event_record is None:
             return None
@@ -65,7 +65,7 @@ class RedisEventRegistry(RemoteEventRegistry):
 
     def get_event_destinations(self, event: Type[Event]) -> Optional[Set[EventConsumer]]:
         event_records: Optional[List[PassengerRecord[str]]] = self.__redis_repository.find_by_passenger_name(
-            event.__name__
+            event.passenger_name()
         )
         if event_records is None:
             return None
@@ -78,4 +78,4 @@ class RedisEventRegistry(RemoteEventRegistry):
         return event_destinations
 
     def unregister(self, event: Type[Event]) -> None:
-        self.__redis_repository.delete_by_passenger_name(event.__name__)
+        self.__redis_repository.delete_by_passenger_name(event.passenger_name())

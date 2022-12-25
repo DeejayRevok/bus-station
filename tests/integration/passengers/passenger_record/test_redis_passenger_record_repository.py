@@ -36,30 +36,30 @@ class TestRedisPassengerRecordRepository(IntegrationTestCase):
         self.redis_repository = RedisPassengerRecordRepository(self.redis_client)
 
     def tearDown(self) -> None:
-        self.redis_repository.delete_by_passenger_name(CommandTest.__name__)
+        self.redis_repository.delete_by_passenger_name(CommandTest.passenger_name())
 
     def test_save(self):
         test_command_handler = CommandTestHandler()
-        test_destination_contact = "test_destination_contact"
         test_command_record = PassengerRecord(
-            passenger_name=CommandTest.__name__,
+            passenger_name=CommandTest.passenger_name(),
             passenger_fqn=self.fqn_getter.get(CommandTest),
             destination_fqn=self.fqn_getter.get(test_command_handler),
-            destination_contact=test_destination_contact,
+            destination_contact="test_destination_contact",
         )
 
         self.redis_repository.save(test_command_record)
 
-        self.assertCountEqual([test_command_record], self.redis_repository.find_by_passenger_name(CommandTest.__name__))
+        self.assertCountEqual(
+            [test_command_record], self.redis_repository.find_by_passenger_name(CommandTest.passenger_name())
+        )
 
     def test_all(self):
         test_command_handler = CommandTestHandler()
-        test_destination_contact = "test_destination_contact"
         test_command_record = PassengerRecord(
-            passenger_name=CommandTest.__name__,
+            passenger_name=CommandTest.passenger_name(),
             passenger_fqn=self.fqn_getter.get(CommandTest),
             destination_fqn=self.fqn_getter.get(test_command_handler),
-            destination_contact=test_destination_contact,
+            destination_contact="test_destination_contact",
         )
         self.redis_repository.save(test_command_record)
 

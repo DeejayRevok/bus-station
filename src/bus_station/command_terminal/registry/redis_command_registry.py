@@ -26,7 +26,7 @@ class RedisCommandRegistry(RemoteCommandRegistry):
     def _register(self, command: Type[Command], handler: CommandHandler, handler_contact: str) -> None:
         self.__redis_repository.save(
             PassengerRecord(
-                passenger_name=command.__name__,
+                passenger_name=command.passenger_name(),
                 passenger_fqn=self.__fqn_getter.get(command),
                 destination_fqn=self.__fqn_getter.get(handler),
                 destination_contact=handler_contact,
@@ -34,7 +34,7 @@ class RedisCommandRegistry(RemoteCommandRegistry):
         )
 
     def get_command_destination_contact(self, command: Type[Command]) -> Optional[str]:
-        command_records = self.__redis_repository.find_by_passenger_name(command.__name__)
+        command_records = self.__redis_repository.find_by_passenger_name(command.passenger_name())
         if command_records is None:
             return None
 
@@ -51,7 +51,7 @@ class RedisCommandRegistry(RemoteCommandRegistry):
 
     def get_command_destination(self, command: Type[Command]) -> Optional[CommandHandler]:
         command_records: Optional[List[PassengerRecord[str]]] = self.__redis_repository.find_by_passenger_name(
-            command.__name__
+            command.passenger_name()
         )
         if command_records is None:
             return None
@@ -60,4 +60,4 @@ class RedisCommandRegistry(RemoteCommandRegistry):
         return self.__command_handler_resolver.resolve_from_fqn(command_handler_fqn)
 
     def unregister(self, command: Type[Command]) -> None:
-        self.__redis_repository.delete_by_passenger_name(command.__name__)
+        self.__redis_repository.delete_by_passenger_name(command.passenger_name())

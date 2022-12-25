@@ -83,8 +83,8 @@ class TestRabbitKombuEventBus(IntegrationTestCase):
 
         self.test_event_consumer1 = EventTestConsumer1()
         self.test_event_consumer2 = EventTestConsumer2()
-        self.redis_registry.register(self.test_event_consumer1, EventTest.__name__)
-        self.redis_registry.register(self.test_event_consumer2, EventTest.__name__)
+        self.redis_registry.register(self.test_event_consumer1, EventTest.passenger_name())
+        self.redis_registry.register(self.test_event_consumer2, EventTest.passenger_name())
         event_consumer_resolver.add_bus_stop(self.test_event_consumer1)
         event_consumer_resolver.add_bus_stop(self.test_event_consumer2)
 

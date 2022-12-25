@@ -34,7 +34,7 @@ class TestTimingQueryMiddleware(TestCase):
 
         time_mock.time.assert_has_calls([call(), call()])
         self.logger_mock.info.assert_called_once_with(
-            f"Query {test_query} handled successfully by {test_query_handler.__class__.__name__} in 1 seconds"
+            f"Query {test_query} handled successfully by {test_query_handler.bus_stop_name()} in 1 seconds"
         )
         self.assertEqual(test_query_response, query_response)
 
@@ -52,6 +52,6 @@ class TestTimingQueryMiddleware(TestCase):
 
         time_mock.time.assert_has_calls([call(), call()])
         self.logger_mock.info.assert_called_once_with(
-            f"Query {test_query} handled wrongly by {test_query_handler.__class__.__name__} in 1 seconds"
+            f"Query {test_query} handled wrongly by {test_query_handler.bus_stop_name()} in 1 seconds"
         )
         self.assertEqual(test_query_response, query_response)

@@ -35,7 +35,7 @@ class TestTimingCommandMiddleware(IntegrationTestCase):
             self.command_middleware_receiver.receive(test_command, test_command_handler)
 
             self.assertIn(
-                f"Command {test_command} handled successfully by {test_command_handler.__class__.__name__} in",
+                f"Command {test_command} handled successfully by {test_command_handler.bus_stop_name()} in",
                 logs.output[0],
             )
         self.assertEqual(1, test_command_handler.call_count)

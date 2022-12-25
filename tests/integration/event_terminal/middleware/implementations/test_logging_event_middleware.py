@@ -37,10 +37,10 @@ class TestLoggingEventMiddleware(IntegrationTestCase):
             self.event_middleware_receiver.receive(test_event, test_event_consumer)
 
             self.assertIn(
-                f"Starting consuming event {test_event} with {test_event_consumer.__class__.__name__}", logs.output[0]
+                f"Starting consuming event {test_event} with {test_event_consumer.bus_stop_name()}", logs.output[0]
             )
             self.assertIn(
-                f"Finished consuming event {test_event} with {test_event_consumer.__class__.__name__}", logs.output[1]
+                f"Finished consuming event {test_event} with {test_event_consumer.bus_stop_name()}", logs.output[1]
             )
         self.assertEqual(1, test_event_consumer.call_count)
 

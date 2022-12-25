@@ -81,8 +81,8 @@ class TestSQLAlchemyTrackingQueryMiddleware(IntegrationTestCase):
 
         stored_tracking = self.sqlalchemy_query_tracking_repository.find_by_id(str(id(test_query)))
         self.assertIsNotNone(stored_tracking)
-        self.assertEqual(test_query.__class__.__name__, stored_tracking.name)
-        self.assertEqual(test_query_handler.__class__.__name__, stored_tracking.executor_name)
+        self.assertEqual(test_query.passenger_name(), stored_tracking.name)
+        self.assertEqual(test_query_handler.bus_stop_name(), stored_tracking.executor_name)
         self.assertEqual(asdict(test_query), stored_tracking.data)
         self.assertIsNotNone(stored_tracking.execution_start)
         self.assertIsNotNone(stored_tracking.execution_end)

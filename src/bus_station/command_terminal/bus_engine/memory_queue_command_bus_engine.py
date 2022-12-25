@@ -23,7 +23,7 @@ class MemoryQueueCommandBusEngine(Engine):
         super().__init__()
         command_handler = command_registry.get_command_destination(command_type)
         if command_handler is None:
-            raise HandlerNotFoundForCommand(command_type.__name__)
+            raise HandlerNotFoundForCommand(command_type.passenger_name())
 
         command_queue = command_registry.get_command_destination_contact(command_type)
         self.__command_worker = MemoryQueuePassengerWorker(

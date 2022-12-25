@@ -22,7 +22,7 @@ class TestSyncCommandBus(TestCase):
         with self.assertRaises(HandlerNotFoundForCommand) as hnffc:
             self.sync_command_bus.transport(test_command)
 
-        self.assertEqual(test_command.__class__.__name__, hnffc.exception.command_name)
+        self.assertEqual(test_command.passenger_name(), hnffc.exception.command_name)
         self.command_registry_mock.get_command_destination_contact.assert_called_once_with(test_command.__class__)
 
     def test_transport_success(self):

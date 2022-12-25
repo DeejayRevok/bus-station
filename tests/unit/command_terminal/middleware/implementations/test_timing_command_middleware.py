@@ -32,7 +32,7 @@ class TestTimingCommandMiddleware(TestCase):
 
         time_mock.time.assert_has_calls([call(), call()])
         self.logger_mock.info.assert_called_once_with(
-            f"Command {test_command} handled successfully by {test_command_handler.__class__.__name__} in 1 seconds"
+            f"Command {test_command} handled successfully by {test_command_handler.bus_stop_name()} in 1 seconds"
         )
 
     @patch("bus_station.command_terminal.middleware.implementations.timing_command_middleware.time")
@@ -49,5 +49,5 @@ class TestTimingCommandMiddleware(TestCase):
 
         time_mock.time.assert_has_calls([call(), call()])
         self.logger_mock.info.assert_called_once_with(
-            f"Command {test_command} handled wrongly by {test_command_handler.__class__.__name__} in 1 seconds"
+            f"Command {test_command} handled wrongly by {test_command_handler.bus_stop_name()} in 1 seconds"
         )

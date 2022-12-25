@@ -18,16 +18,16 @@ class QueryRegistry(metaclass=ABCMeta):
         self, query: Type[Query], handler_contact: Any, existing_handler_contact: Optional[Any]
     ) -> None:
         if existing_handler_contact is not None and handler_contact != existing_handler_contact:
-            raise HandlerForQueryAlreadyRegistered(query.__name__)
+            raise HandlerForQueryAlreadyRegistered(query.passenger_name())
 
     def __get_handler_query(self, handler: QueryHandler) -> Type[Query]:
         handle_typing = get_type_hints(handler.handle)
 
         if "query" not in handle_typing:
-            raise TypeError(f"Handle query not found for {handler.__class__.__name__}")
+            raise TypeError(f"Handle query not found for {handler.bus_stop_name()}")
 
         if not issubclass(handle_typing["query"], Query):
-            raise TypeError(f"Wrong type for handle query of {handler.__class__.__name__}")
+            raise TypeError(f"Wrong type for handle query of {handler.bus_stop_name()}")
 
         return handle_typing["query"]
 

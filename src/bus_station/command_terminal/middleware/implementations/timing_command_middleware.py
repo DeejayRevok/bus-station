@@ -22,5 +22,5 @@ class TimingCommandMiddleware(CommandMiddleware):
         execution_result_hint = "successfully" if handling_exception is None else "wrongly"
         self.__logger.info(
             f"Command {passenger} handled {execution_result_hint} "
-            f"by {bus_stop.__class__.__name__} in {execution_time} seconds"
+            f"by {bus_stop.bus_stop_name()} in {execution_time} seconds"
         )

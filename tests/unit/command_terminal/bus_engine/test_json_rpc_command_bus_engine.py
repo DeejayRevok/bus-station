@@ -31,7 +31,7 @@ class TestJsonRPCCommandBusEngine(TestCase):
         with self.assertRaises(HandlerNotFoundForCommand) as hnffc:
             JsonRPCCommandBusEngine(self.server_mock, self.command_registry_mock, command_type_mock.__class__)
 
-        self.assertEqual(command_type_mock.__class__.__name__, hnffc.exception.command_name)
+        self.assertEqual("command.bus_station.command_terminal.command.Command", hnffc.exception.command_name)
         self.command_registry_mock.get_command_destination.assert_called_once_with(command_type_mock.__class__)
         self.server_mock.register.assert_not_called()
 

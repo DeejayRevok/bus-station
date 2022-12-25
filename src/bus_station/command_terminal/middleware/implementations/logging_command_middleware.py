@@ -11,7 +11,7 @@ class LoggingCommandMiddleware(CommandMiddleware):
         self.__logger = logger
 
     def before_handle(self, passenger: Command, bus_stop: CommandHandler) -> None:
-        self.__logger.info(f"Starting handling command {passenger} with {bus_stop.__class__.__name__}")
+        self.__logger.info(f"Starting handling command {passenger} with {bus_stop.bus_stop_name()}")
 
     def after_handle(
         self, passenger: Command, bus_stop: CommandHandler, handling_exception: Optional[Exception] = None
@@ -21,4 +21,4 @@ class LoggingCommandMiddleware(CommandMiddleware):
                 handling_exception,
                 exc_info=(handling_exception.__class__, handling_exception, handling_exception.__traceback__),
             )
-        self.__logger.info(f"Finished handling command {passenger} with {bus_stop.__class__.__name__}")
+        self.__logger.info(f"Finished handling command {passenger} with {bus_stop.bus_stop_name()}")

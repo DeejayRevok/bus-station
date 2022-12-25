@@ -80,8 +80,8 @@ class TestSQLAlchemyTrackingCommandMiddleware(IntegrationTestCase):
 
         stored_tracking = self.sqlalchemy_command_tracking_repository.find_by_id(str(id(test_command)))
         self.assertIsNotNone(stored_tracking)
-        self.assertEqual(test_command.__class__.__name__, stored_tracking.name)
-        self.assertEqual(test_command_handler.__class__.__name__, stored_tracking.executor_name)
+        self.assertEqual(test_command.passenger_name(), stored_tracking.name)
+        self.assertEqual(test_command_handler.bus_stop_name(), stored_tracking.executor_name)
         self.assertEqual(asdict(test_command), stored_tracking.data)
         self.assertIsNotNone(stored_tracking.execution_start)
         self.assertIsNotNone(stored_tracking.execution_end)
