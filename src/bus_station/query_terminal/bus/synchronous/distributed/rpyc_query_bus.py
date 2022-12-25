@@ -23,7 +23,7 @@ class RPyCQueryBus(QueryBus):
     def transport(self, passenger: Query) -> QueryResponse:
         query_handler_addr = self.__query_registry.get_query_destination_contact(passenger.__class__)
         if query_handler_addr is None:
-            raise HandlerNotFoundForQuery(passenger.__class__.__name__)
+            raise HandlerNotFoundForQuery(passenger.passenger_name())
 
         rpyc_client = self.__get_rpyc_client(query_handler_addr)
         query_response = self.__execute_query(rpyc_client, passenger)
@@ -36,5 +36,5 @@ class RPyCQueryBus(QueryBus):
 
     def __execute_query(self, client: Connection, query: Query) -> QueryResponse:
         serialized_query = self.__query_serializer.serialize(query)
-        serialized_query_response = getattr(client.root, query.__class__.__name__)(serialized_query)
+        serialized_query_response = getattr(client.root, query.passenger_name())(serialized_query)
         return self.__query_response_deserializer.deserialize(serialized_query_response)

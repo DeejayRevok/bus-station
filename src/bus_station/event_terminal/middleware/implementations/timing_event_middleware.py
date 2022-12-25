@@ -22,5 +22,5 @@ class TimingEventMiddleware(EventMiddleware):
         execution_result_hint = "successfully" if consume_exception is None else "wrongly"
         self.__logger.info(
             f"Event {passenger} consumed {execution_result_hint} "
-            f"by {bus_stop.__class__.__name__} in {execution_time} seconds"
+            f"by {bus_stop.bus_stop_name()} in {execution_time} seconds"
         )

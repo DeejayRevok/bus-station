@@ -31,13 +31,14 @@ class TestRPyCQueryBus(TestCase):
         with self.assertRaises(HandlerNotFoundForQuery) as hnffq:
             self.rpyc_query_bus.transport(test_query)
 
-        self.assertEqual(test_query.__class__.__name__, hnffq.exception.query_name)
+        self.assertEqual(test_query.passenger_name(), hnffq.exception.query_name)
         self.query_serializer_mock.serialize.assert_not_called()
         self.query_registry_mock.get_query_destination_contact.assert_called_once_with(test_query.__class__)
 
     @patch("bus_station.query_terminal.bus.synchronous.distributed.rpyc_query_bus.connect")
     def test_transport_success(self, connect_mock):
-        test_query = Mock(spec=Query, name="TestQuery")
+        test_query = Mock(spec=Query)
+        test_query.passenger_name.return_value = "TestQuery"
         test_host = "test_host"
         test_port = "41124"
         self.query_registry_mock.get_query_destination_contact.return_value = f"{test_host}:{test_port}"
@@ -46,7 +47,7 @@ class TestRPyCQueryBus(TestCase):
         test_serialized_query = "test_serialized_query"
         self.query_serializer_mock.serialize.return_value = test_serialized_query
         test_rpyc_callable = Mock(spec=Callable)
-        setattr(test_rpyc_connection.root, test_query.__class__.__name__, test_rpyc_callable)
+        setattr(test_rpyc_connection.root, test_query.passenger_name(), test_rpyc_callable)
         test_query_response = Mock(spec=QueryResponse)
         test_serialized_query_response = "test_serialized_query_response"
         test_rpyc_callable.return_value = test_serialized_query_response

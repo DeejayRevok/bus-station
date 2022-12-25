@@ -41,10 +41,10 @@ class TestLoggingQueryMiddleware(IntegrationTestCase):
             query_response = self.query_middleware_receiver.receive(test_query, test_query_handler)
 
             self.assertIn(
-                f"Starting handling query {test_query} with {test_query_handler.__class__.__name__}", logs.output[0]
+                f"Starting handling query {test_query} with {test_query_handler.bus_stop_name()}", logs.output[0]
             )
             self.assertIn(
-                f"Finished handling query {test_query} with {test_query_handler.__class__.__name__}", logs.output[1]
+                f"Finished handling query {test_query} with {test_query_handler.bus_stop_name()}", logs.output[1]
             )
         self.assertEqual(1, test_query_handler.call_count)
         self.assertEqual(test_query_value, query_response.data)

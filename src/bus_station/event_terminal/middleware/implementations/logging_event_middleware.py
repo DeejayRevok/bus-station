@@ -11,7 +11,7 @@ class LoggingEventMiddleware(EventMiddleware):
         self.__logger = logger
 
     def before_consume(self, passenger: Event, bus_stop: EventConsumer) -> None:
-        self.__logger.info(f"Starting consuming event {passenger} with {bus_stop.__class__.__name__}")
+        self.__logger.info(f"Starting consuming event {passenger} with {bus_stop.bus_stop_name()}")
 
     def after_consume(
         self, passenger: Event, bus_stop: EventConsumer, consume_exception: Optional[Exception] = None
@@ -21,4 +21,4 @@ class LoggingEventMiddleware(EventMiddleware):
                 consume_exception,
                 exc_info=(consume_exception.__class__, consume_exception, consume_exception.__traceback__),
             )
-        self.__logger.info(f"Finished consuming event {passenger} with {bus_stop.__class__.__name__}")
+        self.__logger.info(f"Finished consuming event {passenger} with {bus_stop.bus_stop_name()}")

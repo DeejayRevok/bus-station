@@ -5,4 +5,6 @@ from bus_station.passengers.passenger import Passenger
 
 @dataclass(frozen=True)
 class Event(Passenger):
-    pass
+    @classmethod
+    def passenger_name(cls) -> str:
+        return f"event.{cls.__module__}.{cls.__name__}"

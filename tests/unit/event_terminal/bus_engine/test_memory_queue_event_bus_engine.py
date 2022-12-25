@@ -32,7 +32,7 @@ class TestMemoryQueueEventBusEngine(TestCase):
                 self.event_consumer_mock,
             )
 
-        self.assertEqual(self.event_consumer_mock.__class__.__name__, cnffc.exception.event_consumer_name)
+        self.assertEqual(self.event_consumer_mock.bus_stop_name(), cnffc.exception.event_consumer_name)
         self.event_registry_mock.get_event_destination_contact.assert_called_once_with(self.event_consumer_mock)
         passenger_worker_builder.assert_not_called()
 

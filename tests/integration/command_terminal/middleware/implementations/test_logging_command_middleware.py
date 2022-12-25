@@ -37,11 +37,11 @@ class TestLoggingCommandMiddleware(IntegrationTestCase):
             self.command_middleware_receiver.receive(test_command, test_command_handler)
 
             self.assertIn(
-                f"Starting handling command {test_command} with {test_command_handler.__class__.__name__}",
+                f"Starting handling command {test_command} with {test_command_handler.bus_stop_name()}",
                 logs.output[0],
             )
             self.assertIn(
-                f"Finished handling command {test_command} with {test_command_handler.__class__.__name__}",
+                f"Finished handling command {test_command} with {test_command_handler.bus_stop_name()}",
                 logs.output[1],
             )
         self.assertEqual(1, test_command_handler.call_count)

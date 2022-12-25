@@ -27,13 +27,14 @@ class TestRPyCCommandBus(TestCase):
         with self.assertRaises(HandlerNotFoundForCommand) as hnffc:
             self.rpyc_command_bus.transport(test_command)
 
-        self.assertEqual(test_command.__class__.__name__, hnffc.exception.command_name)
+        self.assertEqual(test_command.passenger_name(), hnffc.exception.command_name)
         self.command_serializer_mock.serialize.assert_not_called()
         self.command_registry_mock.get_command_destination_contact.assert_called_once_with(test_command.__class__)
 
     @patch("bus_station.command_terminal.bus.synchronous.distributed.rpyc_command_bus.connect")
     def test_transport_success(self, connect_mock):
-        test_command = Mock(spec=Command, name="TestCommand")
+        test_command = Mock(spec=Command)
+        test_command.passenger_name.return_value = "TestCommand"
         test_host = "test_host"
         test_port = "41124"
         self.command_registry_mock.get_command_destination_contact.return_value = f"{test_host}:{test_port}"
@@ -42,7 +43,7 @@ class TestRPyCCommandBus(TestCase):
         test_serialized_command = "test_serialized_command"
         self.command_serializer_mock.serialize.return_value = test_serialized_command
         test_rpyc_callable = Mock(spec=Callable)
-        setattr(test_rpyc_connection.root, test_command.__class__.__name__, test_rpyc_callable)
+        setattr(test_rpyc_connection.root, test_command.passenger_name(), test_rpyc_callable)
 
         self.rpyc_command_bus.transport(test_command)
 

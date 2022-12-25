@@ -20,8 +20,8 @@ class PassengerTracker:
         tracking_model = self._get_tracking_model(passenger)
         tracking = tracking_model(
             id=str(id(passenger)),
-            name=passenger.__class__.__name__,
-            executor_name=bus_stop.__class__.__name__,
+            name=passenger.passenger_name(),
+            executor_name=bus_stop.bus_stop_name(),
             data=asdict(passenger),
             execution_start=datetime.now(),
             execution_end=None,
@@ -33,7 +33,7 @@ class PassengerTracker:
         passenger_id = str(id(passenger))
         tracking = self.__repository.find_by_id(passenger_id)
         if tracking is None:
-            raise PassengerTrackingNotFound(passenger.__class__.__name__, passenger_id)
+            raise PassengerTrackingNotFound(passenger.passenger_name(), passenger_id)
         tracking.execution_end = datetime.now()
         tracking.success = success
         self.__set_track_data(tracking, **track_data)

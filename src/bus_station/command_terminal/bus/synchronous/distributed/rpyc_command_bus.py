@@ -19,7 +19,7 @@ class RPyCCommandBus(CommandBus):
     def transport(self, passenger: Command) -> None:
         handler_address = self.__command_registry.get_command_destination_contact(passenger.__class__)
         if handler_address is None:
-            raise HandlerNotFoundForCommand(passenger.__class__.__name__)
+            raise HandlerNotFoundForCommand(passenger.passenger_name())
 
         rpyc_client = self.__get_rpyc_client(handler_address)
         self.__execute_command(rpyc_client, passenger)
@@ -31,4 +31,4 @@ class RPyCCommandBus(CommandBus):
 
     def __execute_command(self, client: Connection, command: Command) -> None:
         serialized_command = self.__command_serializer.serialize(command)
-        getattr(client.root, command.__class__.__name__)(serialized_command)
+        getattr(client.root, command.passenger_name())(serialized_command)

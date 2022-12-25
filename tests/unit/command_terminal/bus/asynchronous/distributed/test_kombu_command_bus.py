@@ -34,7 +34,7 @@ class TestKombuCommandBus(TestCase):
         with self.assertRaises(HandlerNotFoundForCommand) as hnffc:
             self.kombu_command_bus.transport(test_command)
 
-        self.assertEqual(test_command.__class__.__name__, hnffc.exception.command_name)
+        self.assertEqual(test_command.passenger_name(), hnffc.exception.command_name)
         self.command_serializer_mock.serialize.assert_not_called()
         self.command_registry_mock.get_command_destination_contact.assert_called_once_with(test_command.__class__)
 
@@ -43,7 +43,7 @@ class TestKombuCommandBus(TestCase):
         test_command_serialized = "test_command_serialized"
         self.command_serializer_mock.serialize.return_value = test_command_serialized
         self.command_registry_mock.get_commands_registered.return_value = [test_command.__class__]
-        self.command_registry_mock.get_command_destination_contact.return_value = test_command.__class__.__name__
+        self.command_registry_mock.get_command_destination_contact.return_value = test_command.passenger_name()
 
         self.kombu_command_bus.transport(test_command)
 
@@ -51,7 +51,7 @@ class TestKombuCommandBus(TestCase):
         self.producer_mock.publish.assert_called_once_with(
             test_command_serialized,
             exchange="",
-            routing_key=test_command.__class__.__name__,
+            routing_key=test_command.passenger_name(),
             retry=True,
             retry_policy={
                 "interval_start": 0,

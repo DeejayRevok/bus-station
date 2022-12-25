@@ -23,7 +23,7 @@ class JsonRPCQueryBusEngine(Engine):
     def __register_query_in_server(self, query_registry: QueryRegistry, query_type: Type[Q]) -> None:
         handler = query_registry.get_query_destination(query_type)
         if handler is None:
-            raise HandlerNotFoundForQuery(query_type.__name__)
+            raise HandlerNotFoundForQuery(query_type.passenger_name())
         self.__server.register(query_type, handler)
 
     def start(self) -> None:

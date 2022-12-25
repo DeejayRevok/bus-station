@@ -8,3 +8,7 @@ class CommandHandler(BusStop):
     @abstractmethod
     def handle(self, command: Command) -> None:
         pass
+
+    @classmethod
+    def bus_stop_name(cls) -> str:
+        return f"command_handler.{cls.__module__}.{cls.__name__}"

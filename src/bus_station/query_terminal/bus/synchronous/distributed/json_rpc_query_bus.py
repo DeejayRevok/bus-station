@@ -26,7 +26,7 @@ class JsonRPCQueryBus(QueryBus):
     def transport(self, passenger: Query) -> QueryResponse:
         handler_address = self.__query_registry.get_query_destination_contact(passenger.__class__)
         if handler_address is None:
-            raise HandlerNotFoundForQuery(passenger.__class__.__name__)
+            raise HandlerNotFoundForQuery(passenger.passenger_name())
 
         return self.__execute_query(passenger, handler_address)
 
@@ -34,7 +34,7 @@ class JsonRPCQueryBus(QueryBus):
         serialized_query = self.__query_serializer.serialize(query)
 
         request_response = requests.post(
-            query_handler_addr, json=request(query.__class__.__name__, params=(serialized_query,))
+            query_handler_addr, json=request(query.passenger_name(), params=(serialized_query,))
         )
         json_rpc_response = to_result(request_response.json())
 

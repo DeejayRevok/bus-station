@@ -1,5 +1,8 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 
 
 class BusStop(ABC):
-    pass
+    @classmethod
+    @abstractmethod
+    def bus_stop_name(cls) -> str:
+        pass

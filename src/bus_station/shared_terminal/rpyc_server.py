@@ -30,7 +30,7 @@ class RPyCServer(Generic[P, S]):
 
     def register(self, passenger_class: Type[P], bus_stop: S) -> None:
         exposed_callable = partial(self._passenger_handler, bus_stop, passenger_class)
-        exposed_callable_name = self.__EXPOSED_CALLABLE_PATTERN.format(callable_name=passenger_class.__name__)
+        exposed_callable_name = self.__EXPOSED_CALLABLE_PATTERN.format(callable_name=passenger_class.passenger_name())
         self.__callables_to_expose[exposed_callable_name] = exposed_callable
 
     def run(self) -> None:

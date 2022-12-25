@@ -40,7 +40,7 @@ class TestKombuEventBusEngine(TestCase):
                 self.event_consumer_mock,
             )
 
-        self.assertEqual(self.event_consumer_mock.__class__.__name__, cnffe.exception.event_consumer_name)
+        self.assertEqual(self.event_consumer_mock.bus_stop_name(), cnffe.exception.event_consumer_name)
         self.event_registry_mock.get_event_destination_contact.assert_called_once_with(self.event_consumer_mock)
         consumer_builder_mock.assert_not_called()
         exchange_builder_mock.assert_not_called()
@@ -68,7 +68,7 @@ class TestKombuEventBusEngine(TestCase):
 
         test_exchange.declare.assert_has_calls([call(), call(channel=self.channel_mock)])
         queue_builder_mock.assert_called_once_with(
-            name=self.event_consumer_mock.__class__.__name__,
+            name=self.event_consumer_mock.bus_stop_name(),
             exchange=test_exchange,
             queue_arguments={"x-dead-letter-exchange": "failed_events"},
         )

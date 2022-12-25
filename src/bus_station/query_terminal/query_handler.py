@@ -9,3 +9,7 @@ class QueryHandler(BusStop):
     @abstractmethod
     def handle(self, query: Query) -> QueryResponse:
         pass
+
+    @classmethod
+    def bus_stop_name(cls) -> str:
+        return f"query_handler.{cls.__module__}.{cls.__name__}"

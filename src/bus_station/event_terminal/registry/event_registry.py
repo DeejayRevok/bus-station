@@ -14,10 +14,10 @@ class EventRegistry(metaclass=ABCMeta):
         consumer_typing = get_type_hints(consumer.consume)
 
         if "event" not in consumer_typing:
-            raise TypeError(f"Consumer event not found for {consumer.__class__.__name__}")
+            raise TypeError(f"Consumer event not found for {consumer.bus_stop_name()}")
 
         if not issubclass(consumer_typing["event"], Event):
-            raise TypeError(f"Wrong type for consume event of {consumer.__class__.__name__}")
+            raise TypeError(f"Wrong type for consume event of {consumer.bus_stop_name()}")
 
         return consumer_typing["event"]
 

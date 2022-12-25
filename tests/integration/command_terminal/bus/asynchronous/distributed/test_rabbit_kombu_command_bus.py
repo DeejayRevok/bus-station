@@ -77,7 +77,7 @@ class TestRabbitKombuCommandBus(IntegrationTestCase):
         )
         command_receiver = CommandMiddlewareReceiver()
         self.test_command_handler = CommandTestHandler()
-        self.redis_registry.register(self.test_command_handler, CommandTest.__name__)
+        self.redis_registry.register(self.test_command_handler, CommandTest.passenger_name())
         command_handler_resolver.add_bus_stop(self.test_command_handler)
         self.kombu_command_bus_engine = KombuCommandBusEngine(
             self.kombu_connection, self.redis_registry, command_receiver, command_deserializer, CommandTest

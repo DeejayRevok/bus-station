@@ -10,6 +10,10 @@ class TestPassenger(Passenger):
     test_field1: str
     test_field2: int
 
+    @classmethod
+    def passenger_name(cls) -> str:
+        return "test_passenger_name"
+
 
 class TestPassengerJSONSerializer(TestCase):
     def setUp(self) -> None:
@@ -23,6 +27,6 @@ class TestPassengerJSONSerializer(TestCase):
 
         expected_serialized_passenger = (
             '{"passenger_data": {"test_field1": "test_field1_value", "test_field2": 22}, '
-            '"passenger_type": "' + test_passenger_type + '"}'
+            '"passenger_type": "' + test_passenger_type + '", "passenger_name": "test_passenger_name"}'
         )
         self.assertEqual(expected_serialized_passenger, serialized_passenger)

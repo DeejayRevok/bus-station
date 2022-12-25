@@ -26,7 +26,6 @@ class TestJsonRPCQueryServer(TestCase):
     @patch("bus_station.shared_terminal.json_rpc_server.partial")
     def test_register(self, partial_mock):
         test_query_class = Mock(spec=Query)
-        test_query_class.__name__ = "test_name"
         test_query_handler = Mock(spec=QueryHandler)
 
         self.json_rpc_server.register(test_query_class, test_query_handler)
@@ -39,7 +38,7 @@ class TestJsonRPCQueryServer(TestCase):
     @patch("bus_station.shared_terminal.json_rpc_server.ThreadingHTTPServer")
     def test_run(self, http_server_mock, partial_mock, request_handler_mock, method_mock):
         test_query_class = Mock(spec=Query)
-        test_query_class.__name__ = "test_name"
+        test_query_class.passenger_name.return_value = "test_name"
         test_query_handler = Mock(spec=QueryHandler)
         self.json_rpc_server.register(test_query_class, test_query_handler)
         test_http_server = Mock(spec=ThreadingHTTPServer)
@@ -48,6 +47,6 @@ class TestJsonRPCQueryServer(TestCase):
         self.json_rpc_server.run()
 
         partial_mock.assert_called_once()
-        method_mock.assert_called_once_with(partial_mock(), name=test_query_class.__name__)
+        method_mock.assert_called_once_with(partial_mock(), name="test_name")
         http_server_mock.assert_called_once_with(("127.0.0.1", self.port), request_handler_mock)
         test_http_server.serve_forever.assert_called_once_with()

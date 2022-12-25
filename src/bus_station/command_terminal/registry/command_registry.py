@@ -18,16 +18,16 @@ class CommandRegistry(metaclass=ABCMeta):
         self, command: Type[Command], handler_contact: Any, existing_handler_contact: Optional[Any]
     ) -> None:
         if existing_handler_contact is not None and handler_contact != existing_handler_contact:
-            raise HandlerForCommandAlreadyRegistered(command.__name__)
+            raise HandlerForCommandAlreadyRegistered(command.passenger_name())
 
     def __get_handler_command(self, handler: CommandHandler) -> Type[Command]:
         handle_typing = get_type_hints(handler.handle)
 
         if "command" not in handle_typing:
-            raise TypeError(f"Handle command not found for {handler.__class__.__name__}")
+            raise TypeError(f"Handle command not found for {handler.bus_stop_name()}")
 
         if not issubclass(handle_typing["command"], Command):
-            raise TypeError(f"Wrong type for handle command of {handler.__class__.__name__}")
+            raise TypeError(f"Wrong type for handle command of {handler.bus_stop_name()}")
 
         return handle_typing["command"]
 

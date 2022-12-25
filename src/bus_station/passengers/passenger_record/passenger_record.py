@@ -21,7 +21,7 @@ class PassengerRecord(Generic[C]):
     @classmethod
     def from_str(cls, passenger_record_str: str) -> PassengerRecord[str]:
         passenger_record_attrs = passenger_record_str.split(sep=cls.__STR_SEPARATOR)
-        if len(passenger_record_attrs) > 4:
+        if len(passenger_record_attrs) != 4:
             raise ValueError(
                 f"Passenger record string {passenger_record_str} is not a valid representation of PassengerRecord"
             )

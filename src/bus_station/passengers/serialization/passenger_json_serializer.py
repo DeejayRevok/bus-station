@@ -10,6 +10,7 @@ class PassengerJSONSerializer(PassengerSerializer):
         serialized_data = {
             "passenger_data": self.__get_passenger_data(passenger),
             "passenger_type": self.__get_passenger_type(passenger),
+            "passenger_name": passenger.passenger_name(),
         }
         return dumps(serialized_data)
 

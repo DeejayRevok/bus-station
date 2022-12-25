@@ -20,7 +20,7 @@ class TestLoggingQueryMiddleware(TestCase):
         self.logging_query_middleware.before_handle(test_query, test_query_handler)
 
         self.logger_mock.info.assert_called_once_with(
-            f"Starting handling query {test_query} with {test_query_handler.__class__.__name__}"
+            f"Starting handling query {test_query} with {test_query_handler.bus_stop_name()}"
         )
 
     def test_after_handle_without_exception(self):
@@ -32,7 +32,7 @@ class TestLoggingQueryMiddleware(TestCase):
 
         self.logger_mock.info.assert_called_once_with(
             f"Finished handling query {test_query} "
-            f"with {test_query_handler.__class__.__name__} "
+            f"with {test_query_handler.bus_stop_name()} "
             f"with response: {test_query_response}"
         )
         self.assertEqual(test_query_response, query_response)
@@ -50,7 +50,7 @@ class TestLoggingQueryMiddleware(TestCase):
 
         self.logger_mock.info.assert_called_once_with(
             f"Finished handling query {test_query} "
-            f"with {test_query_handler.__class__.__name__} "
+            f"with {test_query_handler.bus_stop_name()} "
             f"with response: {test_query_response}"
         )
         self.assertEqual(test_query_response, query_response)

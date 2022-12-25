@@ -19,7 +19,7 @@ class TestLoggingEventMiddleware(TestCase):
         self.logging_event_middleware.before_consume(test_event, test_event_consumer)
 
         self.logger_mock.info.assert_called_once_with(
-            f"Starting consuming event {test_event} with {test_event_consumer.__class__.__name__}"
+            f"Starting consuming event {test_event} with {test_event_consumer.bus_stop_name()}"
         )
 
     def test_after_consume_without_exception(self):
@@ -29,7 +29,7 @@ class TestLoggingEventMiddleware(TestCase):
         self.logging_event_middleware.after_consume(test_event, test_event_consumer)
 
         self.logger_mock.info.assert_called_once_with(
-            f"Finished consuming event {test_event} with {test_event_consumer.__class__.__name__}"
+            f"Finished consuming event {test_event} with {test_event_consumer.bus_stop_name()}"
         )
         self.logger_mock.exception.assert_not_called()
 
@@ -41,7 +41,7 @@ class TestLoggingEventMiddleware(TestCase):
         self.logging_event_middleware.after_consume(test_event, test_event_consumer, consume_exception=test_exception)
 
         self.logger_mock.info.assert_called_once_with(
-            f"Finished consuming event {test_event} with {test_event_consumer.__class__.__name__}"
+            f"Finished consuming event {test_event} with {test_event_consumer.bus_stop_name()}"
         )
         self.logger_mock.exception.assert_called_once_with(
             test_exception, exc_info=(test_exception.__class__, test_exception, test_exception.__traceback__)
