@@ -51,8 +51,10 @@ class TestLoggingCommandMiddleware(IntegrationTestCase):
         test_command_handler = CommandTestHandler()
 
         with self.assertLogs(level="ERROR") as logs:
-            self.command_middleware_receiver.receive(test_command, test_command_handler)
+            with self.assertRaises(Exception) as exception_context:
+                self.command_middleware_receiver.receive(test_command, test_command_handler)
 
+            self.assertEqual("Test exception", str(exception_context.exception))
             self.assertIn("Test exception", logs.output[0])
             self.assertIn("Traceback", logs.output[0])
         self.assertEqual(1, test_command_handler.call_count)
