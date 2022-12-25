@@ -18,3 +18,6 @@ class EventMiddlewareReceiver(PassengerMiddlewareReceiver[Event, EventConsumer, 
 
         for middleware in reversed(middlewares):
             middleware.after_consume(passenger, passenger_bus_stop, consume_exception=consume_exception)
+
+        if consume_exception is not None:
+            raise consume_exception

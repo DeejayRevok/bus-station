@@ -49,8 +49,10 @@ class TestLoggingEventMiddleware(IntegrationTestCase):
         test_event_consumer = EventTestConsumer()
 
         with self.assertLogs(level="ERROR") as logs:
-            self.event_middleware_receiver.receive(test_event, test_event_consumer)
+            with self.assertRaises(Exception) as exception_context:
+                self.event_middleware_receiver.receive(test_event, test_event_consumer)
 
+            self.assertEqual("Test exception", str(exception_context.exception))
             self.assertIn("Test exception", logs.output[0])
             self.assertIn("Traceback", logs.output[0])
         self.assertEqual(1, test_event_consumer.call_count)

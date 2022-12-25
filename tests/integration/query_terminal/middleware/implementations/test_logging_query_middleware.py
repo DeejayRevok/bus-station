@@ -54,8 +54,10 @@ class TestLoggingQueryMiddleware(IntegrationTestCase):
         test_query_handler = QueryTestHandler()
 
         with self.assertLogs(level="ERROR") as logs:
-            self.query_middleware_receiver.receive(test_query, test_query_handler)
+            with self.assertRaises(Exception) as exception_context:
+                self.query_middleware_receiver.receive(test_query, test_query_handler)
 
+            self.assertEqual("Test exception", str(exception_context.exception))
             self.assertIn("Test exception", logs.output[0])
             self.assertIn("Traceback", logs.output[0])
         self.assertEqual(1, test_query_handler.call_count)

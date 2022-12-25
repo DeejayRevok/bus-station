@@ -23,4 +23,7 @@ class QueryMiddlewareReceiver(PassengerMiddlewareReceiver[Query, QueryHandler, Q
                 passenger, passenger_bus_stop, query_response, handling_exception=handling_exception
             )
 
+        if handling_exception is not None:
+            raise handling_exception
+
         return query_response
