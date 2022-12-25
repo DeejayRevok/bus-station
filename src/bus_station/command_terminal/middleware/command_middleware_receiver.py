@@ -18,3 +18,6 @@ class CommandMiddlewareReceiver(PassengerMiddlewareReceiver[Command, CommandHand
 
         for middleware in reversed(middlewares):
             middleware.after_handle(passenger, passenger_bus_stop, handling_exception=handling_exception)
+
+        if handling_exception is not None:
+            raise handling_exception

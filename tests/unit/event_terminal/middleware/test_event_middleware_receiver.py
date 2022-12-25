@@ -63,11 +63,13 @@ class TestEventMiddlewareReceiver(TestCase):
         parent_mock.consumer = test_event_consumer
         test_exception = Exception("Test exception")
         test_event_consumer.consume.side_effect = test_exception
-
         self.event_middleware_receiver.add_middleware_definition(test_middleware1_class)
         self.event_middleware_receiver.add_middleware_definition(test_middleware2_class)
-        self.event_middleware_receiver.receive(test_event, test_event_consumer)
 
+        with self.assertRaises(Exception) as context:
+            self.event_middleware_receiver.receive(test_event, test_event_consumer)
+
+        self.assertEqual(test_exception, context.exception)
         parent_mock.assert_has_calls(
             [
                 call.middleware1_class().before_consume(test_event, test_event_consumer),

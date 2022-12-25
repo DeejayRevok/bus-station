@@ -63,11 +63,13 @@ class TestCommandMiddlewareReceiver(TestCase):
         parent_mock.handler = test_command_handler
         handle_exception = Exception("Test handle exception")
         test_command_handler.handle.side_effect = handle_exception
-
         self.command_middleware_receiver.add_middleware_definition(test_middleware1_class)
         self.command_middleware_receiver.add_middleware_definition(test_middleware2_class)
-        self.command_middleware_receiver.receive(test_command, test_command_handler)
 
+        with self.assertRaises(Exception) as context:
+            self.command_middleware_receiver.receive(test_command, test_command_handler)
+
+        self.assertEqual(handle_exception, context.exception)
         parent_mock.assert_has_calls(
             [
                 call.middleware1_class().before_handle(test_command, test_command_handler),

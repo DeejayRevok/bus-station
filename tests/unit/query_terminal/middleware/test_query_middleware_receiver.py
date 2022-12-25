@@ -76,11 +76,13 @@ class TestQueryMiddlewareReceiver(TestCase):
         parent_mock.handler = test_query_handler
         test_exception = Exception("Test exception")
         test_query_handler.handle.side_effect = test_exception
-
         self.query_middleware_receiver.add_middleware_definition(test_middleware1_class)
         self.query_middleware_receiver.add_middleware_definition(test_middleware2_class)
-        query_response = self.query_middleware_receiver.receive(test_query, test_query_handler)
 
+        with self.assertRaises(Exception) as context:
+            self.query_middleware_receiver.receive(test_query, test_query_handler)
+
+        self.assertEqual(test_exception, context.exception)
         parent_mock.assert_has_calls(
             [
                 call.middleware1_class().before_handle(test_query, test_query_handler),
@@ -94,4 +96,3 @@ class TestQueryMiddlewareReceiver(TestCase):
                 ),
             ]
         )
-        self.assertEqual(test_query_response, query_response)
