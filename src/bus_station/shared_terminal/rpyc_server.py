@@ -14,17 +14,18 @@ S = TypeVar("S", bound=BusStop)
 
 
 class RPyCServer(Generic[P, S]):
-    __SELF_HOST_ADDR: ClassVar[str] = "127.0.0.1"
     __EXPOSED_CALLABLE_PATTERN: ClassVar[str] = "exposed_{callable_name}"
 
     def __init__(
         self,
+        host: str,
         port: int,
         passenger_deserializer: PassengerDeserializer,
         passenger_receiver: PassengerReceiver,
     ):
         self._passenger_deserializer = passenger_deserializer
         self._passenger_receiver = passenger_receiver
+        self.__host = host
         self.__port = port
         self.__callables_to_expose: Dict[str, Callable] = {}
 
@@ -36,7 +37,7 @@ class RPyCServer(Generic[P, S]):
     def run(self) -> None:
         rpyc_server = ThreadedServer(
             service=self.__build_rpyc_service(),
-            hostname=self.__SELF_HOST_ADDR,
+            hostname=self.__host,
             port=self.__port,
             protocol_config={"allow_public_attrs": True},
         )

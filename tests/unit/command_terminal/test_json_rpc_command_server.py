@@ -13,9 +13,10 @@ class TestJsonRPCCommandServer(TestCase):
     def setUp(self) -> None:
         self.passenger_deserializer_mock = Mock(spec=PassengerDeserializer)
         self.command_receiver_mock = Mock(spec=PassengerReceiver)
+        self.host = "test_host"
         self.port = 1233
         self.json_rpc_server = JsonRPCCommandServer(
-            self.port, self.passenger_deserializer_mock, self.command_receiver_mock
+            self.host, self.port, self.passenger_deserializer_mock, self.command_receiver_mock
         )
 
     @patch("bus_station.shared_terminal.json_rpc_server.partial")
@@ -43,5 +44,5 @@ class TestJsonRPCCommandServer(TestCase):
 
         partial_mock.assert_called_once()
         method_mock.assert_called_once_with(partial_mock(), name="test_name")
-        http_server_mock.assert_called_once_with(("127.0.0.1", self.port), request_handler_mock)
+        http_server_mock.assert_called_once_with((self.host, self.port), request_handler_mock)
         test_http_server.serve_forever.assert_called_once_with()

@@ -11,12 +11,13 @@ from bus_station.shared_terminal.rpyc_server import RPyCServer
 class RPyCQueryServer(RPyCServer[Query, QueryHandler]):
     def __init__(
         self,
+        host: str,
         port: int,
         query_deserializer: PassengerDeserializer,
         query_receiver: PassengerReceiver[Query, QueryHandler],
         query_response_serializer: QueryResponseSerializer,
     ):
-        super().__init__(port, query_deserializer, query_receiver)
+        super().__init__(host, port, query_deserializer, query_receiver)
         self.__query_response_serializer = query_response_serializer
 
     def _passenger_handler(

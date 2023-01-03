@@ -15,8 +15,10 @@ class TestJsonRPCQueryServer(TestCase):
         self.passenger_deserializer_mock = Mock(spec=PassengerDeserializer)
         self.query_receiver_mock = Mock(spec=PassengerReceiver[Query, QueryHandler])
         self.query_response_serializer_mock = Mock(spec=QueryResponseSerializer)
+        self.host = "test_host"
         self.port = 123
         self.json_rpc_server = JsonRPCQueryServer(
+            self.host,
             self.port,
             self.passenger_deserializer_mock,
             self.query_receiver_mock,
@@ -48,5 +50,5 @@ class TestJsonRPCQueryServer(TestCase):
 
         partial_mock.assert_called_once()
         method_mock.assert_called_once_with(partial_mock(), name="test_name")
-        http_server_mock.assert_called_once_with(("127.0.0.1", self.port), request_handler_mock)
+        http_server_mock.assert_called_once_with((self.host, self.port), request_handler_mock)
         test_http_server.serve_forever.assert_called_once_with()

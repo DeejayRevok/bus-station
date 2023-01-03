@@ -16,9 +16,14 @@ class TestRPyCQueryServer(TestCase):
         self.query_deserializer_mock = Mock(spec=PassengerDeserializer)
         self.query_response_serializer_mock = Mock(spec=QueryResponseSerializer)
         self.query_receiver_mock = Mock(spec=PassengerReceiver)
+        self.host = "test_host"
         self.port = 12341
         self.rpyc_query_server = RPyCQueryServer(
-            self.port, self.query_deserializer_mock, self.query_receiver_mock, self.query_response_serializer_mock
+            self.host,
+            self.port,
+            self.query_deserializer_mock,
+            self.query_receiver_mock,
+            self.query_response_serializer_mock,
         )
 
     @patch("bus_station.shared_terminal.rpyc_server.partial")
@@ -44,7 +49,7 @@ class TestRPyCQueryServer(TestCase):
 
         threaded_sever_builder_mock.assert_called_once_with(
             service=service_instance_mock,
-            hostname="127.0.0.1",
+            hostname=self.host,
             port=self.port,
             protocol_config={"allow_public_attrs": True},
         )

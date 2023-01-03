@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from functools import partial
 from http.server import ThreadingHTTPServer
-from typing import Callable, ClassVar, Dict, Generic, Optional, Type, TypeVar
+from typing import Callable, Dict, Generic, Optional, Type, TypeVar
 
 from jsonrpcserver import Error, Success, method
 from jsonrpcserver.codes import ERROR_INTERNAL_ERROR
@@ -18,14 +18,14 @@ S = TypeVar("S", bound=BusStop)
 
 
 class JsonRPCServer(Generic[P, S]):
-    __SELF_HOST_ADDR: ClassVar[str] = "127.0.0.1"
-
     def __init__(
         self,
+        host: str,
         port: int,
         passenger_deserializer: PassengerDeserializer,
         passenger_receiver: PassengerReceiver[P, S],
     ):
+        self.__host = host
         self.__port = port
         self._passenger_deserializer = passenger_deserializer
         self._passenger_receiver = passenger_receiver
@@ -39,7 +39,7 @@ class JsonRPCServer(Generic[P, S]):
     def run(self) -> None:
         self.__register_json_rpc_handlers()
 
-        http_server = ThreadingHTTPServer((self.__SELF_HOST_ADDR, self.__port), RequestHandler)
+        http_server = ThreadingHTTPServer((self.__host, self.__port), RequestHandler)
         try:
             http_server.serve_forever()
         except KeyboardInterrupt:

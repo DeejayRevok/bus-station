@@ -11,12 +11,13 @@ from bus_station.shared_terminal.json_rpc_server import JsonRPCServer
 class JsonRPCQueryServer(JsonRPCServer[Query, QueryHandler]):
     def __init__(
         self,
+        host: str,
         port: int,
         passenger_deserializer: PassengerDeserializer,
         passenger_receiver: PassengerReceiver[Query, QueryHandler],
         query_response_serializer: QueryResponseSerializer,
     ):
-        JsonRPCServer.__init__(self, port, passenger_deserializer, passenger_receiver)
+        JsonRPCServer.__init__(self, host, port, passenger_deserializer, passenger_receiver)
         self.__query_response_serializer = query_response_serializer
 
     def _passenger_handler(
