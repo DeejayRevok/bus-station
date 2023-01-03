@@ -8,7 +8,7 @@ C = TypeVar("C")
 
 @dataclass(frozen=True)
 class PassengerRecord(Generic[C]):
-    __STR_SEPARATOR: ClassVar[str] = "-"
+    __STR_SEPARATOR: ClassVar[str] = "#"
     __STR_PATTERN: ClassVar[
         str
     ] = "{passenger_name}{separator}{passenger_fqn}{separator}{destination_fqn}{separator}{destination_contact}"
