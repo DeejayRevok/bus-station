@@ -68,7 +68,7 @@ class TestRPyCQueryBus(IntegrationTestCase):
         query_response_deserializer = QueryResponseJSONDeserializer()
         query_middleware_receiver = QueryMiddlewareReceiver()
         rpyc_server = RPyCQueryServer(
-            bus_port, query_deserializer, query_middleware_receiver, query_response_serializer
+            bus_host, bus_port, query_deserializer, query_middleware_receiver, query_response_serializer
         )
         self.test_query_handler = QueryTestHandler()
         self.redis_registry.register(self.test_query_handler, f"{bus_host}:{bus_port}")

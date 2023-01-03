@@ -64,7 +64,7 @@ class TestRPyCCommandBus(IntegrationTestCase):
         command_serializer = PassengerJSONSerializer()
         command_deserializer = PassengerJSONDeserializer()
         command_receiver = CommandMiddlewareReceiver()
-        rpyc_server = RPyCCommandServer(bus_port, command_deserializer, command_receiver)
+        rpyc_server = RPyCCommandServer(bus_host, bus_port, command_deserializer, command_receiver)
         self.rpyc_command_bus_engine = RPyCCommandBusEngine(
             rpyc_server,
             self.redis_registry,

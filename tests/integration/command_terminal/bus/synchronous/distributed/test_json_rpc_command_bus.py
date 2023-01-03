@@ -61,7 +61,7 @@ class TestJsonRPCCommandBus(IntegrationTestCase):
         bus_host = "localhost"
         bus_port = 1234
         command_receiver = CommandMiddlewareReceiver()
-        json_rpc_server = JsonRPCCommandServer(bus_port, command_deserializer, command_receiver)
+        json_rpc_server = JsonRPCCommandServer(bus_host, bus_port, command_deserializer, command_receiver)
         self.test_command_handler = CommandTestHandler()
         self.redis_registry.register(self.test_command_handler, f"http://{bus_host}:{bus_port}")
         command_handler_resolver.add_bus_stop(self.test_command_handler)

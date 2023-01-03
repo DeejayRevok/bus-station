@@ -14,9 +14,10 @@ class TestRPyCCommandServer(TestCase):
     def setUp(self) -> None:
         self.command_deserializer_mock = Mock(spec=PassengerDeserializer)
         self.command_receiver_mock = Mock(spec=PassengerReceiver)
+        self.host = "test_host"
         self.port = 678
         self.rpyc_command_server = RPyCCommandServer(
-            self.port, self.command_deserializer_mock, self.command_receiver_mock
+            self.host, self.port, self.command_deserializer_mock, self.command_receiver_mock
         )
 
     @patch("bus_station.shared_terminal.rpyc_server.partial")
@@ -42,7 +43,7 @@ class TestRPyCCommandServer(TestCase):
 
         threaded_sever_builder_mock.assert_called_once_with(
             service=service_instance_mock,
-            hostname="127.0.0.1",
+            hostname=self.host,
             port=self.port,
             protocol_config={"allow_public_attrs": True},
         )
