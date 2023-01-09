@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from bus_station.event_terminal.consumer_for_event_already_registered import ConsumerForEventAlreadyRegistered
 from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
 from bus_station.event_terminal.registry.in_memory_event_registry import InMemoryEventRegistry
@@ -35,6 +36,9 @@ class TestInMemoryEventRegistry(IntegrationTestCase):
             passenger_class_resolver=self.passenger_class_resolver,
         )
 
+    def tearDown(self) -> None:
+        self.in_memory_registry.unregister(EventTest)
+
     def test_register(self):
         test_event_handler = EventTestConsumer()
         test_destination_contact = "test_destination_contact"
@@ -42,6 +46,31 @@ class TestInMemoryEventRegistry(IntegrationTestCase):
 
         self.in_memory_registry.register(test_event_handler, test_destination_contact)
 
+        self.assertCountEqual([test_event_handler], self.in_memory_registry.get_event_destinations(EventTest))
+        self.assertEqual({test_destination_contact}, self.in_memory_registry.get_event_destination_contacts(EventTest))
+
+    def test_register_duplicate(self):
+        test_event_handler = EventTestConsumer()
+        test_destination_contact = "test_destination_contact"
+        self.event_consumer_resolver.add_bus_stop(test_event_handler)
+
+        self.in_memory_registry.register(test_event_handler, test_destination_contact)
+        self.in_memory_registry.register(test_event_handler, test_destination_contact)
+
+        self.assertCountEqual([test_event_handler], self.in_memory_registry.get_event_destinations(EventTest))
+        self.assertEqual({test_destination_contact}, self.in_memory_registry.get_event_destination_contacts(EventTest))
+
+    def test_register_consumer_for_event_already_registered(self):
+        test_event_handler = EventTestConsumer()
+        test_destination_contact = "test_destination_contact"
+        self.event_consumer_resolver.add_bus_stop(test_event_handler)
+
+        self.in_memory_registry.register(test_event_handler, test_destination_contact)
+        with self.assertRaises(ConsumerForEventAlreadyRegistered) as context:
+            self.in_memory_registry.register(test_event_handler, test_destination_contact + "different")
+
+        self.assertEqual(EventTestConsumer.bus_stop_name(), context.exception.consumer_name)
+        self.assertEqual(EventTest.passenger_name(), context.exception.event_name)
         self.assertCountEqual([test_event_handler], self.in_memory_registry.get_event_destinations(EventTest))
         self.assertEqual({test_destination_contact}, self.in_memory_registry.get_event_destination_contacts(EventTest))
 

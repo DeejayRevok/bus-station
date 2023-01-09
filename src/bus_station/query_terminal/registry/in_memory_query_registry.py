@@ -30,6 +30,7 @@ class InMemoryQueryRegistry(QueryRegistry):
             PassengerRecord(
                 passenger_name=query.passenger_name(),
                 passenger_fqn=self.__fqn_getter.get(query),
+                destination_name=handler.bus_stop_name(),
                 destination_fqn=self.__fqn_getter.get(handler),
                 destination_contact=handler_contact,
             )

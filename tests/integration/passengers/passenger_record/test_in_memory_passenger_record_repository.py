@@ -34,6 +34,7 @@ class TestInMemoryPassengerRecordRepository(IntegrationTestCase):
         test_command_record = PassengerRecord(
             passenger_name=CommandTest.passenger_name(),
             passenger_fqn=self.fqn_getter.get(CommandTest),
+            destination_name=CommandTestHandler.bus_stop_name(),
             destination_fqn=self.fqn_getter.get(test_command_handler),
             destination_contact=test_destination_contact,
         )
@@ -50,6 +51,7 @@ class TestInMemoryPassengerRecordRepository(IntegrationTestCase):
         test_command_record = PassengerRecord(
             passenger_name=CommandTest.passenger_name(),
             passenger_fqn=self.fqn_getter.get(CommandTest),
+            destination_name=CommandTestHandler.bus_stop_name(),
             destination_fqn=self.fqn_getter.get(test_command_handler),
             destination_contact=test_destination_contact,
         )

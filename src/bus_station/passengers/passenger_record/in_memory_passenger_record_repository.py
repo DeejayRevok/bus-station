@@ -17,15 +17,15 @@ class InMemoryPassengerRecordRepository(PassengerRecordRepository):
     def find_by_passenger_name(self, passenger_name: str) -> Optional[List[PassengerRecord]]:
         return self.__passenger_records.get(passenger_name)
 
-    def find_by_passenger_name_and_destination(
-        self, passenger_name: str, passenger_destination_fqn: str
+    def find_by_passenger_name_and_destination_name(
+        self, passenger_name: str, passenger_destination_name: str
     ) -> Optional[PassengerRecord]:
         passenger_records = self.__passenger_records.get(passenger_name)
         if passenger_records is None:
             return None
 
         for passenger_record in passenger_records:
-            if passenger_record.destination_fqn == passenger_destination_fqn:
+            if passenger_record.destination_name == passenger_destination_name:
                 return passenger_record
 
         return None

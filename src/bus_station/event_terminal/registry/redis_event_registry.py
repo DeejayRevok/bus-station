@@ -28,6 +28,7 @@ class RedisEventRegistry(RemoteEventRegistry):
             PassengerRecord(
                 passenger_name=event.passenger_name(),
                 passenger_fqn=self.__fqn_getter.get(event),
+                destination_name=consumer.bus_stop_name(),
                 destination_fqn=self.__fqn_getter.get(consumer),
                 destination_contact=consumer_contact,
             )
@@ -47,8 +48,8 @@ class RedisEventRegistry(RemoteEventRegistry):
 
     def get_event_destination_contact(self, event_destination: EventConsumer) -> Optional[str]:
         event = self.get_consumer_event(event_destination)
-        event_record = self.__redis_repository.find_by_passenger_name_and_destination(
-            passenger_name=event.passenger_name(), passenger_destination_fqn=self.__fqn_getter.get(event_destination)
+        event_record = self.__redis_repository.find_by_passenger_name_and_destination_name(
+            passenger_name=event.passenger_name(), passenger_destination_name=event_destination.bus_stop_name()
         )
         if event_record is None:
             return None
