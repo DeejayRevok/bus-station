@@ -14,8 +14,8 @@ class PassengerRecordRepository(Protocol):
         pass
 
     @abstractmethod
-    def find_by_passenger_name_and_destination(
-        self, passenger_name: str, passenger_destination_fqn: str
+    def find_by_passenger_name_and_destination_name(
+        self, passenger_name: str, passenger_destination_name: str
     ) -> Optional[PassengerRecord]:
         pass
 

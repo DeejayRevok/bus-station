@@ -9,19 +9,21 @@ C = TypeVar("C")
 @dataclass(frozen=True)
 class PassengerRecord(Generic[C]):
     __STR_SEPARATOR: ClassVar[str] = "#"
-    __STR_PATTERN: ClassVar[
-        str
-    ] = "{passenger_name}{separator}{passenger_fqn}{separator}{destination_fqn}{separator}{destination_contact}"
+    __STR_PATTERN: ClassVar[str] = (
+        "{passenger_name}{separator}{passenger_fqn}{separator}{destination_name}"
+        "{separator}{destination_fqn}{separator}{destination_contact}"
+    )
 
     passenger_name: str
     passenger_fqn: str
+    destination_name: str
     destination_fqn: str
     destination_contact: C
 
     @classmethod
     def from_str(cls, passenger_record_str: str) -> PassengerRecord[str]:
         passenger_record_attrs = passenger_record_str.split(sep=cls.__STR_SEPARATOR)
-        if len(passenger_record_attrs) != 4:
+        if len(passenger_record_attrs) != 5:
             raise ValueError(
                 f"Passenger record string {passenger_record_str} is not a valid representation of PassengerRecord"
             )
@@ -29,8 +31,9 @@ class PassengerRecord(Generic[C]):
         return cls[str](
             passenger_name=passenger_record_attrs[0],
             passenger_fqn=passenger_record_attrs[1],
-            destination_fqn=passenger_record_attrs[2],
-            destination_contact=passenger_record_attrs[3],
+            destination_name=passenger_record_attrs[2],
+            destination_fqn=passenger_record_attrs[3],
+            destination_contact=passenger_record_attrs[4],
         )
 
     def __str__(self) -> str:
@@ -41,6 +44,7 @@ class PassengerRecord(Generic[C]):
             passenger_name=self.passenger_name,
             separator=self.__STR_SEPARATOR,
             passenger_fqn=self.passenger_fqn,
+            destination_name=self.destination_name,
             destination_fqn=self.destination_fqn,
             destination_contact=destination_contact,
         )

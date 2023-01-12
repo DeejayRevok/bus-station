@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "bus-station"
-version = "3.0.2"
+version = "4.0.0"
 description = "A python bus station"
 readme = "README.md"
 authors = ["DeejayRevok <seryi_one@hotmail.com>"]

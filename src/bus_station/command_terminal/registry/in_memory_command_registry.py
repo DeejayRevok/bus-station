@@ -30,6 +30,7 @@ class InMemoryCommandRegistry(CommandRegistry):
             PassengerRecord(
                 passenger_name=command.passenger_name(),
                 passenger_fqn=self.__fqn_getter.get(command),
+                destination_name=handler.bus_stop_name(),
                 destination_fqn=self.__fqn_getter.get(handler),
                 destination_contact=handler_contact,
             )
