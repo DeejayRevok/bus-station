@@ -37,33 +37,42 @@ class TestKombuEventBusEngine(TestCase):
                 self.event_registry_mock,
                 self.event_receiver_mock,
                 self.event_deserializer_mock,
-                self.event_consumer_mock,
+                "test_event",
+                "test_event_consumer",
             )
 
-        self.assertEqual(self.event_consumer_mock.bus_stop_name(), cnffe.exception.event_consumer_name)
-        self.event_registry_mock.get_event_destination_contact.assert_called_once_with(self.event_consumer_mock)
+        self.assertEqual("test_event_consumer", cnffe.exception.event_consumer_name)
+        self.event_registry_mock.get_event_destination_contact.assert_called_once_with(
+            "test_event", "test_event_consumer"
+        )
         consumer_builder_mock.assert_not_called()
         exchange_builder_mock.assert_not_called()
         queue_builder_mock.assert_not_called()
 
+    @patch("bus_station.event_terminal.bus_engine.kombu_event_bus_engine.resolve_passenger_from_bus_stop")
     @patch("bus_station.event_terminal.bus_engine.kombu_event_bus_engine.Queue")
     @patch("bus_station.event_terminal.bus_engine.kombu_event_bus_engine.Exchange")
     @patch("bus_station.event_terminal.bus_engine.kombu_event_bus_engine.PassengerKombuConsumer")
-    def test_init_contact_found(self, consumer_builder_mock, exchange_builder_mock, queue_builder_mock):
+    def test_init_contact_found(
+        self, consumer_builder_mock, exchange_builder_mock, queue_builder_mock, passenger_resolver_mock
+    ):
         test_queue = Mock(spec=Queue)
         queue_builder_mock.return_value = test_queue
         test_exchange = Mock(spec=Exchange)
         exchange_builder_mock.return_value = test_exchange
         test_queue_name = "test_queue"
         self.event_registry_mock.get_event_destination_contact.return_value = test_queue_name
-        self.event_registry_mock.get_consumer_event.return_value = self.event_type_mock
+        self.event_registry_mock.get_event_destination.return_value = self.event_consumer_mock
+        test_event = Mock(spec=Event)
+        passenger_resolver_mock.return_value = test_event
 
         KombuEventBusEngine(
             self.broker_connection_mock,
             self.event_registry_mock,
             self.event_receiver_mock,
             self.event_deserializer_mock,
-            self.event_consumer_mock,
+            "test_event",
+            "test_event_consumer",
         )
 
         test_exchange.declare.assert_has_calls([call(), call(channel=self.channel_mock)])
@@ -77,11 +86,12 @@ class TestKombuEventBusEngine(TestCase):
             self.broker_connection_mock,
             test_queue,
             self.event_consumer_mock,
-            self.event_type_mock,
+            test_event,
             self.event_receiver_mock,
             self.event_deserializer_mock,
         )
 
+    @patch("bus_station.event_terminal.bus_engine.kombu_event_bus_engine.resolve_passenger_from_bus_stop")
     @patch("bus_station.event_terminal.bus_engine.kombu_event_bus_engine.Queue")
     @patch("bus_station.event_terminal.bus_engine.kombu_event_bus_engine.Exchange")
     @patch("bus_station.event_terminal.bus_engine.kombu_event_bus_engine.PassengerKombuConsumer")
@@ -93,13 +103,15 @@ class TestKombuEventBusEngine(TestCase):
             self.event_registry_mock,
             self.event_receiver_mock,
             self.event_deserializer_mock,
-            self.event_consumer_mock,
+            "test_event",
+            "test_event_consumer",
         )
 
         engine.start()
 
         test_kombu_consumer.run.assert_called_once_with()
 
+    @patch("bus_station.event_terminal.bus_engine.kombu_event_bus_engine.resolve_passenger_from_bus_stop")
     @patch("bus_station.event_terminal.bus_engine.kombu_event_bus_engine.Queue")
     @patch("bus_station.event_terminal.bus_engine.kombu_event_bus_engine.Exchange")
     @patch("bus_station.event_terminal.bus_engine.kombu_event_bus_engine.PassengerKombuConsumer")
@@ -111,7 +123,8 @@ class TestKombuEventBusEngine(TestCase):
             self.event_registry_mock,
             self.event_receiver_mock,
             self.event_deserializer_mock,
-            self.event_consumer_mock,
+            "test_event",
+            "test_event_consumer",
         )
 
         engine.stop()

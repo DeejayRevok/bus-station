@@ -13,7 +13,7 @@ class ThreadedEventBus(EventBus):
         self.__event_registry = event_registry
 
     def transport(self, passenger: Event) -> None:
-        event_consumers = self.__event_registry.get_event_destination_contacts(passenger.__class__)
+        event_consumers = self.__event_registry.get_event_destination_contacts(passenger.passenger_name())
         if event_consumers is None:
             return
 

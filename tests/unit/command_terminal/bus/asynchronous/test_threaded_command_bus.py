@@ -17,18 +17,18 @@ class TestThreadedCommandBus(TestCase):
         self.threaded_command_bus = ThreadedCommandBus(self.command_registry_mock, self.command_receiver_mock)
 
     def test_transport_not_registered(self):
-        test_command = Mock(spec=Command)
+        test_command = Mock(spec=Command, **{"passenger_name.return_value": "test_command"})
         self.command_registry_mock.get_command_destination_contact.return_value = None
 
         with self.assertRaises(HandlerNotFoundForCommand) as hnffc:
             self.threaded_command_bus.transport(test_command)
 
         self.assertEqual(test_command.passenger_name(), hnffc.exception.command_name)
-        self.command_registry_mock.get_command_destination_contact.assert_called_once_with(test_command.__class__)
+        self.command_registry_mock.get_command_destination_contact.assert_called_once_with("test_command")
 
     @patch("bus_station.command_terminal.bus.asynchronous.threaded_command_bus.Thread")
     def test_transport_success(self, thread_mock):
-        test_command = Mock(spec=Command)
+        test_command = Mock(spec=Command, **{"passenger_name.return_value": "test_command"})
         test_command_handler = Mock(spec=CommandHandler)
         test_thread = Mock(spec=Thread)
         thread_mock.return_value = test_thread
@@ -40,4 +40,4 @@ class TestThreadedCommandBus(TestCase):
             target=self.command_receiver_mock.receive, args=(test_command, test_command_handler)
         )
         test_thread.start.assert_called_once_with()
-        self.command_registry_mock.get_command_destination_contact.assert_called_once_with(test_command.__class__)
+        self.command_registry_mock.get_command_destination_contact.assert_called_once_with("test_command")

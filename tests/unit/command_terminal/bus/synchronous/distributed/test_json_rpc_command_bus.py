@@ -23,21 +23,21 @@ class TestJsonRPCCommandBus(TestCase):
         )
 
     def test_transport_not_registered(self):
-        test_command = Mock(spec=Command, name="TestCommand")
+        test_command = Mock(spec=Command, **{"passenger_name.return_value": "test_command"})
         self.command_registry_mock.get_command_destination_contact.return_value = None
 
         with self.assertRaises(HandlerNotFoundForCommand) as hnffc:
             self.json_rpc_command_bus.transport(test_command)
 
-        self.assertEqual(test_command.passenger_name(), hnffc.exception.command_name)
+        self.assertEqual("test_command", hnffc.exception.command_name)
         self.command_serializer_mock.serialize.assert_not_called()
-        self.command_registry_mock.get_command_destination_contact.assert_called_once_with(test_command.__class__)
+        self.command_registry_mock.get_command_destination_contact.assert_called_once_with("test_command")
 
     @patch("bus_station.command_terminal.bus.synchronous.distributed.json_rpc_command_bus.to_result")
     @patch("bus_station.command_terminal.bus.synchronous.distributed.json_rpc_command_bus.request")
     @patch("bus_station.command_terminal.bus.synchronous.distributed.json_rpc_command_bus.requests")
     def test_transport_success(self, requests_mock, request_mock, to_result_mock):
-        test_command = Mock(spec=Command, name="TestCommand")
+        test_command = Mock(spec=Command, **{"passenger_name.return_value": "test_command"})
         test_host = "test_host"
         test_port = "41124"
         test_command_handler_addr = f"{test_host}:{test_port}"
@@ -66,7 +66,7 @@ class TestJsonRPCCommandBus(TestCase):
     @patch("bus_station.command_terminal.bus.synchronous.distributed.json_rpc_command_bus.request")
     @patch("bus_station.command_terminal.bus.synchronous.distributed.json_rpc_command_bus.requests")
     def test_transport_error(self, requests_mock, request_mock, to_result_mock):
-        test_command = Mock(spec=Command, name="TestCommand")
+        test_command = Mock(spec=Command, **{"passenger_name.return_value": "test_command"})
         test_host = "test_host"
         test_port = "41124"
         test_command_handler_addr = f"{test_host}:{test_port}"

@@ -1,12 +1,9 @@
-from typing import Optional, Type, TypeVar
-
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.handler_not_found_for_command import HandlerNotFoundForCommand
 from bus_station.command_terminal.json_rpc_command_server import JsonRPCCommandServer
 from bus_station.command_terminal.registry.remote_command_registry import RemoteCommandRegistry
+from bus_station.passengers.resolve_passenger_from_bus_stop import resolve_passenger_from_bus_stop
 from bus_station.shared_terminal.engine.engine import Engine
-
-C = TypeVar("C", bound=Command)
 
 
 class JsonRPCCommandBusEngine(Engine):
@@ -14,21 +11,17 @@ class JsonRPCCommandBusEngine(Engine):
         self,
         server: JsonRPCCommandServer,
         command_registry: RemoteCommandRegistry,
-        command_type: Optional[Type[C]] = None,
+        command_name: str,
     ):
         super().__init__()
         self.__server = server
-        if command_type is not None:
-            self.__register_command_in_server(command_registry, command_type)
-            return
+        self.__register_command_in_server(command_registry, command_name)
 
-        for command_type in command_registry.get_commands_registered():
-            self.__register_command_in_server(command_registry, command_type)
-
-    def __register_command_in_server(self, command_registry: RemoteCommandRegistry, command_type: Type[C]) -> None:
-        handler = command_registry.get_command_destination(command_type)
+    def __register_command_in_server(self, command_registry: RemoteCommandRegistry, command_name: str) -> None:
+        handler = command_registry.get_command_destination(command_name)
         if handler is None:
-            raise HandlerNotFoundForCommand(command_type.passenger_name())
+            raise HandlerNotFoundForCommand(command_name)
+        command_type = resolve_passenger_from_bus_stop(handler, "handle", "command", Command)
         self.__server.register(command_type, handler)
 
     def start(self) -> None:

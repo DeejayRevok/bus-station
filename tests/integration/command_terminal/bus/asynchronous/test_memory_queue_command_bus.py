@@ -57,7 +57,7 @@ class TestMemoryQueueCommandBus(IntegrationTestCase):
         in_memory_registry.register(self.test_command_handler, self.command_queue)
         command_handler_resolver.add_bus_stop(self.test_command_handler)
         self.memory_queue_bus_engine = MemoryQueueCommandBusEngine(
-            in_memory_registry, command_receiver, passenger_deserializer, CommandTest
+            in_memory_registry, command_receiver, passenger_deserializer, CommandTest.passenger_name()
         )
         self.memory_queue_command_bus = MemoryQueueCommandBus(passenger_serializer, in_memory_registry)
 

@@ -66,13 +66,12 @@ class TestRPyCCommandBus(IntegrationTestCase):
         command_receiver = CommandMiddlewareReceiver()
         rpyc_server = RPyCCommandServer(bus_host, bus_port, command_deserializer, command_receiver)
         self.rpyc_command_bus_engine = RPyCCommandBusEngine(
-            rpyc_server,
-            self.redis_registry,
+            rpyc_server, self.redis_registry, CommandTest.passenger_name()
         )
         self.rpyc_command_bus = RPyCCommandBus(command_serializer, self.redis_registry)
 
     def tearDown(self) -> None:
-        self.redis_registry.unregister(CommandTest)
+        self.redis_registry.unregister(CommandTest.passenger_name())
 
     def test_process_engine_transport_success(self):
         test_command = CommandTest()

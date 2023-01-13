@@ -34,8 +34,8 @@ class RedisEventRegistry(RemoteEventRegistry):
             )
         )
 
-    def get_event_destination_contacts(self, event: Type[Event]) -> Optional[Set[str]]:
-        event_records = self.__redis_repository.find_by_passenger_name(event.passenger_name())
+    def get_event_destination_contacts(self, event_name: str) -> Optional[Set[str]]:
+        event_records = self.__redis_repository.find_by_passenger_name(event_name)
         if event_records is None:
             return None
 
@@ -46,10 +46,9 @@ class RedisEventRegistry(RemoteEventRegistry):
             event_destination_contacts.add(event_record.destination_contact)
         return event_destination_contacts
 
-    def get_event_destination_contact(self, event_destination: EventConsumer) -> Optional[str]:
-        event = self.get_consumer_event(event_destination)
+    def get_event_destination_contact(self, event_name: str, event_destination_name: str) -> Optional[str]:
         event_record = self.__redis_repository.find_by_passenger_name_and_destination_name(
-            passenger_name=event.passenger_name(), passenger_destination_name=event_destination.bus_stop_name()
+            passenger_name=event_name, passenger_destination_name=event_destination_name
         )
         if event_record is None:
             return None
@@ -64,19 +63,24 @@ class RedisEventRegistry(RemoteEventRegistry):
             events_registered.add(event)
         return events_registered
 
-    def get_event_destinations(self, event: Type[Event]) -> Optional[Set[EventConsumer]]:
-        event_records: Optional[List[PassengerRecord[str]]] = self.__redis_repository.find_by_passenger_name(
-            event.passenger_name()
-        )
+    def get_event_destinations(self, event_name: str) -> Optional[Set[EventConsumer]]:
+        event_records: Optional[List[PassengerRecord[str]]] = self.__redis_repository.find_by_passenger_name(event_name)
         if event_records is None:
             return None
 
         event_destinations = set()
         for event_record in event_records:
-            if event_record.destination_fqn is None:
-                continue
             event_destinations.add(self.__event_consumer_resolver.resolve_from_fqn(event_record.destination_fqn))
         return event_destinations
 
-    def unregister(self, event: Type[Event]) -> None:
-        self.__redis_repository.delete_by_passenger_name(event.passenger_name())
+    def get_event_destination(self, event_name: str, event_destination_name: str) -> Optional[EventConsumer]:
+        event_record: Optional[
+            PassengerRecord[str]
+        ] = self.__redis_repository.find_by_passenger_name_and_destination_name(event_name, event_destination_name)
+        if event_record is None:
+            return None
+
+        return self.__event_consumer_resolver.resolve_from_fqn(event_record.destination_fqn)
+
+    def unregister(self, event_name: str) -> None:
+        self.__redis_repository.delete_by_passenger_name(event_name)

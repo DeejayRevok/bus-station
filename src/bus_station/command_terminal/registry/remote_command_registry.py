@@ -12,5 +12,5 @@ class RemoteCommandRegistry(CommandRegistry, ABC):
         pass
 
     @abstractmethod
-    def get_command_destination_contact(self, command: Type[Command]) -> Optional[str]:
+    def get_command_destination_contact(self, command_name: str) -> Optional[str]:
         pass

@@ -66,12 +66,12 @@ class TestJsonRPCCommandBus(IntegrationTestCase):
         self.redis_registry.register(self.test_command_handler, f"http://{bus_host}:{bus_port}")
         command_handler_resolver.add_bus_stop(self.test_command_handler)
         self.json_rpc_command_bus_engine = JsonRPCCommandBusEngine(
-            server=json_rpc_server, command_registry=self.redis_registry
+            server=json_rpc_server, command_registry=self.redis_registry, command_name=CommandTest.passenger_name()
         )
         self.json_rpc_command_bus = JsonRPCCommandBus(command_serializer, self.redis_registry)
 
     def tearDown(self) -> None:
-        self.redis_registry.unregister(CommandTest)
+        self.redis_registry.unregister(CommandTest.passenger_name())
 
     def test_process_engine_transport_success(self):
         test_command = CommandTest()

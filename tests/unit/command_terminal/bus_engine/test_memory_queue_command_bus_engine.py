@@ -28,11 +28,11 @@ class TestMemoryQueueCommandBusEngine(TestCase):
                 self.command_registry_mock,
                 self.command_receiver_mock,
                 self.command_deserializer_mock,
-                self.command_type_mock.__class__,
+                "test_command",
             )
 
-        self.assertEqual("command.bus_station.command_terminal.command.Command", hnffc.exception.command_name)
-        self.command_registry_mock.get_command_destination.assert_called_once_with(self.command_type_mock.__class__)
+        self.assertEqual("test_command", hnffc.exception.command_name)
+        self.command_registry_mock.get_command_destination.assert_called_once_with("test_command")
         passenger_worker_builder.assert_not_called()
 
     @patch("bus_station.command_terminal.bus_engine.memory_queue_command_bus_engine.MemoryQueuePassengerWorker")
@@ -48,13 +48,11 @@ class TestMemoryQueueCommandBusEngine(TestCase):
             self.command_registry_mock,
             self.command_receiver_mock,
             self.command_deserializer_mock,
-            self.command_type_mock.__class__,
+            "test_command",
         )
 
-        self.command_registry_mock.get_command_destination.assert_called_once_with(self.command_type_mock.__class__)
-        self.command_registry_mock.get_command_destination_contact.assert_called_once_with(
-            self.command_type_mock.__class__
-        )
+        self.command_registry_mock.get_command_destination.assert_called_once_with("test_command")
+        self.command_registry_mock.get_command_destination_contact.assert_called_once_with("test_command")
         passenger_worker_builder.assert_called_once_with(
             test_queue, test_command_handler, self.command_receiver_mock, self.command_deserializer_mock
         )
@@ -67,7 +65,7 @@ class TestMemoryQueueCommandBusEngine(TestCase):
             self.command_registry_mock,
             self.command_receiver_mock,
             self.command_deserializer_mock,
-            self.command_type_mock.__class__,
+            "test_command",
         )
 
         engine.start()
@@ -82,7 +80,7 @@ class TestMemoryQueueCommandBusEngine(TestCase):
             self.command_registry_mock,
             self.command_receiver_mock,
             self.command_deserializer_mock,
-            self.command_type_mock.__class__,
+            "test_command",
         )
 
         engine.stop()

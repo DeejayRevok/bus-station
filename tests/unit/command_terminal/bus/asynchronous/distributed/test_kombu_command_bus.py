@@ -28,7 +28,7 @@ class TestKombuCommandBus(TestCase):
         )
 
     def test_transport_not_registered(self):
-        test_command = Mock(spec=Command)
+        test_command = Mock(spec=Command, **{"passenger_name.return_value": "test_command"})
         self.command_registry_mock.get_command_destination_contact.return_value = None
 
         with self.assertRaises(HandlerNotFoundForCommand) as hnffc:
@@ -36,14 +36,14 @@ class TestKombuCommandBus(TestCase):
 
         self.assertEqual(test_command.passenger_name(), hnffc.exception.command_name)
         self.command_serializer_mock.serialize.assert_not_called()
-        self.command_registry_mock.get_command_destination_contact.assert_called_once_with(test_command.__class__)
+        self.command_registry_mock.get_command_destination_contact.assert_called_once_with("test_command")
 
     def test_transport_success(self):
-        test_command = Mock(spec=Command)
+        test_command = Mock(spec=Command, **{"passenger_name.return_value": "test_command"})
         test_command_serialized = "test_command_serialized"
         self.command_serializer_mock.serialize.return_value = test_command_serialized
         self.command_registry_mock.get_commands_registered.return_value = [test_command.__class__]
-        self.command_registry_mock.get_command_destination_contact.return_value = test_command.passenger_name()
+        self.command_registry_mock.get_command_destination_contact.return_value = "test_command"
 
         self.kombu_command_bus.transport(test_command)
 
@@ -51,7 +51,7 @@ class TestKombuCommandBus(TestCase):
         self.producer_mock.publish.assert_called_once_with(
             test_command_serialized,
             exchange="",
-            routing_key=test_command.passenger_name(),
+            routing_key="test_command",
             retry=True,
             retry_policy={
                 "interval_start": 0,

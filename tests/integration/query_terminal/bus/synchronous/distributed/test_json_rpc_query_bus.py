@@ -74,8 +74,7 @@ class TestJsonRPCQueryBus(IntegrationTestCase):
         self.redis_registry.register(self.test_query_handler, f"http://{bus_host}:{bus_port}")
         query_handler_resolver.add_bus_stop(self.test_query_handler)
         self.json_rpc_query_bus_engine = JsonRPCQueryBusEngine(
-            server=json_rpc_server,
-            query_registry=self.redis_registry,
+            server=json_rpc_server, query_registry=self.redis_registry, query_name=QueryTest.passenger_name()
         )
         self.json_rpc_query_bus = JsonRPCQueryBus(
             query_serializer,
@@ -84,7 +83,7 @@ class TestJsonRPCQueryBus(IntegrationTestCase):
         )
 
     def tearDown(self) -> None:
-        self.redis_registry.unregister(QueryTest)
+        self.redis_registry.unregister(QueryTest.passenger_name())
 
     def test_process_engine_transport_success(self):
         test_value = "test_value"

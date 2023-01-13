@@ -1,5 +1,3 @@
-from typing import Type, TypeVar
-
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
 from bus_station.command_terminal.handler_not_found_for_command import HandlerNotFoundForCommand
@@ -9,8 +7,6 @@ from bus_station.passengers.reception.passenger_receiver import PassengerReceive
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 from bus_station.shared_terminal.engine.engine import Engine
 
-C = TypeVar("C", bound=Command)
-
 
 class MemoryQueueCommandBusEngine(Engine):
     def __init__(
@@ -18,14 +14,14 @@ class MemoryQueueCommandBusEngine(Engine):
         command_registry: CommandRegistry,
         command_receiver: PassengerReceiver[Command, CommandHandler],
         command_deserializer: PassengerDeserializer,
-        command_type: Type[C],
+        command_name: str,
     ):
         super().__init__()
-        command_handler = command_registry.get_command_destination(command_type)
+        command_handler = command_registry.get_command_destination(command_name)
         if command_handler is None:
-            raise HandlerNotFoundForCommand(command_type.passenger_name())
+            raise HandlerNotFoundForCommand(command_name)
 
-        command_queue = command_registry.get_command_destination_contact(command_type)
+        command_queue = command_registry.get_command_destination_contact(command_name)
         self.__command_worker = MemoryQueuePassengerWorker(
             command_queue, command_handler, command_receiver, command_deserializer
         )
