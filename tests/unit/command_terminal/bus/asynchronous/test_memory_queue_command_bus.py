@@ -19,7 +19,7 @@ class TestMemoryQueueCommandBus(TestCase):
         )
 
     def test_transport_not_registered(self):
-        test_command = Mock(spec=Command)
+        test_command = Mock(spec=Command, **{"passenger_name.return_value": "test_command"})
         self.command_registry_mock.get_command_destination_contact.return_value = None
 
         with self.assertRaises(HandlerNotFoundForCommand) as hnffc:
@@ -27,12 +27,12 @@ class TestMemoryQueueCommandBus(TestCase):
 
         self.assertEqual(test_command.passenger_name(), hnffc.exception.command_name)
         self.command_serializer_mock.serialize.assert_not_called()
-        self.command_registry_mock.get_command_destination_contact.assert_called_once_with(test_command.__class__)
+        self.command_registry_mock.get_command_destination_contact.assert_called_once_with("test_command")
 
     def test_transport_success(self):
         test_queue = Mock(spec=Queue)
         test_serialized_command = "test_serialized_command"
-        test_command = Mock(spec=Command)
+        test_command = Mock(spec=Command, **{"passenger_name.return_value": "test_command"})
         self.command_serializer_mock.serialize.return_value = test_serialized_command
         self.command_registry_mock.get_command_destination_contact.return_value = test_queue
 
@@ -40,4 +40,4 @@ class TestMemoryQueueCommandBus(TestCase):
 
         self.command_serializer_mock.serialize.assert_called_once_with(test_command)
         test_queue.put.assert_called_once_with(test_serialized_command)
-        self.command_registry_mock.get_command_destination_contact.assert_called_once_with(test_command.__class__)
+        self.command_registry_mock.get_command_destination_contact.assert_called_once_with("test_command")

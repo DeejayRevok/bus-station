@@ -36,19 +36,22 @@ class TestKombuCommandBusEngine(TestCase):
                 self.command_registry_mock,
                 self.command_receiver_mock,
                 self.command_deserializer_mock,
-                self.command_type_mock.__class__,
+                "test_command",
             )
 
-        self.assertEqual("command.bus_station.command_terminal.command.Command", hnffc.exception.command_name)
-        self.command_registry_mock.get_command_destination.assert_called_once_with(self.command_type_mock.__class__)
+        self.assertEqual("test_command", hnffc.exception.command_name)
+        self.command_registry_mock.get_command_destination.assert_called_once_with("test_command")
         consumer_builder_mock.assert_not_called()
         exchange_builder_mock.assert_not_called()
         queue_builder_mock.assert_not_called()
 
+    @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.resolve_passenger_from_bus_stop")
     @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.Queue")
     @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.Exchange")
     @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.PassengerKombuConsumer")
-    def test_init_handler_found(self, consumer_builder_mock, exchange_builder_mock, queue_builder_mock):
+    def test_init_handler_found(
+        self, consumer_builder_mock, exchange_builder_mock, queue_builder_mock, passenger_resolver_mock
+    ):
         test_queue = Mock(spec=Queue)
         queue_builder_mock.return_value = test_queue
         test_exchange = Mock(spec=Exchange)
@@ -56,6 +59,8 @@ class TestKombuCommandBusEngine(TestCase):
         test_command_handler = Mock(spec=CommandHandler)
         self.command_registry_mock.get_command_destination.return_value = test_command_handler
         test_queue_name = "test_queue"
+        test_command = Mock(spec=Command)
+        passenger_resolver_mock.return_value = test_command
         self.command_registry_mock.get_command_destination_contact.return_value = test_queue_name
 
         KombuCommandBusEngine(
@@ -63,7 +68,7 @@ class TestKombuCommandBusEngine(TestCase):
             self.command_registry_mock,
             self.command_receiver_mock,
             self.command_deserializer_mock,
-            self.command_type_mock.__class__,
+            "test_command",
         )
 
         test_exchange.declare.assert_called_once_with()
@@ -76,11 +81,13 @@ class TestKombuCommandBusEngine(TestCase):
             self.broker_connection_mock,
             test_queue,
             test_command_handler,
-            self.command_type_mock.__class__,
+            test_command,
             self.command_receiver_mock,
             self.command_deserializer_mock,
         )
+        passenger_resolver_mock.assert_called_once_with(test_command_handler, "handle", "command", Command)
 
+    @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.resolve_passenger_from_bus_stop")
     @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.Queue")
     @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.Exchange")
     @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.PassengerKombuConsumer")
@@ -92,13 +99,14 @@ class TestKombuCommandBusEngine(TestCase):
             self.command_registry_mock,
             self.command_receiver_mock,
             self.command_deserializer_mock,
-            self.command_type_mock.__class__,
+            "test_command",
         )
 
         engine.start()
 
         test_kombu_consumer.run.assert_called_once_with()
 
+    @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.resolve_passenger_from_bus_stop")
     @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.Queue")
     @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.Exchange")
     @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.PassengerKombuConsumer")
@@ -110,7 +118,7 @@ class TestKombuCommandBusEngine(TestCase):
             self.command_registry_mock,
             self.command_receiver_mock,
             self.command_deserializer_mock,
-            self.command_type_mock.__class__,
+            "test_command",
         )
 
         engine.stop()

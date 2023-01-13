@@ -25,19 +25,19 @@ class TestRPyCQueryBus(TestCase):
         )
 
     def test_transport_not_registered(self):
-        test_query = Mock(spec=Query, name="TestQuery")
+        test_query = Mock(spec=Query, **{"passenger_name.return_value": "test_query"})
         self.query_registry_mock.get_query_destination_contact.return_value = None
 
         with self.assertRaises(HandlerNotFoundForQuery) as hnffq:
             self.rpyc_query_bus.transport(test_query)
 
-        self.assertEqual(test_query.passenger_name(), hnffq.exception.query_name)
+        self.assertEqual("test_query", hnffq.exception.query_name)
         self.query_serializer_mock.serialize.assert_not_called()
-        self.query_registry_mock.get_query_destination_contact.assert_called_once_with(test_query.__class__)
+        self.query_registry_mock.get_query_destination_contact.assert_called_once_with("test_query")
 
     @patch("bus_station.query_terminal.bus.synchronous.distributed.rpyc_query_bus.connect")
     def test_transport_success(self, connect_mock):
-        test_query = Mock(spec=Query)
+        test_query = Mock(spec=Query, **{"passenger_name.return_value": "test_query"})
         test_query.passenger_name.return_value = "TestQuery"
         test_host = "test_host"
         test_port = "41124"

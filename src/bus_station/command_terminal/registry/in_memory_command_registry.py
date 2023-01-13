@@ -36,16 +36,16 @@ class InMemoryCommandRegistry(CommandRegistry):
             )
         )
 
-    def get_command_destination(self, command: Type[Command]) -> Optional[CommandHandler]:
-        command_records = self.__in_memory_repository.find_by_passenger_name(command.passenger_name())
+    def get_command_destination(self, command_name: str) -> Optional[CommandHandler]:
+        command_records = self.__in_memory_repository.find_by_passenger_name(command_name)
         if command_records is None:
             return None
 
         command_handler_fqn = command_records[0].destination_fqn
         return self.__command_handler_resolver.resolve_from_fqn(command_handler_fqn)
 
-    def get_command_destination_contact(self, command: Type[Command]) -> Optional[Any]:
-        command_records = self.__in_memory_repository.find_by_passenger_name(command.passenger_name())
+    def get_command_destination_contact(self, command_name: str) -> Optional[Any]:
+        command_records = self.__in_memory_repository.find_by_passenger_name(command_name)
         if command_records is None:
             return None
 
@@ -60,5 +60,5 @@ class InMemoryCommandRegistry(CommandRegistry):
             commands_registered.add(command)
         return commands_registered
 
-    def unregister(self, command: Type[Command]) -> None:
-        self.__in_memory_repository.delete_by_passenger_name(command.passenger_name())
+    def unregister(self, command_name: str) -> None:
+        self.__in_memory_repository.delete_by_passenger_name(command_name)

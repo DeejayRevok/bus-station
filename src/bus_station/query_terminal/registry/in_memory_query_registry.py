@@ -36,16 +36,16 @@ class InMemoryQueryRegistry(QueryRegistry):
             )
         )
 
-    def get_query_destination(self, query: Type[Query]) -> Optional[QueryHandler]:
-        query_records = self.__in_memory_repository.find_by_passenger_name(query.passenger_name())
+    def get_query_destination(self, query_name: str) -> Optional[QueryHandler]:
+        query_records = self.__in_memory_repository.find_by_passenger_name(query_name)
         if query_records is None:
             return None
 
         query_handler_fqn = query_records[0].destination_fqn
         return self.__query_handler_resolver.resolve_from_fqn(query_handler_fqn)
 
-    def get_query_destination_contact(self, query: Type[Query]) -> Optional[Any]:
-        query_records = self.__in_memory_repository.find_by_passenger_name(query.passenger_name())
+    def get_query_destination_contact(self, query_name: str) -> Optional[Any]:
+        query_records = self.__in_memory_repository.find_by_passenger_name(query_name)
         if query_records is None:
             return None
         return query_records[0].destination_contact
@@ -59,5 +59,5 @@ class InMemoryQueryRegistry(QueryRegistry):
             queries_registered.add(query)
         return queries_registered
 
-    def unregister(self, query: Type[Query]) -> None:
-        self.__in_memory_repository.delete_by_passenger_name(query.passenger_name())
+    def unregister(self, query_name: str) -> None:
+        self.__in_memory_repository.delete_by_passenger_name(query_name)

@@ -42,7 +42,7 @@ class TestRedisCommandRegistry(IntegrationTestCase):
         )
 
     def tearDown(self) -> None:
-        self.redis_registry.unregister(CommandTest)
+        self.redis_registry.unregister(CommandTest.passenger_name())
 
     def test_register(self):
         test_command_handler = CommandTestHandler()
@@ -51,8 +51,12 @@ class TestRedisCommandRegistry(IntegrationTestCase):
 
         self.redis_registry.register(test_command_handler, test_destination_contact)
 
-        self.assertEqual(test_command_handler, self.redis_registry.get_command_destination(CommandTest))
-        self.assertEqual(test_destination_contact, self.redis_registry.get_command_destination_contact(CommandTest))
+        self.assertEqual(
+            test_command_handler, self.redis_registry.get_command_destination(CommandTest.passenger_name())
+        )
+        self.assertEqual(
+            test_destination_contact, self.redis_registry.get_command_destination_contact(CommandTest.passenger_name())
+        )
 
     def test_unregister(self):
         test_command_handler = CommandTestHandler()
@@ -60,9 +64,9 @@ class TestRedisCommandRegistry(IntegrationTestCase):
         self.redis_registry.register(test_command_handler, test_destination_contact)
         self.command_handler_resolver.add_bus_stop(test_command_handler)
 
-        self.redis_registry.unregister(CommandTest)
+        self.redis_registry.unregister(CommandTest.passenger_name())
 
-        self.assertIsNone(self.redis_registry.get_command_destination(CommandTest))
+        self.assertIsNone(self.redis_registry.get_command_destination(CommandTest.passenger_name()))
 
     def test_get_commands_registered(self):
         test_command_handler = CommandTestHandler()

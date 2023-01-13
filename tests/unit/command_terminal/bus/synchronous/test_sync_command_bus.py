@@ -16,21 +16,21 @@ class TestSyncCommandBus(TestCase):
         self.sync_command_bus = SyncCommandBus(self.command_registry_mock, self.command_receiver_mock)
 
     def test_transport_not_registered(self):
-        test_command = Mock(spec=Command)
+        test_command = Mock(spec=Command, **{"passenger_name.return_value": "test_command"})
         self.command_registry_mock.get_command_destination_contact.return_value = None
 
         with self.assertRaises(HandlerNotFoundForCommand) as hnffc:
             self.sync_command_bus.transport(test_command)
 
-        self.assertEqual(test_command.passenger_name(), hnffc.exception.command_name)
-        self.command_registry_mock.get_command_destination_contact.assert_called_once_with(test_command.__class__)
+        self.assertEqual("test_command", hnffc.exception.command_name)
+        self.command_registry_mock.get_command_destination_contact.assert_called_once_with("test_command")
 
     def test_transport_success(self):
-        test_command = Mock(spec=Command)
+        test_command = Mock(spec=Command, **{"passenger_name.return_value": "test_command"})
         test_command_handler = Mock(spec=CommandHandler)
         self.command_registry_mock.get_command_destination_contact.return_value = test_command_handler
 
         self.sync_command_bus.transport(test_command)
 
         self.command_receiver_mock.receive.assert_called_once_with(test_command, test_command_handler)
-        self.command_registry_mock.get_command_destination_contact.assert_called_once_with(test_command.__class__)
+        self.command_registry_mock.get_command_destination_contact.assert_called_once_with("test_command")

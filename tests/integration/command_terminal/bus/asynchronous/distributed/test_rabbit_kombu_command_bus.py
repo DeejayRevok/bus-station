@@ -80,7 +80,11 @@ class TestRabbitKombuCommandBus(IntegrationTestCase):
         self.redis_registry.register(self.test_command_handler, CommandTest.passenger_name())
         command_handler_resolver.add_bus_stop(self.test_command_handler)
         self.kombu_command_bus_engine = KombuCommandBusEngine(
-            self.kombu_connection, self.redis_registry, command_receiver, command_deserializer, CommandTest
+            self.kombu_connection,
+            self.redis_registry,
+            command_receiver,
+            command_deserializer,
+            CommandTest.passenger_name(),
         )
         self.kombu_command_bus = KombuCommandBus(
             self.kombu_connection,
@@ -90,7 +94,7 @@ class TestRabbitKombuCommandBus(IntegrationTestCase):
 
     def tearDown(self) -> None:
         self.kombu_command_bus.shutdown()
-        self.redis_registry.unregister(CommandTest)
+        self.redis_registry.unregister(CommandTest.passenger_name())
 
     def test_process_transport_success(self):
         test_command = CommandTest()

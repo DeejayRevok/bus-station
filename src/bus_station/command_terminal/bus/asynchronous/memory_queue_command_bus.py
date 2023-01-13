@@ -17,7 +17,7 @@ class MemoryQueueCommandBus(CommandBus):
         self.__command_registry = command_registry
 
     def transport(self, passenger: Command) -> None:
-        handler_queue = self.__command_registry.get_command_destination_contact(passenger.__class__)
+        handler_queue = self.__command_registry.get_command_destination_contact(passenger.passenger_name())
         if handler_queue is None:
             raise HandlerNotFoundForCommand(passenger.passenger_name())
 

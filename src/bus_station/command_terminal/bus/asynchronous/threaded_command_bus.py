@@ -16,7 +16,7 @@ class ThreadedCommandBus(CommandBus):
         self.__command_receiver = command_receiver
 
     def transport(self, passenger: Command) -> None:
-        command_handler = self.__command_registry.get_command_destination_contact(passenger.__class__)
+        command_handler = self.__command_registry.get_command_destination_contact(passenger.passenger_name())
         if command_handler is None:
             raise HandlerNotFoundForCommand(passenger.passenger_name())
 

@@ -42,7 +42,7 @@ class TestRedisQueryRegistry(IntegrationTestCase):
         )
 
     def tearDown(self) -> None:
-        self.redis_registry.unregister(QueryTest)
+        self.redis_registry.unregister(QueryTest.passenger_name())
 
     def test_register_destination(self):
         test_query_handler = QueryTestHandler()
@@ -51,8 +51,10 @@ class TestRedisQueryRegistry(IntegrationTestCase):
 
         self.redis_registry.register(test_query_handler, test_destination_contact)
 
-        self.assertEqual(test_query_handler, self.redis_registry.get_query_destination(QueryTest))
-        self.assertEqual(test_destination_contact, self.redis_registry.get_query_destination_contact(QueryTest))
+        self.assertEqual(test_query_handler, self.redis_registry.get_query_destination(QueryTest.passenger_name()))
+        self.assertEqual(
+            test_destination_contact, self.redis_registry.get_query_destination_contact(QueryTest.passenger_name())
+        )
 
     def test_unregister(self):
         test_query_handler = QueryTestHandler()
@@ -60,9 +62,9 @@ class TestRedisQueryRegistry(IntegrationTestCase):
         self.redis_registry.register(test_query_handler, test_destination_contact)
         self.query_handler_resolver.add_bus_stop(test_query_handler)
 
-        self.redis_registry.unregister(QueryTest)
+        self.redis_registry.unregister(QueryTest.passenger_name())
 
-        self.assertIsNone(self.redis_registry.get_query_destination(QueryTest))
+        self.assertIsNone(self.redis_registry.get_query_destination(QueryTest.passenger_name()))
 
     def test_get_queries_registered(self):
         test_query_handler = QueryTestHandler()

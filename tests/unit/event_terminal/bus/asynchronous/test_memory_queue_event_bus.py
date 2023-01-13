@@ -20,7 +20,7 @@ class TestMemoryQueueEventBus(TestCase):
     def test_transport_success(self):
         test_queue = Mock(spec=Queue)
         test_serialized_event = "test_serialized_event"
-        test_event = Mock(spec=Event)
+        test_event = Mock(spec=Event, **{"passenger_name.return_value": "test_event"})
         self.event_serializer_mock.serialize.return_value = test_serialized_event
         self.event_registry_mock.get_event_destination_contacts.return_value = [test_queue]
 
@@ -28,4 +28,4 @@ class TestMemoryQueueEventBus(TestCase):
 
         self.event_serializer_mock.serialize.assert_called_once_with(test_event)
         test_queue.put.assert_called_once_with(test_serialized_event)
-        self.event_registry_mock.get_event_destination_contacts.assert_called_once_with(test_event.__class__)
+        self.event_registry_mock.get_event_destination_contacts.assert_called_once_with("test_event")

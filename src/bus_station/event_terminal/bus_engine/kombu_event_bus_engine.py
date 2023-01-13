@@ -7,9 +7,11 @@ from kombu.transport.virtual import Channel
 from bus_station.event_terminal.contact_not_found_for_consumer import ContactNotFoundForConsumer
 from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
+from bus_station.event_terminal.event_consumer_not_found import EventConsumerNotFound
 from bus_station.event_terminal.registry.remote_event_registry import RemoteEventRegistry
 from bus_station.passengers.passenger_kombu_consumer import PassengerKombuConsumer
 from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
+from bus_station.passengers.resolve_passenger_from_bus_stop import resolve_passenger_from_bus_stop
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 from bus_station.shared_terminal.engine.engine import Engine
 
@@ -23,12 +25,16 @@ class KombuEventBusEngine(Engine):
         event_registry: RemoteEventRegistry,
         event_receiver: PassengerReceiver[Event, EventConsumer],
         event_deserializer: PassengerDeserializer,
-        event_consumer: EventConsumer,
+        event_name: str,
+        event_consumer_name: str,
     ):
         super().__init__()
-        event_exchange_name = event_registry.get_event_destination_contact(event_consumer)
+        event_exchange_name = event_registry.get_event_destination_contact(event_name, event_consumer_name)
         if event_exchange_name is None:
-            raise ContactNotFoundForConsumer(event_consumer.bus_stop_name())
+            raise ContactNotFoundForConsumer(event_consumer_name)
+        event_consumer = event_registry.get_event_destination(event_name, event_consumer_name)
+        if event_consumer is None:
+            raise EventConsumerNotFound(event_consumer_name)
 
         broker_connection = broker_connection
         channel = broker_connection.channel()
@@ -41,7 +47,7 @@ class KombuEventBusEngine(Engine):
             broker_connection,
             event_consumer_queue,
             event_consumer,
-            event_registry.get_consumer_event(event_consumer),
+            resolve_passenger_from_bus_stop(event_consumer, "consume", "event", Event),
             event_receiver,
             event_deserializer,
         )

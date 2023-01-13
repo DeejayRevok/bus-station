@@ -98,19 +98,21 @@ class TestRabbitKombuEventBus(IntegrationTestCase):
             self.redis_registry,
             event_middleware_receiver,
             event_deserializer,
-            self.test_event_consumer1,
+            EventTest.passenger_name(),
+            self.test_event_consumer1.bus_stop_name(),
         )
         self.kombu_event_bus_engine2 = KombuEventBusEngine(
             self.kombu_connection,
             self.redis_registry,
             event_middleware_receiver,
             event_deserializer,
-            self.test_event_consumer2,
+            EventTest.passenger_name(),
+            self.test_event_consumer2.bus_stop_name(),
         )
 
     def tearDown(self) -> None:
         self.kombu_event_bus.shutdown()
-        self.redis_registry.unregister(EventTest)
+        self.redis_registry.unregister(EventTest.passenger_name())
 
     def test_process_transport_success(self):
         test_event = EventTest()

@@ -29,11 +29,14 @@ class TestMemoryQueueEventBusEngine(TestCase):
                 self.event_registry_mock,
                 self.event_receiver_mock,
                 self.event_deserializer_mock,
-                self.event_consumer_mock,
+                "test_event",
+                "test_event_consumer",
             )
 
-        self.assertEqual(self.event_consumer_mock.bus_stop_name(), cnffc.exception.event_consumer_name)
-        self.event_registry_mock.get_event_destination_contact.assert_called_once_with(self.event_consumer_mock)
+        self.assertEqual("test_event_consumer", cnffc.exception.event_consumer_name)
+        self.event_registry_mock.get_event_destination_contact.assert_called_once_with(
+            "test_event", "test_event_consumer"
+        )
         passenger_worker_builder.assert_not_called()
 
     @patch("bus_station.event_terminal.bus_engine.memory_queue_event_bus_engine.MemoryQueuePassengerWorker")
@@ -42,15 +45,19 @@ class TestMemoryQueueEventBusEngine(TestCase):
         passenger_worker_builder.return_value = memory_queue_passenger_worker_mock
         test_queue = Mock(spec=Queue)
         self.event_registry_mock.get_event_destination_contact.return_value = test_queue
+        self.event_registry_mock.get_event_destination.return_value = self.event_consumer_mock
 
         MemoryQueueEventBusEngine(
             self.event_registry_mock,
             self.event_receiver_mock,
             self.event_deserializer_mock,
-            self.event_consumer_mock,
+            "test_event",
+            "test_event_consumer",
         )
 
-        self.event_registry_mock.get_event_destination_contact.assert_called_once_with(self.event_consumer_mock)
+        self.event_registry_mock.get_event_destination_contact.assert_called_once_with(
+            "test_event", "test_event_consumer"
+        )
         passenger_worker_builder.assert_called_once_with(
             test_queue, self.event_consumer_mock, self.event_receiver_mock, self.event_deserializer_mock
         )
@@ -63,7 +70,8 @@ class TestMemoryQueueEventBusEngine(TestCase):
             self.event_registry_mock,
             self.event_receiver_mock,
             self.event_deserializer_mock,
-            self.event_consumer_mock,
+            "test_event",
+            "test_event_consumer",
         )
 
         engine.start()
@@ -78,7 +86,8 @@ class TestMemoryQueueEventBusEngine(TestCase):
             self.event_registry_mock,
             self.event_receiver_mock,
             self.event_deserializer_mock,
-            self.event_consumer_mock,
+            "test_event",
+            "test_event_consumer",
         )
 
         engine.stop()

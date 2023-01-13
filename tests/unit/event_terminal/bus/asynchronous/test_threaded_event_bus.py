@@ -17,7 +17,7 @@ class TestThreadedEventBus(TestCase):
 
     @patch("bus_station.event_terminal.bus.asynchronous.threaded_event_bus.Thread")
     def test_transport_success(self, thread_mock):
-        test_event = Mock(spec=Event)
+        test_event = Mock(spec=Event, **{"passenger_name.return_value": "test_event"})
         test_event_consumer = Mock(spec=EventConsumer)
         test_thread = Mock(spec=Thread)
         thread_mock.return_value = test_thread
@@ -29,4 +29,4 @@ class TestThreadedEventBus(TestCase):
             target=self.event_receiver_mock.receive, args=(test_event, test_event_consumer)
         )
         test_thread.start.assert_called_once_with()
-        self.event_registry_mock.get_event_destination_contacts.assert_called_once_with(test_event.__class__)
+        self.event_registry_mock.get_event_destination_contacts.assert_called_once_with("test_event")

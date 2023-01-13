@@ -12,5 +12,5 @@ class RemoteQueryRegistry(QueryRegistry, ABC):
         pass
 
     @abstractmethod
-    def get_query_destination_contact(self, query: Type[Query]) -> Optional[str]:
+    def get_query_destination_contact(self, query_name: str) -> Optional[str]:
         pass

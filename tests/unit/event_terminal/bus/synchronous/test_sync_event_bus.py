@@ -15,11 +15,11 @@ class TestSyncEventBus(TestCase):
         self.sync_event_bus = SyncEventBus(self.event_registry_mock, self.event_receiver_mock)
 
     def test_transport_success(self):
-        test_event = Mock(spec=Event)
+        test_event = Mock(spec=Event, **{"passenger_name.return_value": "test_event"})
         test_event_consumer = Mock(spec=EventConsumer)
         self.event_registry_mock.get_event_destination_contacts.return_value = [test_event_consumer]
 
         self.sync_event_bus.transport(test_event)
 
         self.event_receiver_mock.receive.assert_called_once_with(test_event, test_event_consumer)
-        self.event_registry_mock.get_event_destination_contacts.assert_called_once_with(test_event.__class__)
+        self.event_registry_mock.get_event_destination_contacts.assert_called_once_with("test_event")
