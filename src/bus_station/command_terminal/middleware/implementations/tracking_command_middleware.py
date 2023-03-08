@@ -17,4 +17,4 @@ class TrackingCommandMiddleware(CommandMiddleware):
         self, passenger: Command, bus_stop: CommandHandler, handling_exception: Optional[Exception] = None
     ) -> None:
         success = handling_exception is None
-        self.__tracker.end_tracking(passenger, success)
+        self.__tracker.end_tracking(passenger, bus_stop, success)

@@ -5,7 +5,7 @@ from typing import Optional
 
 @dataclass
 class PassengerTracking:
-    id: str
+    passenger_id: str
     name: str
     executor_name: str
     data: dict

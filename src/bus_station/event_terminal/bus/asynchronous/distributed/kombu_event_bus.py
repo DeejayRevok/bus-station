@@ -1,5 +1,4 @@
-from kombu import Connection
-from kombu.messaging import Producer
+from kombu import Connection, Producer
 
 from bus_station.event_terminal.bus.event_bus import EventBus
 from bus_station.event_terminal.event import Event
@@ -45,6 +44,3 @@ class KombuEventBus(EventBus):
                     "max_retries": 10,
                 },
             )
-
-    def shutdown(self) -> None:
-        self.__producer.release()

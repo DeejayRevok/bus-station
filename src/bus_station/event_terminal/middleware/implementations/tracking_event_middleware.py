@@ -17,4 +17,4 @@ class TrackingEventMiddleware(EventMiddleware):
         self, passenger: Event, bus_stop: EventConsumer, consume_exception: Optional[Exception] = None
     ) -> None:
         success = consume_exception is None
-        self.__tracker.end_tracking(passenger, success)
+        self.__tracker.end_tracking(passenger, bus_stop, success)

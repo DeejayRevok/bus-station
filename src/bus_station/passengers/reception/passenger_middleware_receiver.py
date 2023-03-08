@@ -27,6 +27,6 @@ class PassengerMiddlewareReceiver(PassengerReceiver[P, S], Generic[P, S, M], ABC
         for middleware_definition in self._middleware_definitions:
             if isinstance(middleware_definition, tuple):
                 middleware_cls, middleware_args = middleware_definition
-                yield middleware_cls(*middleware_args)  # pyre-ignore[19]
+                yield middleware_cls(*middleware_args)
             else:
                 yield middleware_definition

@@ -26,7 +26,7 @@ class TestTrackingEventMiddleware(TestCase):
 
         self.tracking_event_middleware.after_consume(test_event, test_event_handler)
 
-        self.passenger_tracker_mock.end_tracking.assert_called_once_with(test_event, True)
+        self.passenger_tracker_mock.end_tracking.assert_called_once_with(test_event, test_event_handler, True)
 
     def test_after_consume_with_exception(self):
         test_event = Mock(spec=Event)
@@ -36,4 +36,4 @@ class TestTrackingEventMiddleware(TestCase):
             test_event, test_event_handler, consume_exception=Exception("Test")
         )
 
-        self.passenger_tracker_mock.end_tracking.assert_called_once_with(test_event, False)
+        self.passenger_tracker_mock.end_tracking.assert_called_once_with(test_event, test_event_handler, False)

@@ -1,8 +1,7 @@
 from typing import ClassVar
 
-from kombu import Connection
-from kombu.messaging import Exchange, Queue
-from kombu.transport.virtual import Channel
+from kombu import Connection, Exchange, Queue
+from kombu.transport.base import StdChannel
 
 from bus_station.event_terminal.contact_not_found_for_consumer import ContactNotFoundForConsumer
 from bus_station.event_terminal.event import Event
@@ -36,7 +35,6 @@ class KombuEventBusEngine(Engine):
         if event_consumer is None:
             raise EventConsumerNotFound(event_consumer_name)
 
-        broker_connection = broker_connection
         channel = broker_connection.channel()
         self.__create_dead_letter_exchange(channel)
 
@@ -61,22 +59,22 @@ class KombuEventBusEngine(Engine):
     def stop(self) -> None:
         self.__event_consumer_consumer.stop()
 
-    def __create_dead_letter_exchange(self, channel: Channel) -> None:
+    def __create_dead_letter_exchange(self, channel: StdChannel) -> None:
         command_failure_exchange = Exchange(self.__DEAD_LETTER_EXCHANGE_NAME, type="fanout", channel=channel)
-        command_failure_exchange.declare()
+        command_failure_exchange.declare()  # pyre-ignore[16]
 
-    def __create_event_consumer_exchange(self, event_name: str, broker_channel: Channel) -> Exchange:
+    def __create_event_consumer_exchange(self, event_name: str, broker_channel: StdChannel) -> Exchange:
         event_exchange = Exchange(event_name, type="fanout")
-        event_exchange.declare(channel=broker_channel)
+        event_exchange.declare(channel=broker_channel)  # pyre-ignore[16]
         return event_exchange
 
     def __create_event_consumer_queue(
-        self, event_consumer: EventConsumer, event_exchange: Exchange, broker_channel: Channel
+        self, event_consumer: EventConsumer, event_exchange: Exchange, broker_channel: StdChannel
     ) -> Queue:
         consumer_queue = Queue(
             name=event_consumer.bus_stop_name(),
             exchange=event_exchange,
             queue_arguments={"x-dead-letter-exchange": self.__DEAD_LETTER_EXCHANGE_NAME},
         )
-        consumer_queue.declare(channel=broker_channel)
+        consumer_queue.declare(channel=broker_channel)  # pyre-ignore[16]
         return consumer_queue

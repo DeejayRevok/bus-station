@@ -24,5 +24,7 @@ class TrackingQueryMiddleware(QueryMiddleware):
     ) -> QueryResponse:
         success = handling_exception is None
         response_data = asdict(query_response) if query_response is not None else None
-        self.__tracker.end_tracking(passenger, response_data=response_data, success=success)
+        self.__tracker.end_tracking(
+            passenger=passenger, bus_stop=bus_stop, response_data=response_data, success=success
+        )
         return query_response

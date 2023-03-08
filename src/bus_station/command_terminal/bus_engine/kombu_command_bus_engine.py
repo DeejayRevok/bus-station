@@ -1,8 +1,7 @@
 from typing import ClassVar
 
-from kombu import Connection
-from kombu.messaging import Exchange, Queue
-from kombu.transport.virtual import Channel
+from kombu import Connection, Exchange, Queue
+from kombu.transport.base import StdChannel
 
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
@@ -62,13 +61,13 @@ class KombuCommandBusEngine(Engine):
     def stop(self) -> None:
         self.__command_consumer.stop()
 
-    def __create_dead_letter_exchange(self, channel: Channel) -> None:
+    def __create_dead_letter_exchange(self, channel: StdChannel) -> None:
         command_failure_exchange = Exchange(self.__DEAD_LETTER_EXCHANGE_NAME, type="fanout", channel=channel)
-        command_failure_exchange.declare()
+        command_failure_exchange.declare()  # pyre-ignore[16]
 
-    def __create_command_handler_queue(self, command_queue_name: str, channel: Channel) -> Queue:
+    def __create_command_handler_queue(self, command_queue_name: str, channel: StdChannel) -> Queue:
         command_queue = Queue(
             name=command_queue_name, queue_arguments={"x-dead-letter-exchange": self.__DEAD_LETTER_EXCHANGE_NAME}
         )
-        command_queue.declare(channel=channel)
+        command_queue.declare(channel=channel)  # pyre-ignore[16]
         return command_queue

@@ -3,9 +3,8 @@ from functools import partial
 from http.server import ThreadingHTTPServer
 from typing import Callable, Dict, Generic, Optional, Type, TypeVar
 
-from jsonrpcserver import Error, Success, method
+from jsonrpcserver import Error, Result, Success, method
 from jsonrpcserver.codes import ERROR_INTERNAL_ERROR
-from jsonrpcserver.result import Result
 from jsonrpcserver.server import RequestHandler
 
 from bus_station.passengers.passenger import Passenger
@@ -49,7 +48,9 @@ class JsonRPCServer(Generic[P, S]):
         for exposed_callable_name, exposed_callable in self.__internal_registry.items():
             method(exposed_callable, name=exposed_callable_name)
 
-    def __passenger_handler(self, bus_stop: S, passenger_class: Type[P], serialized_passenger: str) -> Result:
+    def __passenger_handler(
+        self, bus_stop: S, passenger_class: Type[P], serialized_passenger: str
+    ) -> Result:  # pyre-ignore[11]
         try:
             serialized_response = self._passenger_handler(bus_stop, passenger_class, serialized_passenger)
         except Exception as ex:

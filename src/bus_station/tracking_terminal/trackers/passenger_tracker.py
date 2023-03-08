@@ -1,25 +1,22 @@
+from abc import ABC, abstractmethod
 from dataclasses import asdict
 from datetime import datetime
-from typing import Any, Type
+from typing import Any
 
 from bus_station.passengers.passenger import Passenger
 from bus_station.shared_terminal.bus_stop import BusStop
+from bus_station.tracking_terminal.models.passenger_model_tracking_map import PassengerModelTrackingMap
 from bus_station.tracking_terminal.models.passenger_tracking import PassengerTracking
-from bus_station.tracking_terminal.repositories.passenger_tracking_repository import PassengerTrackingRepository
-from bus_station.tracking_terminal.trackers.passenger_tracking_not_found import PassengerTrackingNotFound
 
 
-class PassengerTracker:
-    def __init__(self, passenger_tracking_repository: PassengerTrackingRepository):
-        self.__repository = passenger_tracking_repository
-
-    def _get_tracking_model(self, passenger: Passenger) -> Type:
-        return PassengerTracking
+class PassengerTracker(ABC):
+    def __init__(self, passenger_model_tracking_map: PassengerModelTrackingMap):
+        self.__passenger_model_tracking_map = passenger_model_tracking_map
 
     def start_tracking(self, passenger: Passenger, bus_stop: BusStop) -> None:
-        tracking_model = self._get_tracking_model(passenger)
+        tracking_model = self.__passenger_model_tracking_map.get_tracking_model(passenger)
         tracking = tracking_model(
-            id=str(id(passenger)),
+            passenger_id=passenger.passenger_id,
             name=passenger.passenger_name(),
             executor_name=bus_stop.bus_stop_name(),
             data=asdict(passenger),
@@ -27,17 +24,25 @@ class PassengerTracker:
             execution_end=None,
             success=None,
         )
-        self.__repository.save(tracking)
+        self._track(tracking)
 
-    def end_tracking(self, passenger: Passenger, success: bool, **track_data: Any) -> None:
-        passenger_id = str(id(passenger))
-        tracking = self.__repository.find_by_id(passenger_id)
-        if tracking is None:
-            raise PassengerTrackingNotFound(passenger.passenger_name(), passenger_id)
-        tracking.execution_end = datetime.now()
-        tracking.success = success
+    @abstractmethod
+    def _track(self, passenger_tracking: PassengerTracking) -> None:
+        pass
+
+    def end_tracking(self, passenger: Passenger, bus_stop: BusStop, success: bool, **track_data: Any) -> None:
+        tracking_model = self.__passenger_model_tracking_map.get_tracking_model(passenger)
+        tracking = tracking_model(
+            passenger_id=passenger.passenger_id,
+            name=passenger.passenger_name(),
+            executor_name=bus_stop.bus_stop_name(),
+            data=asdict(passenger),
+            execution_start=None,
+            execution_end=datetime.now(),
+            success=success,
+        )
         self.__set_track_data(tracking, **track_data)
-        self.__repository.save(tracking)
+        self._track(tracking)
 
     def __set_track_data(self, passenger_tracking: PassengerTracking, **track_data: Any) -> None:
         for track_data_key, track_data_value in track_data.items():

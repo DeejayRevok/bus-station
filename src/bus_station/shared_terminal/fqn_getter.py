@@ -3,7 +3,6 @@ from typing import Any, ClassVar
 
 
 class FQNGetter:
-
     __FQN_PATTERN: ClassVar[str] = "{module_name}.{class_qualname}"
 
     def get(self, subject: Any) -> str:

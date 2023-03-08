@@ -5,13 +5,10 @@ services:
     build:
       context: .
     image: bus-station:latest
-    container_name: bus-station
     command: tail -f > /dev/null
     depends_on:
       - rabbitmq
       - redis
-      - postgres
-      - mongo
     volumes:
       - .:/app
 
@@ -37,20 +34,25 @@ services:
     ports:
       - 6379:6379
 
-  postgres:
-    image: postgres:14.1
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
     environment:
-      POSTGRES_USER: test_user
-      POSTGRES_PASSWORD: test_password
-      POSTGRES_DB: test_db
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
     ports:
-      - 5432:5432
+      - 22181:2181
 
-  mongo:
-    image: mongo:4.4.11
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: test_user
-      MONGO_INITDB_ROOT_PASSWORD: test_password
-      MONGO_INITDB_DATABASE: test_db
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
     ports:
-      - 27017:27017
+      - 9092:9092
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    restart: always

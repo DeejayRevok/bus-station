@@ -1,6 +1,5 @@
 import requests
-from jsonrpcclient import request
-from jsonrpcclient.responses import Error, to_result
+from jsonrpcclient import Error, parse, request
 
 from bus_station.command_terminal.bus.command_bus import CommandBus
 from bus_station.command_terminal.command import Command
@@ -32,7 +31,7 @@ class JsonRPCCommandBus(CommandBus):
         request_response = requests.post(
             command_handler_addr, json=request(command.__class__.passenger_name(), params=(serialized_command,))
         )
-        json_rpc_response = to_result(request_response.json())
+        json_rpc_response = parse(request_response.json())
 
         if isinstance(json_rpc_response, Error):
             raise CommandExecutionFailed(command, json_rpc_response.message)

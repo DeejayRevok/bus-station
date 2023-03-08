@@ -93,7 +93,6 @@ class TestRabbitKombuCommandBus(IntegrationTestCase):
         )
 
     def tearDown(self) -> None:
-        self.kombu_command_bus.shutdown()
         self.redis_registry.unregister(CommandTest.passenger_name())
 
     def test_process_transport_success(self):

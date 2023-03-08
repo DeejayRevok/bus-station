@@ -8,14 +8,14 @@ repos:
     hooks:
       - id: isort
         name: Sort imports
-        entry: docker exec bus-station poetry run tox -e isort
+        entry: docker-compose run bus-station poetry run tox -e isort
         language: system
         types: [ python ]
         pass_filenames: false
         additional_dependencies: [ ]
       - id: black
         name: Apply black formatting
-        entry: docker exec bus-station poetry run tox -e black
+        entry: docker-compose run bus-station poetry run tox -e black
         language: system
         types: [ python ]
         pass_filenames: false

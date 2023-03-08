@@ -1,5 +1,4 @@
-from kombu import Connection
-from kombu.messaging import Producer
+from kombu import Connection, Producer
 
 from bus_station.command_terminal.bus.command_bus import CommandBus
 from bus_station.command_terminal.command import Command
@@ -42,6 +41,3 @@ class KombuCommandBus(CommandBus):
                     "max_retries": 10,
                 },
             )
-
-    def shutdown(self) -> None:
-        self.__producer.release()
