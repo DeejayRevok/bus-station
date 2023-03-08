@@ -29,7 +29,7 @@ class Passenger(ABC):
 
     @classmethod
     def __from_data_dict(cls, passenger_data: dict) -> Self:
-        passenger_cls_field_values = dict()
+        passenger_cls_field_values = {}
         for passenger_field in fields(cls):
             if cls.__is_field_required(passenger_field) and passenger_field.name not in passenger_data:
                 raise ValueError(f"Missing value for field {passenger_field.name} when recreating {cls.__name__}")
