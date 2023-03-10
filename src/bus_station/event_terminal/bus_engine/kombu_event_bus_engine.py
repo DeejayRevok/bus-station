@@ -61,11 +61,11 @@ class KombuEventBusEngine(Engine):
 
     def __create_dead_letter_exchange(self, channel: StdChannel) -> None:
         command_failure_exchange = Exchange(self.__DEAD_LETTER_EXCHANGE_NAME, type="fanout", channel=channel)
-        command_failure_exchange.declare()  # pyre-ignore[16]
+        command_failure_exchange.declare()
 
     def __create_event_consumer_exchange(self, event_name: str, broker_channel: StdChannel) -> Exchange:
         event_exchange = Exchange(event_name, type="fanout")
-        event_exchange.declare(channel=broker_channel)  # pyre-ignore[16]
+        event_exchange.declare(channel=broker_channel)
         return event_exchange
 
     def __create_event_consumer_queue(
@@ -76,5 +76,5 @@ class KombuEventBusEngine(Engine):
             exchange=event_exchange,
             queue_arguments={"x-dead-letter-exchange": self.__DEAD_LETTER_EXCHANGE_NAME},
         )
-        consumer_queue.declare(channel=broker_channel)  # pyre-ignore[16]
+        consumer_queue.declare(channel=broker_channel)
         return consumer_queue

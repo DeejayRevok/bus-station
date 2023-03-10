@@ -63,11 +63,11 @@ class KombuCommandBusEngine(Engine):
 
     def __create_dead_letter_exchange(self, channel: StdChannel) -> None:
         command_failure_exchange = Exchange(self.__DEAD_LETTER_EXCHANGE_NAME, type="fanout", channel=channel)
-        command_failure_exchange.declare()  # pyre-ignore[16]
+        command_failure_exchange.declare()
 
     def __create_command_handler_queue(self, command_queue_name: str, channel: StdChannel) -> Queue:
         command_queue = Queue(
             name=command_queue_name, queue_arguments={"x-dead-letter-exchange": self.__DEAD_LETTER_EXCHANGE_NAME}
         )
-        command_queue.declare(channel=channel)  # pyre-ignore[16]
+        command_queue.declare(channel=channel)
         return command_queue
