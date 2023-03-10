@@ -17,8 +17,8 @@ class KafkaTopicCreator:
             return
 
         topic_creation_futures = self.__admin_client.create_topics(
-            [NewTopic(topic, self.__DEFAULT_PARTITIONS_NUMBER)]
-        )  # pyre-ignore[16]
+            [NewTopic(topic, self.__DEFAULT_PARTITIONS_NUMBER)]  # pyre-ignore[16]
+        )
         try:
             topic_creation_futures[topic].result()
         except KafkaException as ex:

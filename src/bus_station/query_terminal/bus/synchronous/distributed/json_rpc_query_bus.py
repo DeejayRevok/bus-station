@@ -39,4 +39,4 @@ class JsonRPCQueryBus(QueryBus):
 
         if isinstance(json_rpc_response, Error):
             raise QueryExecutionFailed(query, json_rpc_response.message)
-        return self.__query_response_deserializer.deserialize(json_rpc_response.result)
+        return self.__query_response_deserializer.deserialize(json_rpc_response.result)  # pyre-ignore [16]
