@@ -111,7 +111,6 @@ class TestRabbitKombuEventBus(IntegrationTestCase):
         )
 
     def tearDown(self) -> None:
-        self.kombu_event_bus.shutdown()
         self.redis_registry.unregister(EventTest.passenger_name())
 
     def test_process_transport_success(self):

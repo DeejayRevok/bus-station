@@ -2,11 +2,11 @@ from ctypes import c_bool
 from multiprocessing import Value
 from typing import Callable, List, Type
 
-from kombu import Connection, Message
-from kombu.messaging import Consumer as KombuConsumer
-from kombu.messaging import Queue
+from kombu import Connection
+from kombu import Consumer as KombuConsumer
+from kombu import Message, Queue
 from kombu.mixins import ConsumerMixin
-from kombu.transport.virtual import Channel
+from kombu.transport.base import StdChannel
 
 from bus_station.passengers.passenger import Passenger
 from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
@@ -40,7 +40,7 @@ class PassengerKombuConsumer(ConsumerMixin):
     def should_stop(self, value):
         self.__should_stop.value = value
 
-    def get_consumers(self, Consumer: Callable, channel: Channel) -> List[KombuConsumer]:
+    def get_consumers(self, Consumer: Callable, channel: StdChannel) -> List[KombuConsumer]:
         return [
             Consumer(queues=[self.__queue], callbacks=[self.on_message]),
         ]

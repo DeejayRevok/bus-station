@@ -37,7 +37,7 @@ class TestJsonRPCQueryBus(TestCase):
         self.query_serializer_mock.serialize.assert_not_called()
         self.query_registry_mock.get_query_destination_contact.assert_called_once_with("test_query")
 
-    @patch("bus_station.query_terminal.bus.synchronous.distributed.json_rpc_query_bus.to_result")
+    @patch("bus_station.query_terminal.bus.synchronous.distributed.json_rpc_query_bus.parse")
     @patch("bus_station.query_terminal.bus.synchronous.distributed.json_rpc_query_bus.request")
     @patch("bus_station.query_terminal.bus.synchronous.distributed.json_rpc_query_bus.requests")
     def test_transport_success(self, requests_mock, request_mock, to_result_mock):
@@ -69,7 +69,7 @@ class TestJsonRPCQueryBus(TestCase):
         to_result_mock.assert_called_once_with(test_json_requests_response)
         self.query_response_deserializer_mock.deserialize.assert_called_once_with(test_query_response_serialized)
 
-    @patch("bus_station.query_terminal.bus.synchronous.distributed.json_rpc_query_bus.to_result")
+    @patch("bus_station.query_terminal.bus.synchronous.distributed.json_rpc_query_bus.parse")
     @patch("bus_station.query_terminal.bus.synchronous.distributed.json_rpc_query_bus.request")
     @patch("bus_station.query_terminal.bus.synchronous.distributed.json_rpc_query_bus.requests")
     def test_transport_error(self, requests_mock, request_mock, to_result_mock):

@@ -35,7 +35,7 @@ class TestTrackingQueryMiddleware(TestCase):
 
         self.assertEqual(test_query_response, query_response)
         self.passenger_tracker_mock.end_tracking.assert_called_once_with(
-            test_query, response_data=test_query_response_dict, success=True
+            passenger=test_query, bus_stop=test_query_handler, response_data=test_query_response_dict, success=True
         )
 
     @patch("bus_station.query_terminal.middleware.implementations.tracking_query_middleware.asdict")
@@ -52,5 +52,5 @@ class TestTrackingQueryMiddleware(TestCase):
 
         self.assertEqual(test_query_response, query_response)
         self.passenger_tracker_mock.end_tracking.assert_called_once_with(
-            test_query, response_data=test_query_response_dict, success=False
+            passenger=test_query, bus_stop=test_query_handler, response_data=test_query_response_dict, success=False
         )

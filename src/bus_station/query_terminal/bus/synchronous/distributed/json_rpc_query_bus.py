@@ -1,6 +1,5 @@
 import requests
-from jsonrpcclient import request
-from jsonrpcclient.responses import Error, to_result
+from jsonrpcclient import Error, parse, request
 
 from bus_station.passengers.serialization.passenger_serializer import PassengerSerializer
 from bus_station.query_terminal.bus.query_bus import QueryBus
@@ -36,8 +35,8 @@ class JsonRPCQueryBus(QueryBus):
         request_response = requests.post(
             query_handler_addr, json=request(query.passenger_name(), params=(serialized_query,))
         )
-        json_rpc_response = to_result(request_response.json())
+        json_rpc_response = parse(request_response.json())
 
         if isinstance(json_rpc_response, Error):
             raise QueryExecutionFailed(query, json_rpc_response.message)
-        return self.__query_response_deserializer.deserialize(json_rpc_response.result)
+        return self.__query_response_deserializer.deserialize(json_rpc_response.result)  # pyre-ignore [16]

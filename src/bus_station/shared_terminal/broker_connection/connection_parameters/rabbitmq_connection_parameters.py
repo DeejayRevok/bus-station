@@ -8,7 +8,6 @@ from bus_station.shared_terminal.broker_connection.connection_parameters.connect
 
 @final
 class RabbitMQConnectionParameters(ConnectionParameters):
-
     __CONNECTION_STRING_PATTERN: ClassVar[str] = "amqp://{username}:{password}@{host}:{port}/{vhost}"
 
     def __init__(self, host: str, port: Union[int, str], username: str, password: str, vhost: str, **additional_args):
