@@ -25,10 +25,7 @@ pyre-check = "0.9.18"
 tox = "3.20.1"
 psycopg2 = "2.9.3"
 isort = "5.10.1"
-
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+commitizen = "^2.42.1"
 
 [tool.black]
 line-length = 120
@@ -44,3 +41,8 @@ exclude = '''
 profile = "black"
 py_version=310
 line_length = 120
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "5.0.0"
+tag_format = "$version"

@@ -20,3 +20,10 @@ repos:
         types: [ python ]
         pass_filenames: false
         additional_dependencies: [ ]
+      - id: cz-check-commit-msg
+        name: Commitizen check commit message
+        entry: docker-compose run bus-station poetry run cz check
+        args: [--allow-abort, --commit-msg-file]
+        stages: [commit-msg]
+        language: python
+        language_version: python3
