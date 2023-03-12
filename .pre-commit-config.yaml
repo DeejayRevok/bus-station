@@ -12,11 +12,18 @@ repos:
         language: system
         types: [ python ]
         pass_filenames: false
-        additional_dependencies: [ ]
+        stages: [commit]
       - id: black
         name: Apply black formatting
         entry: docker-compose run bus-station poetry run tox -e black
         language: system
         types: [ python ]
         pass_filenames: false
-        additional_dependencies: [ ]
+        stages: [commit]
+      - id: cz-check-commit-msg
+        name: Commitizen check commit message
+        entry: docker-compose run bus-station poetry run cz check
+        args: [--allow-abort, --commit-msg-file]
+        stages: [commit-msg]
+        language: python
+        language_version: python3
