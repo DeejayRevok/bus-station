@@ -20,7 +20,7 @@ class RPyCQueryBus(QueryBus):
         self.__query_response_deserializer = query_response_deserializer
         self.__query_registry = query_registry
 
-    def transport(self, passenger: Query) -> QueryResponse:
+    def _transport(self, passenger: Query) -> QueryResponse:
         query_handler_addr = self.__query_registry.get_query_destination_contact(passenger.passenger_name())
         if query_handler_addr is None:
             raise HandlerNotFoundForQuery(passenger.passenger_name())

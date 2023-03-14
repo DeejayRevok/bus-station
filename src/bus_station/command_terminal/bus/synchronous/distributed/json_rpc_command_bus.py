@@ -18,7 +18,7 @@ class JsonRPCCommandBus(CommandBus):
         self.__command_serializer = command_serializer
         self.__command_registry = command_registry
 
-    def transport(self, passenger: Command) -> None:
+    def _transport(self, passenger: Command) -> None:
         handler_address = self.__command_registry.get_command_destination_contact(passenger.passenger_name())
         if handler_address is None:
             raise HandlerNotFoundForCommand(passenger.passenger_name())
