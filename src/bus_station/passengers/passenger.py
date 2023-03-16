@@ -36,7 +36,9 @@ class Passenger(ABC):
         return passenger_data.pop("passenger_id")
 
     @classmethod
-    def __get_distributed_id(cls, passenger_data: dict) -> str:
+    def __get_distributed_id(cls, passenger_data: dict) -> Optional[str]:
+        if "distributed_id" not in passenger_data:
+            return None
         return passenger_data.pop("distributed_id")
 
     @classmethod

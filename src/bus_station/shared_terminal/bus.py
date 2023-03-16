@@ -9,7 +9,7 @@ P = TypeVar("P", bound=Passenger)
 
 class Bus(Generic[P]):
     def transport(self, passenger: P) -> Optional[Any]:
-        distributed_id = get_distributed_id()
+        distributed_id = get_distributed_id(passenger)
         passenger.set_distributed_id(distributed_id)
 
         return self._transport(passenger)
