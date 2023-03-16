@@ -24,7 +24,8 @@ class Passenger(ABC):
         passenger = cls.__from_data_dict(passenger_data)
 
         object.__setattr__(passenger, "passenger_id", passenger_id)
-        passenger.set_distributed_id(distributed_id)
+        if distributed_id is not None:
+            passenger.set_distributed_id(distributed_id)
 
         return passenger
 
