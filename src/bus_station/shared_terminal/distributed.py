@@ -4,9 +4,9 @@ from uuid import uuid4
 
 from bus_station.passengers.passenger import Passenger
 
-__context_distributed_id_var: ContextVar[Optional[str]] = ContextVar(
+__context_distributed_id_var: ContextVar[Optional[str]] = ContextVar(  # pyre-ignore[9]
     "bus_station_distributed_id", default=None
-)  # pyre-ignore[9]
+)
 
 
 def create_distributed_id() -> str:
