@@ -1,5 +1,5 @@
 from unittest import TestCase
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 from bus_station.command_terminal.bus.synchronous.sync_command_bus import SyncCommandBus
 from bus_station.command_terminal.command import Command
@@ -15,7 +15,9 @@ class TestSyncCommandBus(TestCase):
         self.command_receiver_mock = Mock(spec=PassengerReceiver[Command, CommandHandler])
         self.sync_command_bus = SyncCommandBus(self.command_registry_mock, self.command_receiver_mock)
 
-    def test_transport_not_registered(self):
+    @patch("bus_station.shared_terminal.bus.get_distributed_id")
+    def test_transport_not_registered(self, get_distributed_id_mock):
+        get_distributed_id_mock.return_value = "test_distributed_id"
         test_command = Mock(spec=Command, **{"passenger_name.return_value": "test_command"})
         self.command_registry_mock.get_command_destination_contact.return_value = None
 
@@ -24,8 +26,11 @@ class TestSyncCommandBus(TestCase):
 
         self.assertEqual("test_command", hnffc.exception.command_name)
         self.command_registry_mock.get_command_destination_contact.assert_called_once_with("test_command")
+        test_command.set_distributed_id.assert_called_once_with("test_distributed_id")
 
-    def test_transport_success(self):
+    @patch("bus_station.shared_terminal.bus.get_distributed_id")
+    def test_transport_success(self, get_distributed_id_mock):
+        get_distributed_id_mock.return_value = "test_distributed_id"
         test_command = Mock(spec=Command, **{"passenger_name.return_value": "test_command"})
         test_command_handler = Mock(spec=CommandHandler)
         self.command_registry_mock.get_command_destination_contact.return_value = test_command_handler
@@ -34,3 +39,4 @@ class TestSyncCommandBus(TestCase):
 
         self.command_receiver_mock.receive.assert_called_once_with(test_command, test_command_handler)
         self.command_registry_mock.get_command_destination_contact.assert_called_once_with("test_command")
+        test_command.set_distributed_id.assert_called_once_with("test_distributed_id")

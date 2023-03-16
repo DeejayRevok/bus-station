@@ -23,8 +23,10 @@ class TestPassengerJSONDeserializer(TestCase):
         passenger_id = str(uuid4())
         test_passenger_serialized = (
             '{"passenger_data": {'
-            +'"passenger_id":"'+passenger_id+'",'
-            +'"test_arg": "test"}, "passenger_type": "'
+            + '"passenger_id":"'
+            + passenger_id
+            + '",'
+            + '"test_arg": "test"}, "passenger_type": "'
             + TestPassenger.__module__
             + "."
             + TestPassenger.__name__
@@ -41,8 +43,10 @@ class TestPassengerJSONDeserializer(TestCase):
         passenger_id = str(uuid4())
         test_passenger_serialized = (
             '{"passenger_data": {'
-            +'"passenger_id":"'+passenger_id+'",'
-            +'"test_arg": "test"}, "passenger_type": "'
+            + '"passenger_id":"'
+            + passenger_id
+            + '",'
+            + '"test_arg": "test"}, "passenger_type": "'
             + TestPassenger.__module__
             + "."
             + TestPassenger.__name__
@@ -58,8 +62,10 @@ class TestPassengerJSONDeserializer(TestCase):
     def test_deserialize_class_error(self):
         test_passenger_serialized = (
             '{"passenger_data": {'
-            +'"passenger_id":"' + str(uuid4()) + '",'
-            +'"test_arg_not_existent": "test"}, "passenger_type": "'
+            + '"passenger_id":"'
+            + str(uuid4())
+            + '",'
+            + '"test_arg_not_existent": "test"}, "passenger_type": "'
             + TestPassenger.__module__
             + "."
             + TestPassenger.__name__

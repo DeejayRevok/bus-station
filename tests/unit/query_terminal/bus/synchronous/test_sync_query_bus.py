@@ -1,5 +1,5 @@
 from unittest import TestCase
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
 from bus_station.query_terminal.bus.synchronous.sync_query_bus import SyncQueryBus
@@ -16,7 +16,9 @@ class TestSyncQueryBus(TestCase):
         self.query_receiver_mock = Mock(spec=PassengerReceiver[Query, QueryHandler])
         self.sync_query_bus = SyncQueryBus(self.query_registry_mock, self.query_receiver_mock)
 
-    def test_transport_not_registered(self):
+    @patch("bus_station.shared_terminal.bus.get_distributed_id")
+    def test_transport_not_registered(self, get_distributed_id_mock):
+        get_distributed_id_mock.return_value = "test_distributed_id"
         test_query = Mock(spec=Query, **{"passenger_name.return_value": "test_query"})
         self.query_registry_mock.get_query_destination_contact.return_value = None
 
@@ -25,8 +27,11 @@ class TestSyncQueryBus(TestCase):
 
         self.assertEqual(test_query.passenger_name(), hnffq.exception.query_name)
         self.query_registry_mock.get_query_destination_contact.assert_called_once_with("test_query")
+        test_query.set_distributed_id.assert_called_once_with("test_distributed_id")
 
-    def test_transport_success(self):
+    @patch("bus_station.shared_terminal.bus.get_distributed_id")
+    def test_transport_success(self, get_distributed_id_mock):
+        get_distributed_id_mock.return_value = "test_distributed_id"
         test_query = Mock(spec=Query, **{"passenger_name.return_value": "test_query"})
         test_query_handler = Mock(spec=QueryHandler)
         test_query_response = Mock(spec=QueryResponse)
@@ -38,3 +43,4 @@ class TestSyncQueryBus(TestCase):
         self.query_receiver_mock.receive.assert_called_once_with(test_query, test_query_handler)
         self.assertEqual(test_query_response, query_response)
         self.query_registry_mock.get_query_destination_contact.assert_called_once_with("test_query")
+        test_query.set_distributed_id.assert_called_once_with("test_distributed_id")

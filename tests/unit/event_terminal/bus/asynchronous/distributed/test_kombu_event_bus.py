@@ -26,7 +26,9 @@ class TestKombuEventBus(TestCase):
             self.event_registry_mock,
         )
 
-    def test_transport_success(self):
+    @patch("bus_station.shared_terminal.bus.get_distributed_id")
+    def test_transport_sucess(self, get_distributed_id_mock):
+        get_distributed_id_mock.return_value = "test_distributed_id"
         test_event = Mock(spec=Event, **{"passenger_name.return_value": "test_event"})
         test_event_serialized = "test_event_serialized"
         self.event_serializer_mock.serialize.return_value = test_event_serialized
@@ -46,3 +48,4 @@ class TestKombuEventBus(TestCase):
                 "max_retries": 10,
             },
         )
+        test_event.set_distributed_id.assert_called_once_with("test_distributed_id")

@@ -26,7 +26,8 @@ class TestPassengerJSONSerializer(TestCase):
         serialized_passenger = self.passenger_json_serializer.serialize(test_passenger)
 
         expected_serialized_passenger = (
-            '{"passenger_data": {"passenger_id": "'+test_passenger.passenger_id+'", "test_field1": "test_field1_value", "test_field2": 22}, '
+            '{"passenger_data": {"passenger_id": "' + test_passenger.passenger_id + '", "distributed_id": null, '
+            '"test_field1": "test_field1_value", "test_field2": 22}, '
             '"passenger_type": "' + test_passenger_type + '", "passenger_name": "test_passenger_name"}'
         )
         self.assertEqual(expected_serialized_passenger, serialized_passenger)

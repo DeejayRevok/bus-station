@@ -3,7 +3,7 @@ from json import loads
 from threading import Thread
 from time import sleep
 
-from confluent_kafka import Producer, Consumer
+from confluent_kafka import Consumer, Producer
 from confluent_kafka.admin import AdminClient
 
 from bus_station.command_terminal.command import Command
@@ -31,29 +31,18 @@ class TestKafkaPassengerTracker(IntegrationTestCase):
     def setUpClass(cls) -> None:
         bootstrap_servers = f"{cls.kafka['host']}:{cls.kafka['port']}"
         cls.kafka_producer = Producer(
-            {
-                'bootstrap.servers': bootstrap_servers,
-                'client.id': "bus-station-test",
-                'queue.buffering.max.ms': 10
-            }
+            {"bootstrap.servers": bootstrap_servers, "client.id": "bus-station-test", "queue.buffering.max.ms": 10}
         )
-        kafka_admin_client = AdminClient({
-            "bootstrap.servers": bootstrap_servers
-        })
+        kafka_admin_client = AdminClient({"bootstrap.servers": bootstrap_servers})
         kafka_topic_creator = KafkaTopicCreator(kafka_admin_client)
         passenger_tracking_model_map = PassengerModelTrackingMap()
         passenger_tracking_serializer = PassengerTrackingJSONSerializer()
         cls.kafka_tracker = KafkaPassengerTracker(
-            cls.kafka_producer,
-            kafka_topic_creator,
-            passenger_tracking_serializer,
-            passenger_tracking_model_map
+            cls.kafka_producer, kafka_topic_creator, passenger_tracking_serializer, passenger_tracking_model_map
         )
-        kafka_consumer = Consumer({
-            'bootstrap.servers': bootstrap_servers,
-            'auto.offset.reset': 'smallest',
-            'group.id': 'test_consumer'
-        })
+        kafka_consumer = Consumer(
+            {"bootstrap.servers": bootstrap_servers, "auto.offset.reset": "smallest", "group.id": "test_consumer"}
+        )
         topic_name = "CommandTracking"
         kafka_topic_creator.create(topic_name)
         kafka_consumer.subscribe([topic_name])
@@ -71,6 +60,7 @@ class TestKafkaPassengerTracker(IntegrationTestCase):
 
     def test_start_tracking(self):
         test_command = TestCommand(test="test_data")
+        test_command.set_distributed_id("test_distributed_id")
         test_command_handler = TestCommandHandler()
 
         self.kafka_tracker.start_tracking(passenger=test_command, bus_stop=test_command_handler)
@@ -82,13 +72,17 @@ class TestKafkaPassengerTracker(IntegrationTestCase):
         self.assertEqual(test_command.passenger_id, received_message_dict["passenger_id"])
         self.assertEqual(test_command.passenger_name(), received_message_dict["name"])
         self.assertEqual(test_command_handler.bus_stop_name(), received_message_dict["executor_name"])
-        self.assertEqual({"passenger_id": test_command.passenger_id, "test": "test_data"}, received_message_dict["data"])
+        self.assertEqual(
+            {"passenger_id": test_command.passenger_id, "distributed_id": "test_distributed_id", "test": "test_data"},
+            received_message_dict["data"],
+        )
         self.assertIsNotNone(received_message_dict["execution_start"])
         self.assertIsNone(received_message_dict["execution_end"])
         self.assertIsNone(received_message_dict["success"])
 
     def test_end_tracking(self):
         test_command = TestCommand(test="test_data")
+        test_command.set_distributed_id("test_distributed_id")
         test_command_handler = TestCommandHandler()
 
         self.kafka_tracker.end_tracking(passenger=test_command, bus_stop=test_command_handler, success=True)
@@ -100,7 +94,10 @@ class TestKafkaPassengerTracker(IntegrationTestCase):
         self.assertEqual(test_command.passenger_id, received_message_dict["passenger_id"])
         self.assertEqual(test_command.passenger_name(), received_message_dict["name"])
         self.assertEqual(test_command_handler.bus_stop_name(), received_message_dict["executor_name"])
-        self.assertEqual({"passenger_id": test_command.passenger_id, "test": "test_data"}, received_message_dict["data"])
+        self.assertEqual(
+            {"passenger_id": test_command.passenger_id, "distributed_id": "test_distributed_id", "test": "test_data"},
+            received_message_dict["data"],
+        )
         self.assertIsNone(received_message_dict["execution_start"])
         self.assertIsNotNone(received_message_dict["execution_end"])
         self.assertTrue(received_message_dict["success"])

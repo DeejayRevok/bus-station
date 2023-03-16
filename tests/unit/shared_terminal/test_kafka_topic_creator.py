@@ -3,7 +3,7 @@ from unittest import TestCase
 from unittest.mock import Mock, patch
 
 from confluent_kafka.admin import AdminClient
-from confluent_kafka.cimpl import NewTopic, KafkaException, KafkaError
+from confluent_kafka.cimpl import KafkaError, KafkaException, NewTopic
 
 from bus_station.shared_terminal.kafka_topic_creator import KafkaTopicCreator
 
@@ -11,9 +11,7 @@ from bus_station.shared_terminal.kafka_topic_creator import KafkaTopicCreator
 class TestKafkaTopicCreator(TestCase):
     def setUp(self) -> None:
         self.kafka_admin_client_mock = Mock(spec=AdminClient)
-        self.kafka_topic_creator = KafkaTopicCreator(
-            self.kafka_admin_client_mock
-        )
+        self.kafka_topic_creator = KafkaTopicCreator(self.kafka_admin_client_mock)
 
     @patch("bus_station.shared_terminal.kafka_topic_creator.NewTopic")
     def test_create_repeated_calls(self, new_topic_mock):

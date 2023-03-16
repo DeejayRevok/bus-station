@@ -26,7 +26,9 @@ class TestJsonRPCQueryBus(TestCase):
             self.query_registry_mock,
         )
 
-    def test_transport_not_registered(self):
+    @patch("bus_station.shared_terminal.bus.get_distributed_id")
+    def test_transport_not_registered(self, get_distributed_id_mock):
+        get_distributed_id_mock.return_value = "test_distributed_id"
         test_query = Mock(spec=Query, **{"passenger_name.return_value": "test_query"})
         self.query_registry_mock.get_query_destination_contact.return_value = None
 
@@ -36,11 +38,14 @@ class TestJsonRPCQueryBus(TestCase):
         self.assertEqual("test_query", hnffq.exception.query_name)
         self.query_serializer_mock.serialize.assert_not_called()
         self.query_registry_mock.get_query_destination_contact.assert_called_once_with("test_query")
+        test_query.set_distributed_id.assert_called_once_with("test_distributed_id")
 
+    @patch("bus_station.shared_terminal.bus.get_distributed_id")
     @patch("bus_station.query_terminal.bus.synchronous.distributed.json_rpc_query_bus.parse")
     @patch("bus_station.query_terminal.bus.synchronous.distributed.json_rpc_query_bus.request")
     @patch("bus_station.query_terminal.bus.synchronous.distributed.json_rpc_query_bus.requests")
-    def test_transport_success(self, requests_mock, request_mock, to_result_mock):
+    def test_transport_success(self, requests_mock, request_mock, to_result_mock, get_distributed_id_mock):
+        get_distributed_id_mock.return_value = "test_distributed_id"
         test_query = Mock(spec=Query, **{"passenger_name.return_value": "test_query"})
         test_host = "test_host"
         test_port = "41124"
@@ -68,11 +73,14 @@ class TestJsonRPCQueryBus(TestCase):
         requests_mock.post.assert_called_once_with(test_query_handler_addr, json=test_json_rpc_request)
         to_result_mock.assert_called_once_with(test_json_requests_response)
         self.query_response_deserializer_mock.deserialize.assert_called_once_with(test_query_response_serialized)
+        test_query.set_distributed_id.assert_called_once_with("test_distributed_id")
 
+    @patch("bus_station.shared_terminal.bus.get_distributed_id")
     @patch("bus_station.query_terminal.bus.synchronous.distributed.json_rpc_query_bus.parse")
     @patch("bus_station.query_terminal.bus.synchronous.distributed.json_rpc_query_bus.request")
     @patch("bus_station.query_terminal.bus.synchronous.distributed.json_rpc_query_bus.requests")
-    def test_transport_error(self, requests_mock, request_mock, to_result_mock):
+    def test_transport_error(self, requests_mock, request_mock, to_result_mock, get_distributed_id_mock):
+        get_distributed_id_mock.return_value = "test_distributed_id"
         test_query = Mock(spec=Query, **{"passenger_name.return_value": "test_query"})
         test_host = "test_host"
         test_port = "41124"
@@ -99,3 +107,4 @@ class TestJsonRPCQueryBus(TestCase):
         request_mock.assert_called_once_with(test_query.passenger_name(), params=(test_serialized_query,))
         requests_mock.post.assert_called_once_with(test_query_handler_addr, json=test_json_rpc_request)
         to_result_mock.assert_called_once_with(test_json_requests_response)
+        test_query.set_distributed_id.assert_called_once_with("test_distributed_id")

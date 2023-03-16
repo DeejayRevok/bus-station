@@ -16,7 +16,9 @@ class TestThreadedCommandBus(TestCase):
         self.command_receiver_mock = Mock(spec=PassengerReceiver[Command, CommandHandler])
         self.threaded_command_bus = ThreadedCommandBus(self.command_registry_mock, self.command_receiver_mock)
 
-    def test_transport_not_registered(self):
+    @patch("bus_station.shared_terminal.bus.get_distributed_id")
+    def test_transport_not_registered(self, get_distributed_id_mock):
+        get_distributed_id_mock.return_value = "test_distributed_id"
         test_command = Mock(spec=Command, **{"passenger_name.return_value": "test_command"})
         self.command_registry_mock.get_command_destination_contact.return_value = None
 
@@ -25,9 +27,12 @@ class TestThreadedCommandBus(TestCase):
 
         self.assertEqual(test_command.passenger_name(), hnffc.exception.command_name)
         self.command_registry_mock.get_command_destination_contact.assert_called_once_with("test_command")
+        test_command.set_distributed_id.assert_called_once_with("test_distributed_id")
 
+    @patch("bus_station.shared_terminal.bus.get_distributed_id")
     @patch("bus_station.command_terminal.bus.asynchronous.threaded_command_bus.Thread")
-    def test_transport_success(self, thread_mock):
+    def test_transport_success(self, thread_mock, get_distributed_id_mock):
+        get_distributed_id_mock.return_value = "test_distributed_id"
         test_command = Mock(spec=Command, **{"passenger_name.return_value": "test_command"})
         test_command_handler = Mock(spec=CommandHandler)
         test_thread = Mock(spec=Thread)
@@ -41,3 +46,4 @@ class TestThreadedCommandBus(TestCase):
         )
         test_thread.start.assert_called_once_with()
         self.command_registry_mock.get_command_destination_contact.assert_called_once_with("test_command")
+        test_command.set_distributed_id.assert_called_once_with("test_distributed_id")

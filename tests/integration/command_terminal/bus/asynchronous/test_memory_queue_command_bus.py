@@ -3,7 +3,9 @@ import signal
 from ctypes import c_int
 from dataclasses import dataclass
 from multiprocessing import Process, Queue, Value
+from multiprocessing.sharedctypes import Array
 from time import sleep
+from uuid import uuid4
 
 from bus_station.command_terminal.bus.asynchronous.memory_queue_command_bus import MemoryQueueCommandBus
 from bus_station.command_terminal.bus_engine.memory_queue_command_bus_engine import MemoryQueueCommandBusEngine
@@ -18,6 +20,7 @@ from bus_station.passengers.passenger_record.in_memory_passenger_record_reposito
 from bus_station.passengers.serialization.passenger_json_deserializer import PassengerJSONDeserializer
 from bus_station.passengers.serialization.passenger_json_serializer import PassengerJSONSerializer
 from bus_station.shared_terminal.bus_stop_resolver.in_memory_bus_stop_resolver import InMemoryBusStopResolver
+from bus_station.shared_terminal.distributed import clear_context_distributed_id, create_distributed_id
 from bus_station.shared_terminal.engine.runner.process_engine_runner import ProcessEngineRunner
 from bus_station.shared_terminal.engine.runner.self_process_engine_runner import SelfProcessEngineRunner
 from bus_station.shared_terminal.fqn_getter import FQNGetter
@@ -32,9 +35,11 @@ class CommandTest(Command):
 class CommandTestHandler(CommandHandler):
     def __init__(self):
         self.call_count = Value(c_int, 0)
+        self.distributed_id = Array("c", str.encode(str(uuid4())))
 
     def handle(self, command: CommandTest) -> None:
         self.call_count.value = self.call_count.value + 1
+        self.distributed_id.value = str.encode(command.distributed_id)
 
 
 class TestMemoryQueueCommandBus(IntegrationTestCase):
@@ -60,9 +65,11 @@ class TestMemoryQueueCommandBus(IntegrationTestCase):
             in_memory_registry, command_receiver, passenger_deserializer, CommandTest.passenger_name()
         )
         self.memory_queue_command_bus = MemoryQueueCommandBus(passenger_serializer, in_memory_registry)
+        self.distributed_id = create_distributed_id()
 
     def tearDown(self) -> None:
         self.command_queue.close()
+        clear_context_distributed_id()
 
     def test_process_transport_success(self):
         test_command = CommandTest()
@@ -71,6 +78,8 @@ class TestMemoryQueueCommandBus(IntegrationTestCase):
 
             sleep(1)
             self.assertEqual(1, self.test_command_handler.call_count.value)
+            self.assertEqual(self.distributed_id, test_command.distributed_id)
+            self.assertEqual(self.distributed_id, self.test_command_handler.distributed_id.value.decode())
 
     def test_self_process_transport_success(self):
         test_command = CommandTest()
@@ -84,5 +93,7 @@ class TestMemoryQueueCommandBus(IntegrationTestCase):
 
                 sleep(1)
                 self.assertEqual(i + 1, self.test_command_handler.call_count.value)
+                self.assertEqual(self.distributed_id, test_command.distributed_id)
+                self.assertEqual(self.distributed_id, self.test_command_handler.distributed_id.value.decode())
         finally:
             os.kill(runner_process.pid, signal.SIGINT)

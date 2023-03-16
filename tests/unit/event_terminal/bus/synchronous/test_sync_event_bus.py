@@ -1,5 +1,5 @@
 from unittest import TestCase
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 from bus_station.event_terminal.bus.synchronous.sync_event_bus import SyncEventBus
 from bus_station.event_terminal.event import Event
@@ -14,7 +14,9 @@ class TestSyncEventBus(TestCase):
         self.event_receiver_mock = Mock(spec=PassengerReceiver[Event, EventConsumer])
         self.sync_event_bus = SyncEventBus(self.event_registry_mock, self.event_receiver_mock)
 
-    def test_transport_success(self):
+    @patch("bus_station.shared_terminal.bus.get_distributed_id")
+    def test_transport_sucess(self, get_distributed_id_mock):
+        get_distributed_id_mock.return_value = "test_distributed_id"
         test_event = Mock(spec=Event, **{"passenger_name.return_value": "test_event"})
         test_event_consumer = Mock(spec=EventConsumer)
         self.event_registry_mock.get_event_destination_contacts.return_value = [test_event_consumer]
@@ -23,3 +25,4 @@ class TestSyncEventBus(TestCase):
 
         self.event_receiver_mock.receive.assert_called_once_with(test_event, test_event_consumer)
         self.event_registry_mock.get_event_destination_contacts.assert_called_once_with("test_event")
+        test_event.set_distributed_id.assert_called_once_with("test_distributed_id")

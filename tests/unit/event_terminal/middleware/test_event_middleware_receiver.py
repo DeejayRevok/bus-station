@@ -1,6 +1,6 @@
 from typing import Type
 from unittest import TestCase
-from unittest.mock import Mock, call
+from unittest.mock import Mock, call, patch
 
 from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
@@ -28,7 +28,10 @@ class TestEventMiddlewareReceiver(TestCase):
 
         test_middleware_class.assert_called_once_with(test_arg)
 
-    def test_receive_successful_consume(self):
+    @patch("bus_station.passengers.reception.passenger_receiver.clear_context_distributed_id")
+    @patch("bus_station.passengers.reception.passenger_receiver.get_distributed_id")
+    def test_receive_successful_consume(self, get_distributed_id_mock, clear_context_distributed_id_mock):
+        get_distributed_id_mock.return_value = "test_distributed_id"
         parent_mock = Mock()
         test_middleware1_class = Mock(spec=Type[EventMiddleware])
         test_middleware2_class = Mock(spec=Type[EventMiddleware])
@@ -51,8 +54,14 @@ class TestEventMiddlewareReceiver(TestCase):
                 call.middleware1_class().after_consume(test_event, test_event_consumer, consume_exception=None),
             ]
         )
+        test_event.set_distributed_id.assert_called_once_with("test_distributed_id")
+        get_distributed_id_mock.assert_called_once_with(test_event)
+        clear_context_distributed_id_mock.assert_called_once_with()
 
-    def test_receive_consume_exception(self):
+    @patch("bus_station.passengers.reception.passenger_receiver.clear_context_distributed_id")
+    @patch("bus_station.passengers.reception.passenger_receiver.get_distributed_id")
+    def test_receive_consume_exception(self, get_distributed_id_mock, clear_context_distributed_id_mock):
+        get_distributed_id_mock.return_value = "test_distributed_id"
         parent_mock = Mock()
         test_middleware1_class = Mock(spec=Type[EventMiddleware])
         test_middleware2_class = Mock(spec=Type[EventMiddleware])
@@ -83,3 +92,6 @@ class TestEventMiddlewareReceiver(TestCase):
                 ),
             ]
         )
+        test_event.set_distributed_id.assert_called_once_with("test_distributed_id")
+        get_distributed_id_mock.assert_called_once_with(test_event)
+        clear_context_distributed_id_mock.assert_called_once_with()
