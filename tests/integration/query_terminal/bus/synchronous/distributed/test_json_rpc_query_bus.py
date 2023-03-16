@@ -3,7 +3,9 @@ import signal
 from ctypes import c_int
 from dataclasses import dataclass
 from multiprocessing import Process, Value
+from multiprocessing.sharedctypes import Array
 from time import sleep
+from uuid import uuid4
 
 from redis import Redis
 
@@ -22,6 +24,7 @@ from bus_station.query_terminal.registry.redis_query_registry import RedisQueryR
 from bus_station.query_terminal.serialization.query_response_json_deserializer import QueryResponseJSONDeserializer
 from bus_station.query_terminal.serialization.query_response_json_serializer import QueryResponseJSONSerializer
 from bus_station.shared_terminal.bus_stop_resolver.in_memory_bus_stop_resolver import InMemoryBusStopResolver
+from bus_station.shared_terminal.distributed import clear_context_distributed_id, create_distributed_id
 from bus_station.shared_terminal.engine.runner.process_engine_runner import ProcessEngineRunner
 from bus_station.shared_terminal.engine.runner.self_process_engine_runner import SelfProcessEngineRunner
 from bus_station.shared_terminal.fqn_getter import FQNGetter
@@ -36,9 +39,11 @@ class QueryTest(Query):
 class QueryTestHandler(QueryHandler):
     def __init__(self):
         self.call_count = Value(c_int, 0)
+        self.distributed_id = Array("c", str.encode(str(uuid4())))
 
     def handle(self, query: QueryTest) -> QueryResponse:
         self.call_count.value = self.call_count.value + 1
+        self.distributed_id.value = str.encode(query.distributed_id)
         return QueryResponse(data=query.test_value)
 
 
@@ -81,9 +86,11 @@ class TestJsonRPCQueryBus(IntegrationTestCase):
             query_response_deserializer,
             self.redis_registry,
         )
+        self.distributed_id = create_distributed_id()
 
     def tearDown(self) -> None:
         self.redis_registry.unregister(QueryTest.passenger_name())
+        clear_context_distributed_id()
 
     def test_process_engine_transport_success(self):
         test_value = "test_value"
@@ -98,6 +105,8 @@ class TestJsonRPCQueryBus(IntegrationTestCase):
                 self.assertEqual(i + 1, self.test_query_handler.call_count.value)
                 expected_query_response = QueryResponse(data=test_value)
                 self.assertEqual(expected_query_response, query_response)
+                self.assertEqual(self.distributed_id, test_query.distributed_id)
+                self.assertEqual(self.distributed_id, self.test_query_handler.distributed_id.value.decode())
 
     def test_self_process_engine_transport_success(self):
         test_value = "test_value"
@@ -114,5 +123,7 @@ class TestJsonRPCQueryBus(IntegrationTestCase):
                 self.assertEqual(i + 1, self.test_query_handler.call_count.value)
                 expected_query_response = QueryResponse(data=test_value)
                 self.assertEqual(expected_query_response, query_response)
+                self.assertEqual(self.distributed_id, test_query.distributed_id)
+                self.assertEqual(self.distributed_id, self.test_query_handler.distributed_id.value.decode())
         finally:
             os.kill(runner_process.pid, signal.SIGINT)

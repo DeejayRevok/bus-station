@@ -13,7 +13,7 @@ class SyncCommandBus(CommandBus):
         self.__command_registry = command_registry
         self.__command_receiver = command_receiver
 
-    def transport(self, passenger: Command) -> None:
+    def _transport(self, passenger: Command) -> None:
         command_handler = self.__command_registry.get_command_destination_contact(passenger.passenger_name())
         if command_handler is None:
             raise HandlerNotFoundForCommand(passenger.passenger_name())

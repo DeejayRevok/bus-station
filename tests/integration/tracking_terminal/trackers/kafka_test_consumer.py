@@ -18,6 +18,6 @@ class KafkaTestConsumer:
                 continue
             if message.error():
                 continue
-            self.received_message_data = message.value().decode('utf-8')
+            self.received_message_data = message.value().decode("utf-8")
 
         self.__consumer.close()

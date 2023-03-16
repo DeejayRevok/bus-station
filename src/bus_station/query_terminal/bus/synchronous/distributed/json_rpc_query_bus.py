@@ -22,7 +22,7 @@ class JsonRPCQueryBus(QueryBus):
         self.__query_registry = query_registry
         self.__query_response_deserializer = query_response_deserializer
 
-    def transport(self, passenger: Query) -> QueryResponse:
+    def _transport(self, passenger: Query) -> QueryResponse:
         handler_address = self.__query_registry.get_query_destination_contact(passenger.passenger_name())
         if handler_address is None:
             raise HandlerNotFoundForQuery(passenger.passenger_name())

@@ -18,27 +18,25 @@ class PassengerTest(Passenger):
 class TestPassenger(TestCase):
     def test_from_data_dict(self):
         test_uuid = str(uuid4())
+        test_distributed_id = str(uuid4())
         data_dict = {
             "passenger_id": test_uuid,
+            "distributed_id": test_distributed_id,
             "first_property": "test_first_property",
-            "second_property": 4
+            "second_property": 4,
         }
 
         result_passenger = PassengerTest.from_data_dict(data_dict)
 
-        expected_passenger = PassengerTest(
-            first_property="test_first_property",
-            second_property=4
-        )
+        expected_passenger = PassengerTest(first_property="test_first_property", second_property=4)
         object.__setattr__(expected_passenger, "passenger_id", test_uuid)
+        object.__setattr__(expected_passenger, "distributed_id", test_distributed_id)
         self.assertEqual(expected_passenger, result_passenger)
 
     def test_from_data_dict_missing_field(self):
         test_uuid = str(uuid4())
-        data_dict = {
-            "passenger_id": test_uuid,
-            "second_property": 4
-        }
+        test_distributed_id = str(uuid4())
+        data_dict = {"passenger_id": test_uuid, "distributed_id": test_distributed_id, "second_property": 4}
 
         with self.assertRaises(ValueError):
             PassengerTest.from_data_dict(data_dict)

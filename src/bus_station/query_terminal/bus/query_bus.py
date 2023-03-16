@@ -7,5 +7,5 @@ from bus_station.shared_terminal.bus import Bus
 
 class QueryBus(Bus[Query]):
     @abstractmethod
-    def transport(self, passenger: Query) -> QueryResponse:
+    def _transport(self, passenger: Query) -> QueryResponse:
         pass

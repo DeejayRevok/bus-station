@@ -1,6 +1,6 @@
 from typing import Type
 from unittest import TestCase
-from unittest.mock import Mock, call
+from unittest.mock import Mock, call, patch
 
 from bus_station.query_terminal.middleware.query_middleware import QueryMiddleware
 from bus_station.query_terminal.middleware.query_middleware_receiver import QueryMiddlewareReceiver
@@ -29,7 +29,10 @@ class TestQueryMiddlewareReceiver(TestCase):
 
         test_middleware_class.assert_called_once_with(test_arg)
 
-    def test_receive_successful_handle(self):
+    @patch("bus_station.passengers.reception.passenger_receiver.clear_context_distributed_id")
+    @patch("bus_station.passengers.reception.passenger_receiver.get_distributed_id")
+    def test_receive_successful_handle(self, get_distributed_id_mock, clear_context_distributed_id_mock):
+        get_distributed_id_mock.return_value = "test_distributed_id"
         parent_mock = Mock()
         test_query_response = Mock(spec=QueryResponse)
         test_middleware1_class = Mock(spec=Type[QueryMiddleware])
@@ -61,8 +64,14 @@ class TestQueryMiddlewareReceiver(TestCase):
             ]
         )
         self.assertEqual(test_query_response, query_response)
+        test_query.set_distributed_id.assert_called_once_with("test_distributed_id")
+        get_distributed_id_mock.assert_called_once_with(test_query)
+        clear_context_distributed_id_mock.assert_called_once_with()
 
-    def test_receive_handle_exception(self):
+    @patch("bus_station.passengers.reception.passenger_receiver.clear_context_distributed_id")
+    @patch("bus_station.passengers.reception.passenger_receiver.get_distributed_id")
+    def test_receive_handle_exception(self, get_distributed_id_mock, clear_context_distributed_id_mock):
+        get_distributed_id_mock.return_value = "test_distributed_id"
         parent_mock = Mock()
         test_query_response = Mock(spec=QueryResponse)
         test_middleware1_class = Mock(spec=Type[QueryMiddleware])
@@ -96,3 +105,6 @@ class TestQueryMiddlewareReceiver(TestCase):
                 ),
             ]
         )
+        test_query.set_distributed_id.assert_called_once_with("test_distributed_id")
+        get_distributed_id_mock.assert_called_once_with(test_query)
+        clear_context_distributed_id_mock.assert_called_once_with()

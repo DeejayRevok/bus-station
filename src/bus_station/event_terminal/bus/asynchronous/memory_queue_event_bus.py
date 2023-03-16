@@ -15,7 +15,7 @@ class MemoryQueueEventBus(EventBus):
         self.__event_serializer = event_serializer
         self.__event_registry = event_registry
 
-    def transport(self, passenger: Event) -> None:
+    def _transport(self, passenger: Event) -> None:
         event_consumer_queues = self.__event_registry.get_event_destination_contacts(passenger.passenger_name())
         if event_consumer_queues is None:
             return

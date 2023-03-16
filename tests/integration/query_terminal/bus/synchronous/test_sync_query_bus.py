@@ -11,6 +11,7 @@ from bus_station.query_terminal.query_handler import QueryHandler
 from bus_station.query_terminal.query_response import QueryResponse
 from bus_station.query_terminal.registry.in_memory_query_registry import InMemoryQueryRegistry
 from bus_station.shared_terminal.bus_stop_resolver.in_memory_bus_stop_resolver import InMemoryBusStopResolver
+from bus_station.shared_terminal.distributed import clear_context_distributed_id, create_distributed_id
 from bus_station.shared_terminal.fqn_getter import FQNGetter
 from tests.integration.integration_test_case import IntegrationTestCase
 
@@ -23,9 +24,11 @@ class QueryTest(Query):
 class QueryTestHandler(QueryHandler):
     def __init__(self):
         self.call_count = 0
+        self.distributed_id = ""
 
     def handle(self, query: QueryTest) -> QueryResponse:
         self.call_count += 1
+        self.distributed_id = query.distributed_id
         return QueryResponse(data=query.test_value)
 
 
@@ -43,6 +46,10 @@ class TestSyncQueryBus(IntegrationTestCase):
         )
         self.query_middleware_receiver = QueryMiddlewareReceiver()
         self.sync_query_bus = SyncQueryBus(self.in_memory_registry, self.query_middleware_receiver)
+        self.distributed_id = create_distributed_id()
+
+    def tearDown(self) -> None:
+        clear_context_distributed_id()
 
     def test_transport_success(self):
         test_query_value = "test_query_value"
@@ -55,3 +62,5 @@ class TestSyncQueryBus(IntegrationTestCase):
 
         self.assertEqual(1, test_query_handler.call_count)
         self.assertEqual(test_query_value, test_query_response.data)
+        self.assertEqual(self.distributed_id, test_query.distributed_id)
+        self.assertEqual(self.distributed_id, test_query_handler.distributed_id)

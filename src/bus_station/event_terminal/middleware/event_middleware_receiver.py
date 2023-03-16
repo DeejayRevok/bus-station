@@ -5,7 +5,7 @@ from bus_station.passengers.reception.passenger_middleware_receiver import Passe
 
 
 class EventMiddlewareReceiver(PassengerMiddlewareReceiver[Event, EventConsumer, EventMiddleware]):
-    def receive(self, passenger: Event, passenger_bus_stop: EventConsumer) -> None:
+    def _receive(self, passenger: Event, passenger_bus_stop: EventConsumer) -> None:
         middlewares = list(self._get_middlewares())
         for middleware in middlewares:
             middleware.before_consume(passenger, passenger_bus_stop)

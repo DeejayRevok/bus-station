@@ -6,7 +6,7 @@ from bus_station.query_terminal.query_response import QueryResponse
 
 
 class QueryMiddlewareReceiver(PassengerMiddlewareReceiver[Query, QueryHandler, QueryMiddleware]):
-    def receive(self, passenger: Query, passenger_bus_stop: QueryHandler) -> QueryResponse:
+    def _receive(self, passenger: Query, passenger_bus_stop: QueryHandler) -> QueryResponse:
         middlewares = list(self._get_middlewares())
         for middleware in middlewares:
             middleware.before_handle(passenger, passenger_bus_stop)

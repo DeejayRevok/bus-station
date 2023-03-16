@@ -13,11 +13,14 @@ from bus_station.tracking_terminal.models.query_tracking import QueryTracking
 class TestCommand(Command):
     pass
 
+
 class TestEvent(Event):
     pass
 
+
 class TestQuery(Query):
     pass
+
 
 class TestNotSupported(Passenger):
     @classmethod
@@ -31,21 +34,9 @@ class TestPassengerModelTrackingMap(TestCase):
 
     def test_get_tracking_model_passenger_supported(self):
         scenarios = [
-            {
-                "message": "Test map command",
-                "passenger": TestCommand(),
-                "expected_result": CommandTracking
-            },
-            {
-                "message": "Test map event",
-                "passenger": TestEvent(),
-                "expected_result": EventTracking
-            },
-            {
-                "message": "Test map query",
-                "passenger": TestQuery(),
-                "expected_result": QueryTracking
-            }
+            {"message": "Test map command", "passenger": TestCommand(), "expected_result": CommandTracking},
+            {"message": "Test map event", "passenger": TestEvent(), "expected_result": EventTracking},
+            {"message": "Test map query", "passenger": TestQuery(), "expected_result": QueryTracking},
         ]
         for scenario in scenarios:
             with self.subTest(scenario["message"]):

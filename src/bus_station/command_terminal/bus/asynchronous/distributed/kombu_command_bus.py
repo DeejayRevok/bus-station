@@ -19,7 +19,7 @@ class KombuCommandBus(CommandBus):
         self.__command_registry = command_registry
         self.__producer = Producer(broker_connection.channel())
 
-    def transport(self, passenger: Command) -> None:
+    def _transport(self, passenger: Command) -> None:
         handler_queue_name = self.__command_registry.get_command_destination_contact(passenger.passenger_name())
         if handler_queue_name is None:
             raise HandlerNotFoundForCommand(passenger.passenger_name())

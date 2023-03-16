@@ -12,7 +12,7 @@ class SyncQueryBus(QueryBus):
         self.__query_receiver = query_receiver
         self.__query_registry = query_registry
 
-    def transport(self, passenger: Query) -> QueryResponse:
+    def _transport(self, passenger: Query) -> QueryResponse:
         query_handler = self.__query_registry.get_query_destination_contact(passenger.passenger_name())
         if query_handler is None:
             raise HandlerNotFoundForQuery(passenger.passenger_name())

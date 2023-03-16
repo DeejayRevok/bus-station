@@ -18,7 +18,7 @@ class KombuEventBus(EventBus):
         self.__event_registry = event_registry
         self.__producer = Producer(broker_connection.channel())
 
-    def transport(self, passenger: Event) -> None:
+    def _transport(self, passenger: Event) -> None:
         event_exchange_names = self.__event_registry.get_event_destination_contacts(passenger.passenger_name())
         if event_exchange_names is None:
             return

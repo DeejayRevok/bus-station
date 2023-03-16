@@ -1,6 +1,6 @@
 from datetime import datetime
 from unittest import TestCase
-from unittest.mock import Mock, MagicMock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 from confluent_kafka.cimpl import Producer
 from freezegun import freeze_time
@@ -29,7 +29,7 @@ class TestKafkaPassengerTracker(TestCase):
             self.kafka_producer_mock,
             self.kafka_topic_creator_mock,
             self.passenger_tracking_serializer_mock,
-            self.passenger_tracking_model_map_mock
+            self.passenger_tracking_model_map_mock,
         )
 
     @freeze_time()
@@ -55,8 +55,7 @@ class TestKafkaPassengerTracker(TestCase):
         )
         self.kafka_topic_creator_mock.create.assert_called_once_with(tracking_model_mock.__class__.__name__)
         self.kafka_producer_mock.produce.assert_called_once_with(
-            topic=tracking_model_mock.__class__.__name__,
-            value="test_serialized_passenger_tracking"
+            topic=tracking_model_mock.__class__.__name__, value="test_serialized_passenger_tracking"
         )
         self.kafka_producer_mock.poll.assert_called_once_with(0)
 
@@ -83,7 +82,6 @@ class TestKafkaPassengerTracker(TestCase):
         )
         self.kafka_topic_creator_mock.create.assert_called_once_with(tracking_model_mock.__class__.__name__)
         self.kafka_producer_mock.produce.assert_called_once_with(
-            topic=tracking_model_mock.__class__.__name__,
-            value="test_serialized_passenger_tracking"
+            topic=tracking_model_mock.__class__.__name__, value="test_serialized_passenger_tracking"
         )
         self.kafka_producer_mock.poll.assert_called_once_with(0)
