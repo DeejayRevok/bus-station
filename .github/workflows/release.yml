@@ -15,7 +15,7 @@ jobs:
       - name: Install commitizen
         run: pip install commitizen
       - name: Bump version and create changelog
-        run: cz bump --files-only --changelog --changelog-to-stdout >body.md
+        run: cz bump --yes --files-only --changelog --changelog-to-stdout >body.md
       - name: Set version
         id: version
         run: echo "::set-output name=VERSION::$(docker-compose run bus-station poetry version -s)"
