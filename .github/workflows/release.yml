@@ -7,25 +7,25 @@ jobs:
   bus-station-release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Setup environment
         run: docker-compose up -d
       - name: Build the package
         run: docker-compose run bus-station poetry build
+      - name: Install commitizen
+        run: pip install commitizen
       - name: Bump version and create changelog
-        id: cz
-        uses: commitizen-tools/commitizen-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          changelog_increment_filename: body.md
-          push: false
+        run: cz bump --yes --files-only --changelog --changelog-to-stdout >body.md
+      - name: Set version
+        id: version
+        run: echo "::set-output name=VERSION::$(docker-compose run bus-station poetry version -s)"
       - name: Check if version exists
         uses: mukunku/tag-exists-action@v1.0.0
         id: checkTag
         with:
-          tag: ${{ steps.cz.outputs.version }}
+          tag: ${{ steps.version.outputs.VERSION }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Fail if tag exists
@@ -36,7 +36,7 @@ jobs:
           git config --local user.name "Github Action"
           git config --local user.email "$GITHUB_ACTOR@users.noreply.github.com"
           git add pyproject.toml CHANGELOG.md
-          git commit -m "${{ steps.cz.outputs.version }}: Github actions version and changelog update"
+          git commit -m "${{ steps.version.outputs.VERSION }}: Github actions version and changelog update"
           git push
       - name: Publish the package
         run: docker-compose run bus-station poetry publish -u ${{ secrets.PYPI_USER }} -p ${{ secrets.PYPI_PASSWORD }}
@@ -44,6 +44,6 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           body_path: "body.md"
-          tag_name: ${{ steps.cz.outputs.version }}
+          tag_name: ${{ steps.version.outputs.VERSION }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
