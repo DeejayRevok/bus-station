@@ -1,3 +1,13 @@
+## 5.1.0 (2023-03-17)
+
+### Feat
+
+- make distributed id work with serialization/deserialization
+- add distributed id on bus transport
+- add distributed id on passenger receivers
+- add distributed id functions
+- **Passenger**: add distributed id
+
 ## 5.0.0 (2023-03-10)
 
 ## 4.0.0 (2023-01-13)

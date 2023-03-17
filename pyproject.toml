@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "bus-station"
-version = "5.0.0"
+version = "5.1.0"
 description = "A python bus station"
 readme = "README.md"
 authors = ["DeejayRevok <seryi_one@hotmail.com>"]
@@ -44,7 +44,7 @@ line_length = 120
 
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "5.0.0"
+version = "5.1.0"
 tag_format = "$version"
 version_files = [
   "pyproject.toml:version"
