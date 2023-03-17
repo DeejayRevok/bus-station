@@ -13,8 +13,6 @@ jobs:
           token: ${{ secrets.RELEASE_TOKEN }}
       - name: Setup environment
         run: docker-compose up -d
-      - name: Build the package
-        run: docker-compose run bus-station poetry build
       - name: Install commitizen
         run: pip install commitizen
       - name: Bump version and create changelog
@@ -40,7 +38,7 @@ jobs:
           git commit -m "${{ steps.version.outputs.VERSION }}: Github actions version and changelog update"
           git push
       - name: Publish the package
-        run: docker-compose run bus-station poetry publish -u ${{ secrets.PYPI_USER }} -p ${{ secrets.PYPI_PASSWORD }}
+        run: docker-compose run bus-station poetry publish -u ${{ secrets.PYPI_USER }} -p ${{ secrets.PYPI_PASSWORD }} --build
       - name: Create github release
         uses: softprops/action-gh-release@v1
         with:
