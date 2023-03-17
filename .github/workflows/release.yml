@@ -10,7 +10,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.RELEASE_TOKEN }}
       - name: Setup environment
         run: docker-compose up -d
       - name: Build the package
@@ -28,7 +28,7 @@ jobs:
         with:
           tag: ${{ steps.version.outputs.VERSION }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
       - name: Fail if tag exists
         if: steps.checkTag.outputs.exists == 'true'
         run: exit 1
@@ -47,4 +47,4 @@ jobs:
           body_path: "body.md"
           tag_name: ${{ steps.version.outputs.VERSION }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
