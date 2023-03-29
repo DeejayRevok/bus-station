@@ -11,7 +11,6 @@ from bus_station.passengers.passenger_record.in_memory_passenger_record_reposito
     InMemoryPassengerRecordRepository,
 )
 from bus_station.shared_terminal.bus_stop_resolver.in_memory_bus_stop_resolver import InMemoryBusStopResolver
-from bus_station.shared_terminal.distributed import clear_context_distributed_id, create_distributed_id
 from bus_station.shared_terminal.fqn_getter import FQNGetter
 from tests.integration.integration_test_case import IntegrationTestCase
 
@@ -24,11 +23,9 @@ class CommandTest(Command):
 class CommandTestHandler(CommandHandler):
     def __init__(self):
         self.call_count = 0
-        self.distributed_id = ""
 
     def handle(self, command: CommandTest) -> None:
         self.call_count += 1
-        self.distributed_id = command.distributed_id
 
 
 class TestThreadedCommandBus(IntegrationTestCase):
@@ -45,10 +42,6 @@ class TestThreadedCommandBus(IntegrationTestCase):
         )
         self.command_receiver = CommandMiddlewareReceiver()
         self.threaded_command_bus = ThreadedCommandBus(self.in_memory_registry, self.command_receiver)
-        self.distributed_id = create_distributed_id()
-
-    def tearDown(self) -> None:
-        clear_context_distributed_id()
 
     def test_transport_success(self):
         test_command = CommandTest()
@@ -60,5 +53,3 @@ class TestThreadedCommandBus(IntegrationTestCase):
 
         sleep(1)
         self.assertEqual(1, test_command_handler.call_count)
-        self.assertEqual(self.distributed_id, test_command.distributed_id)
-        self.assertEqual(self.distributed_id, test_command_handler.distributed_id)

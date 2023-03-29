@@ -24,9 +24,9 @@ class TestRPyCQueryBus(TestCase):
             self.query_registry_mock,
         )
 
-    @patch("bus_station.shared_terminal.bus.get_distributed_id")
-    def test_transport_not_registered(self, get_distributed_id_mock):
-        get_distributed_id_mock.return_value = "test_distributed_id"
+    @patch("bus_station.shared_terminal.bus.get_context_root_passenger_id")
+    def test_transport_not_registered(self, get_context_root_passenger_id_mock):
+        get_context_root_passenger_id_mock.return_value = "test_root_passenger_id"
         test_query = Mock(spec=Query, **{"passenger_name.return_value": "test_query"})
         self.query_registry_mock.get_query_destination_contact.return_value = None
 
@@ -36,12 +36,12 @@ class TestRPyCQueryBus(TestCase):
         self.assertEqual("test_query", hnffq.exception.query_name)
         self.query_serializer_mock.serialize.assert_not_called()
         self.query_registry_mock.get_query_destination_contact.assert_called_once_with("test_query")
-        test_query.set_distributed_id.assert_called_once_with("test_distributed_id")
+        test_query.set_root_passenger_id.assert_called_once_with("test_root_passenger_id")
 
-    @patch("bus_station.shared_terminal.bus.get_distributed_id")
+    @patch("bus_station.shared_terminal.bus.get_context_root_passenger_id")
     @patch("bus_station.query_terminal.bus.synchronous.distributed.rpyc_query_bus.connect")
-    def test_transport_success(self, connect_mock, get_distributed_id_mock):
-        get_distributed_id_mock.return_value = "test_distributed_id"
+    def test_transport_success(self, connect_mock, get_context_root_passenger_id_mock):
+        get_context_root_passenger_id_mock.return_value = "test_root_passenger_id"
         test_query = Mock(spec=Query, **{"passenger_name.return_value": "test_query"})
         test_query.passenger_name.return_value = "TestQuery"
         test_host = "test_host"
@@ -66,4 +66,4 @@ class TestRPyCQueryBus(TestCase):
         test_rpyc_callable.assert_called_once_with(test_serialized_query)
         self.query_response_deserializer_mock.deserialize.assert_called_once_with(test_serialized_query_response)
         test_rpyc_connection.close.assert_called_once_with()
-        test_query.set_distributed_id.assert_called_once_with("test_distributed_id")
+        test_query.set_root_passenger_id.assert_called_once_with("test_root_passenger_id")

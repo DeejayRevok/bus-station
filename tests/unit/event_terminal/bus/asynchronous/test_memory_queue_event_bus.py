@@ -17,9 +17,9 @@ class TestMemoryQueueEventBus(TestCase):
             self.event_registry_mock,
         )
 
-    @patch("bus_station.shared_terminal.bus.get_distributed_id")
-    def test_transport_sucess(self, get_distributed_id_mock):
-        get_distributed_id_mock.return_value = "test_distributed_id"
+    @patch("bus_station.shared_terminal.bus.get_context_root_passenger_id")
+    def test_transport_sucess(self, get_context_root_passenger_id_mock):
+        get_context_root_passenger_id_mock.return_value = "test_root_passenger_id"
         test_queue = Mock(spec=Queue)
         test_serialized_event = "test_serialized_event"
         test_event = Mock(spec=Event, **{"passenger_name.return_value": "test_event"})
@@ -31,4 +31,4 @@ class TestMemoryQueueEventBus(TestCase):
         self.event_serializer_mock.serialize.assert_called_once_with(test_event)
         test_queue.put.assert_called_once_with(test_serialized_event)
         self.event_registry_mock.get_event_destination_contacts.assert_called_once_with("test_event")
-        test_event.set_distributed_id.assert_called_once_with("test_distributed_id")
+        test_event.set_root_passenger_id.assert_called_once_with("test_root_passenger_id")
