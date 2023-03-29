@@ -27,9 +27,9 @@ class TestKombuCommandBus(TestCase):
             self.command_registry_mock,
         )
 
-    @patch("bus_station.shared_terminal.bus.get_distributed_id")
-    def test_transport_not_registered(self, get_distributed_id_mock):
-        get_distributed_id_mock.return_value = "test_distributed_id"
+    @patch("bus_station.shared_terminal.bus.get_context_root_passenger_id")
+    def test_transport_not_registered(self, get_context_root_passenger_id_mock):
+        get_context_root_passenger_id_mock.return_value = "test_root_passenger_id"
         test_command = Mock(spec=Command, **{"passenger_name.return_value": "test_command"})
         self.command_registry_mock.get_command_destination_contact.return_value = None
 
@@ -39,11 +39,11 @@ class TestKombuCommandBus(TestCase):
         self.assertEqual(test_command.passenger_name(), hnffc.exception.command_name)
         self.command_serializer_mock.serialize.assert_not_called()
         self.command_registry_mock.get_command_destination_contact.assert_called_once_with("test_command")
-        test_command.set_distributed_id.assert_called_once_with("test_distributed_id")
+        test_command.set_root_passenger_id.assert_called_once_with("test_root_passenger_id")
 
-    @patch("bus_station.shared_terminal.bus.get_distributed_id")
-    def test_transport_success(self, get_distributed_id_mock):
-        get_distributed_id_mock.return_value = "test_distributed_id"
+    @patch("bus_station.shared_terminal.bus.get_context_root_passenger_id")
+    def test_transport_success(self, get_context_root_passenger_id_mock):
+        get_context_root_passenger_id_mock.return_value = "test_root_passenger_id"
         test_command = Mock(spec=Command, **{"passenger_name.return_value": "test_command"})
         test_command_serialized = "test_command_serialized"
         self.command_serializer_mock.serialize.return_value = test_command_serialized
@@ -65,4 +65,4 @@ class TestKombuCommandBus(TestCase):
                 "max_retries": 10,
             },
         )
-        test_command.set_distributed_id.assert_called_once_with("test_distributed_id")
+        test_command.set_root_passenger_id.assert_called_once_with("test_root_passenger_id")

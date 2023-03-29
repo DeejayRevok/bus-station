@@ -3,9 +3,7 @@ import signal
 from ctypes import c_int
 from dataclasses import dataclass
 from multiprocessing import Process, Value
-from multiprocessing.sharedctypes import Array
 from time import sleep
-from uuid import uuid4
 
 from redis import Redis
 
@@ -21,7 +19,6 @@ from bus_station.passengers.passenger_record.redis_passenger_record_repository i
 from bus_station.passengers.serialization.passenger_json_deserializer import PassengerJSONDeserializer
 from bus_station.passengers.serialization.passenger_json_serializer import PassengerJSONSerializer
 from bus_station.shared_terminal.bus_stop_resolver.in_memory_bus_stop_resolver import InMemoryBusStopResolver
-from bus_station.shared_terminal.distributed import clear_context_distributed_id, create_distributed_id
 from bus_station.shared_terminal.engine.runner.process_engine_runner import ProcessEngineRunner
 from bus_station.shared_terminal.engine.runner.self_process_engine_runner import SelfProcessEngineRunner
 from bus_station.shared_terminal.fqn_getter import FQNGetter
@@ -36,11 +33,9 @@ class CommandTest(Command):
 class CommandTestHandler(CommandHandler):
     def __init__(self):
         self.call_count = Value(c_int, 0)
-        self.distributed_id = Array("c", str.encode(str(uuid4())))
 
     def handle(self, command: CommandTest) -> None:
         self.call_count.value = self.call_count.value + 1
-        self.distributed_id.value = str.encode(command.distributed_id)
 
 
 class TestJsonRPCCommandBus(IntegrationTestCase):
@@ -74,11 +69,9 @@ class TestJsonRPCCommandBus(IntegrationTestCase):
             server=json_rpc_server, command_registry=self.redis_registry, command_name=CommandTest.passenger_name()
         )
         self.json_rpc_command_bus = JsonRPCCommandBus(command_serializer, self.redis_registry)
-        self.distributed_id = create_distributed_id()
 
     def tearDown(self) -> None:
         self.redis_registry.unregister(CommandTest.passenger_name())
-        clear_context_distributed_id()
 
     def test_process_engine_transport_success(self):
         test_command = CommandTest()
@@ -89,8 +82,6 @@ class TestJsonRPCCommandBus(IntegrationTestCase):
                 self.json_rpc_command_bus.transport(test_command)
 
                 self.assertEqual(i + 1, self.test_command_handler.call_count.value)
-                self.assertEqual(self.distributed_id, test_command.distributed_id)
-                self.assertEqual(self.distributed_id, self.test_command_handler.distributed_id.value.decode())
 
     def test_self_process_engine_transport_success(self):
         test_command = CommandTest()
@@ -104,7 +95,5 @@ class TestJsonRPCCommandBus(IntegrationTestCase):
                 self.json_rpc_command_bus.transport(test_command)
 
                 self.assertEqual(i + 1, self.test_command_handler.call_count.value)
-                self.assertEqual(self.distributed_id, test_command.distributed_id)
-                self.assertEqual(self.distributed_id, self.test_command_handler.distributed_id.value.decode())
         finally:
             os.kill(runner_process.pid, signal.SIGINT)

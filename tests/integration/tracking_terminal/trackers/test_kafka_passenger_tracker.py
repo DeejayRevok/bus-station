@@ -60,7 +60,7 @@ class TestKafkaPassengerTracker(IntegrationTestCase):
 
     def test_start_tracking(self):
         test_command = TestCommand(test="test_data")
-        test_command.set_distributed_id("test_distributed_id")
+        test_command.set_root_passenger_id("test_root_passenger_id")
         test_command_handler = TestCommandHandler()
 
         self.kafka_tracker.start_tracking(passenger=test_command, bus_stop=test_command_handler)
@@ -73,7 +73,11 @@ class TestKafkaPassengerTracker(IntegrationTestCase):
         self.assertEqual(test_command.passenger_name(), received_message_dict["name"])
         self.assertEqual(test_command_handler.bus_stop_name(), received_message_dict["executor_name"])
         self.assertEqual(
-            {"passenger_id": test_command.passenger_id, "distributed_id": "test_distributed_id", "test": "test_data"},
+            {
+                "passenger_id": test_command.passenger_id,
+                "root_passenger_id": "test_root_passenger_id",
+                "test": "test_data",
+            },
             received_message_dict["data"],
         )
         self.assertIsNotNone(received_message_dict["execution_start"])
@@ -82,8 +86,8 @@ class TestKafkaPassengerTracker(IntegrationTestCase):
 
     def test_end_tracking(self):
         test_command = TestCommand(test="test_data")
-        test_command.set_distributed_id("test_distributed_id")
         test_command_handler = TestCommandHandler()
+        test_command.set_root_passenger_id("test_root_passenger_id")
 
         self.kafka_tracker.end_tracking(passenger=test_command, bus_stop=test_command_handler, success=True)
 
@@ -95,7 +99,11 @@ class TestKafkaPassengerTracker(IntegrationTestCase):
         self.assertEqual(test_command.passenger_name(), received_message_dict["name"])
         self.assertEqual(test_command_handler.bus_stop_name(), received_message_dict["executor_name"])
         self.assertEqual(
-            {"passenger_id": test_command.passenger_id, "distributed_id": "test_distributed_id", "test": "test_data"},
+            {
+                "passenger_id": test_command.passenger_id,
+                "root_passenger_id": "test_root_passenger_id",
+                "test": "test_data",
+            },
             received_message_dict["data"],
         )
         self.assertIsNone(received_message_dict["execution_start"])

@@ -3,9 +3,7 @@ import signal
 from ctypes import c_int
 from dataclasses import dataclass
 from multiprocessing import Process, Value
-from multiprocessing.sharedctypes import Array
 from time import sleep
-from uuid import uuid4
 
 from redis import Redis
 
@@ -23,7 +21,6 @@ from bus_station.shared_terminal.broker_connection.connection_parameters.rabbitm
     RabbitMQConnectionParameters,
 )
 from bus_station.shared_terminal.bus_stop_resolver.in_memory_bus_stop_resolver import InMemoryBusStopResolver
-from bus_station.shared_terminal.distributed import clear_context_distributed_id, create_distributed_id
 from bus_station.shared_terminal.engine.runner.process_engine_runner import ProcessEngineRunner
 from bus_station.shared_terminal.engine.runner.self_process_engine_runner import SelfProcessEngineRunner
 from bus_station.shared_terminal.factories.kombu_connection_factory import KombuConnectionFactory
@@ -39,21 +36,17 @@ class EventTest(Event):
 class EventTestConsumer1(EventConsumer):
     def __init__(self):
         self.call_count = Value(c_int, 0)
-        self.distributed_id = Array("c", str.encode(str(uuid4())))
 
     def consume(self, event: EventTest) -> None:
         self.call_count.value = self.call_count.value + 1
-        self.distributed_id.value = str.encode(event.distributed_id)
 
 
 class EventTestConsumer2(EventConsumer):
     def __init__(self):
         self.call_count = Value(c_int, 2)
-        self.distributed_id = Array("c", str.encode(str(uuid4())))
 
     def consume(self, event: EventTest) -> None:
         self.call_count.value = self.call_count.value - 1
-        self.distributed_id.value = str.encode(event.distributed_id)
 
 
 class TestRabbitKombuEventBus(IntegrationTestCase):
@@ -116,11 +109,9 @@ class TestRabbitKombuEventBus(IntegrationTestCase):
             EventTest.passenger_name(),
             self.test_event_consumer2.bus_stop_name(),
         )
-        self.distributed_id = create_distributed_id()
 
     def tearDown(self) -> None:
         self.redis_registry.unregister(EventTest.passenger_name())
-        clear_context_distributed_id()
 
     def test_process_transport_success(self):
         test_event = EventTest()
@@ -132,9 +123,6 @@ class TestRabbitKombuEventBus(IntegrationTestCase):
                     sleep(1)
                     self.assertEqual(i + 1, self.test_event_consumer1.call_count.value)
                     self.assertEqual(1 - i, self.test_event_consumer2.call_count.value)
-                    self.assertEqual(self.distributed_id, test_event.distributed_id)
-                    self.assertEqual(self.distributed_id, self.test_event_consumer1.distributed_id.value.decode())
-                    self.assertEqual(self.distributed_id, self.test_event_consumer2.distributed_id.value.decode())
 
     def test_self_process_transport_success(self):
         test_event = EventTest()
@@ -152,9 +140,6 @@ class TestRabbitKombuEventBus(IntegrationTestCase):
                 sleep(1)
                 self.assertEqual(i + 1, self.test_event_consumer1.call_count.value)
                 self.assertEqual(1 - i, self.test_event_consumer2.call_count.value)
-                self.assertEqual(self.distributed_id, test_event.distributed_id)
-                self.assertEqual(self.distributed_id, self.test_event_consumer1.distributed_id.value.decode())
-                self.assertEqual(self.distributed_id, self.test_event_consumer2.distributed_id.value.decode())
         finally:
             os.kill(runner_process1.pid, signal.SIGINT)
             os.kill(runner_process2.pid, signal.SIGINT)

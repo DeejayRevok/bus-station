@@ -28,14 +28,12 @@ class TestCommandMiddlewareReceiver(TestCase):
 
         test_middleware_class.assert_called_once_with(test_arg)
 
-    @patch("bus_station.passengers.reception.passenger_receiver.clear_context_distributed_id")
-    @patch("bus_station.passengers.reception.passenger_receiver.get_distributed_id")
-    def test_receive_successful_handle(self, get_distributed_id_mock, clear_context_distributed_id_mock):
-        get_distributed_id_mock.return_value = "test_distributed_id"
+    @patch("bus_station.passengers.reception.passenger_receiver.set_context_root_passenger_id")
+    def test_receive_successful_handle(self, set_context_root_passenger_id_mock):
         parent_mock = Mock()
         test_middleware1_class = Mock(spec=Type[CommandMiddleware])
         test_middleware2_class = Mock(spec=Type[CommandMiddleware])
-        test_command = Mock(spec=Command)
+        test_command = Mock(spec=Command, passenger_id="test_passenger_id", root_passenger_id="test_root_passenger_id")
         test_command_handler = Mock(spec=CommandHandler)
         parent_mock.middleware1_class = test_middleware1_class
         parent_mock.middleware2_class = test_middleware2_class
@@ -54,18 +52,16 @@ class TestCommandMiddlewareReceiver(TestCase):
                 call.middleware1_class().after_handle(test_command, test_command_handler, handling_exception=None),
             ]
         )
-        test_command.set_distributed_id.assert_called_once_with("test_distributed_id")
-        get_distributed_id_mock.assert_called_once_with(test_command)
-        clear_context_distributed_id_mock.assert_called_once_with()
+        set_context_root_passenger_id_mock.assert_has_calls(
+            [call(test_command.passenger_id), call(test_command.root_passenger_id)]
+        )
 
-    @patch("bus_station.passengers.reception.passenger_receiver.clear_context_distributed_id")
-    @patch("bus_station.passengers.reception.passenger_receiver.get_distributed_id")
-    def test_receive_handle_exception(self, get_distributed_id_mock, clear_context_distributed_id_mock):
-        get_distributed_id_mock.return_value = "test_distributed_id"
+    @patch("bus_station.passengers.reception.passenger_receiver.set_context_root_passenger_id")
+    def test_receive_handle_exception(self, set_context_root_passenger_id_mock):
         parent_mock = Mock()
         test_middleware1_class = Mock(spec=Type[CommandMiddleware])
         test_middleware2_class = Mock(spec=Type[CommandMiddleware])
-        test_command = Mock(spec=Command)
+        test_command = Mock(spec=Command, passenger_id="test_passenger_id", root_passenger_id="test_root_passenger_id")
         test_command_handler = Mock(spec=CommandHandler)
         parent_mock.middleware1_class = test_middleware1_class
         parent_mock.middleware2_class = test_middleware2_class
@@ -92,6 +88,6 @@ class TestCommandMiddlewareReceiver(TestCase):
                 ),
             ]
         )
-        test_command.set_distributed_id.assert_called_once_with("test_distributed_id")
-        get_distributed_id_mock.assert_called_once_with(test_command)
-        clear_context_distributed_id_mock.assert_called_once_with()
+        set_context_root_passenger_id_mock.assert_has_calls(
+            [call(test_command.passenger_id), call(test_command.root_passenger_id)]
+        )
