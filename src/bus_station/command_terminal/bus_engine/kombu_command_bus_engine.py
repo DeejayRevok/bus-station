@@ -9,8 +9,8 @@ from bus_station.command_terminal.contact_not_found_for_command import ContactNo
 from bus_station.command_terminal.handler_not_found_for_command import HandlerNotFoundForCommand
 from bus_station.command_terminal.registry.remote_command_registry import RemoteCommandRegistry
 from bus_station.passengers.passenger_kombu_consumer import PassengerKombuConsumer
+from bus_station.passengers.passenger_resolvers import resolve_passenger_class_from_bus_stop
 from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
-from bus_station.passengers.resolve_passenger_from_bus_stop import resolve_passenger_from_bus_stop
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 from bus_station.shared_terminal.engine.engine import Engine
 
@@ -41,7 +41,7 @@ class KombuCommandBusEngine(Engine):
 
         command_queue = self.__create_command_handler_queue(command_queue_name, channel)
 
-        command_type = resolve_passenger_from_bus_stop(command_handler, "handle", "command", Command)
+        command_type = resolve_passenger_class_from_bus_stop(command_handler, "handle", "command", Command)
 
         self.__command_consumer = PassengerKombuConsumer(
             broker_connection,

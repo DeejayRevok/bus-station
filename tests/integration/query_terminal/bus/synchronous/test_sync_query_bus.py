@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 
-from bus_station.passengers.passenger_class_resolver import PassengerClassResolver
 from bus_station.passengers.passenger_record.in_memory_passenger_record_repository import (
     InMemoryPassengerRecordRepository,
 )
@@ -11,7 +10,6 @@ from bus_station.query_terminal.query_handler import QueryHandler
 from bus_station.query_terminal.query_response import QueryResponse
 from bus_station.query_terminal.registry.in_memory_query_registry import InMemoryQueryRegistry
 from bus_station.shared_terminal.bus_stop_resolver.in_memory_bus_stop_resolver import InMemoryBusStopResolver
-from bus_station.shared_terminal.fqn_getter import FQNGetter
 from tests.integration.integration_test_case import IntegrationTestCase
 
 
@@ -32,14 +30,10 @@ class QueryTestHandler(QueryHandler):
 class TestSyncQueryBus(IntegrationTestCase):
     def setUp(self) -> None:
         self.in_memory_repository = InMemoryPassengerRecordRepository()
-        self.fqn_getter = FQNGetter()
-        self.query_handler_resolver = InMemoryBusStopResolver[QueryHandler](fqn_getter=self.fqn_getter)
-        self.passenger_class_resolver = PassengerClassResolver()
+        self.query_handler_resolver = InMemoryBusStopResolver[QueryHandler]()
         self.in_memory_registry = InMemoryQueryRegistry(
             in_memory_repository=self.in_memory_repository,
             query_handler_resolver=self.query_handler_resolver,
-            fqn_getter=self.fqn_getter,
-            passenger_class_resolver=self.passenger_class_resolver,
         )
         self.query_middleware_receiver = QueryMiddlewareReceiver()
         self.sync_query_bus = SyncQueryBus(self.in_memory_registry, self.query_middleware_receiver)

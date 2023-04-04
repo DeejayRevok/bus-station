@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from typing import Any, Iterable, Optional, Type
 
-from bus_station.passengers.resolve_passenger_from_bus_stop import resolve_passenger_from_bus_stop
+from bus_station.passengers.passenger_resolvers import resolve_passenger_class_from_bus_stop
 from bus_station.query_terminal.handler_for_query_already_registered import HandlerForQueryAlreadyRegistered
 from bus_station.query_terminal.query import Query
 from bus_station.query_terminal.query_handler import QueryHandler
@@ -9,7 +9,7 @@ from bus_station.query_terminal.query_handler import QueryHandler
 
 class QueryRegistry(metaclass=ABCMeta):
     def register(self, handler: QueryHandler, handler_contact: Any) -> None:
-        handler_query = resolve_passenger_from_bus_stop(handler, "handle", "query", Query)
+        handler_query = resolve_passenger_class_from_bus_stop(handler, "handle", "query", Query)
         existing_handler_contact = self.get_query_destination_contact(handler_query.passenger_name())
         self.__check_query_already_registered(handler_query, handler_contact, existing_handler_contact)
         if existing_handler_contact is None:

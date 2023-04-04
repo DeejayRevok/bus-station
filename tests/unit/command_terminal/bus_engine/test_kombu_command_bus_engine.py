@@ -45,7 +45,7 @@ class TestKombuCommandBusEngine(TestCase):
         exchange_builder_mock.assert_not_called()
         queue_builder_mock.assert_not_called()
 
-    @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.resolve_passenger_from_bus_stop")
+    @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.resolve_passenger_class_from_bus_stop")
     @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.Queue")
     @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.Exchange")
     @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.PassengerKombuConsumer")
@@ -87,7 +87,7 @@ class TestKombuCommandBusEngine(TestCase):
         )
         passenger_resolver_mock.assert_called_once_with(test_command_handler, "handle", "command", Command)
 
-    @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.resolve_passenger_from_bus_stop")
+    @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.resolve_passenger_class_from_bus_stop")
     @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.Queue")
     @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.Exchange")
     @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.PassengerKombuConsumer")
@@ -106,7 +106,7 @@ class TestKombuCommandBusEngine(TestCase):
 
         test_kombu_consumer.run.assert_called_once_with()
 
-    @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.resolve_passenger_from_bus_stop")
+    @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.resolve_passenger_class_from_bus_stop")
     @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.Queue")
     @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.Exchange")
     @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.PassengerKombuConsumer")

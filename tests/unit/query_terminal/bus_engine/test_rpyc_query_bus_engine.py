@@ -13,7 +13,7 @@ class TestRPyCQueryBusEngine(TestCase):
         self.rpyc_server_mock = Mock(spec=RPyCServer)
         self.query_registry_mock = Mock(spec=RemoteQueryRegistry)
 
-    @patch("bus_station.query_terminal.bus_engine.rpyc_query_bus_engine.resolve_passenger_from_bus_stop")
+    @patch("bus_station.query_terminal.bus_engine.rpyc_query_bus_engine.resolve_passenger_class_from_bus_stop")
     def test_init_with_query(self, passenger_resolver_mock):
         query_type_mock = Mock(spec=Query, **{"passenger_name.return_value": "test_query"})
         query_handler_mock = Mock(spec=QueryHandler)
@@ -25,7 +25,7 @@ class TestRPyCQueryBusEngine(TestCase):
         self.query_registry_mock.get_query_destination.assert_called_once_with("test_query")
         self.rpyc_server_mock.register.assert_called_once_with(query_type_mock, query_handler_mock)
 
-    @patch("bus_station.query_terminal.bus_engine.rpyc_query_bus_engine.resolve_passenger_from_bus_stop")
+    @patch("bus_station.query_terminal.bus_engine.rpyc_query_bus_engine.resolve_passenger_class_from_bus_stop")
     def test_start(self, _):
         engine = RPyCQueryBusEngine(self.rpyc_server_mock, self.query_registry_mock, "test_query")
 

@@ -13,7 +13,7 @@ class TestRPyCCommandBusEngine(TestCase):
         self.rpyc_server_mock = Mock(spec=RPyCServer)
         self.command_registry_mock = Mock(spec=RemoteCommandRegistry)
 
-    @patch("bus_station.command_terminal.bus_engine.rpyc_command_bus_engine.resolve_passenger_from_bus_stop")
+    @patch("bus_station.command_terminal.bus_engine.rpyc_command_bus_engine.resolve_passenger_class_from_bus_stop")
     def test_init_with_command(self, passenger_resolver_mock):
         command_type_mock = Mock(spec=Command)
         passenger_resolver_mock.return_value = command_type_mock
@@ -26,7 +26,7 @@ class TestRPyCCommandBusEngine(TestCase):
         self.rpyc_server_mock.register.assert_called_once_with(command_type_mock, command_handler_mock)
         passenger_resolver_mock.assert_called_once_with(command_handler_mock, "handle", "command", Command)
 
-    @patch("bus_station.command_terminal.bus_engine.rpyc_command_bus_engine.resolve_passenger_from_bus_stop")
+    @patch("bus_station.command_terminal.bus_engine.rpyc_command_bus_engine.resolve_passenger_class_from_bus_stop")
     def test_start(self, _):
         engine = RPyCCommandBusEngine(self.rpyc_server_mock, self.command_registry_mock, "test_command")
 

@@ -9,7 +9,7 @@ from bus_station.passengers.passenger_record.in_memory_passenger_record_reposito
 )
 from bus_station.passengers.passenger_record.passenger_record import PassengerRecord
 from bus_station.passengers.passenger_record.redis_passenger_record_repository import RedisPassengerRecordRepository
-from bus_station.shared_terminal.fqn_getter import FQNGetter
+from bus_station.shared_terminal.fqn import resolve_fqn
 from tests.integration.integration_test_case import IntegrationTestCase
 
 
@@ -29,7 +29,6 @@ class TestRedisPassengerRecordRepository(IntegrationTestCase):
         cls.redis_host = cls.redis["host"]
         cls.redis_port = cls.redis["port"]
         cls.redis_client = Redis(host=cls.redis_host, port=cls.redis_port)
-        cls.fqn_getter = FQNGetter()
 
     def setUp(self) -> None:
         self.in_memory_repository = InMemoryPassengerRecordRepository()
@@ -42,9 +41,9 @@ class TestRedisPassengerRecordRepository(IntegrationTestCase):
         test_command_handler = CommandTestHandler()
         test_command_record = PassengerRecord(
             passenger_name=CommandTest.passenger_name(),
-            passenger_fqn=self.fqn_getter.get(CommandTest),
+            passenger_fqn=resolve_fqn(CommandTest),
             destination_name=CommandTestHandler.bus_stop_name(),
-            destination_fqn=self.fqn_getter.get(test_command_handler),
+            destination_fqn=resolve_fqn(test_command_handler),
             destination_contact="test_destination_contact",
         )
 
@@ -58,9 +57,9 @@ class TestRedisPassengerRecordRepository(IntegrationTestCase):
         test_command_handler = CommandTestHandler()
         test_command_record = PassengerRecord(
             passenger_name=CommandTest.passenger_name(),
-            passenger_fqn=self.fqn_getter.get(CommandTest),
+            passenger_fqn=resolve_fqn(CommandTest),
             destination_name=CommandTestHandler.bus_stop_name(),
-            destination_fqn=self.fqn_getter.get(test_command_handler),
+            destination_fqn=resolve_fqn(test_command_handler),
             destination_contact="test_destination_contact",
         )
         self.redis_repository.save(test_command_record)

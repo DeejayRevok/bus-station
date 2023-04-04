@@ -11,7 +11,6 @@ from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
 from bus_station.command_terminal.middleware.command_middleware_receiver import CommandMiddlewareReceiver
 from bus_station.command_terminal.registry.in_memory_command_registry import InMemoryCommandRegistry
-from bus_station.passengers.passenger_class_resolver import PassengerClassResolver
 from bus_station.passengers.passenger_record.in_memory_passenger_record_repository import (
     InMemoryPassengerRecordRepository,
 )
@@ -20,7 +19,6 @@ from bus_station.passengers.serialization.passenger_json_serializer import Passe
 from bus_station.shared_terminal.bus_stop_resolver.in_memory_bus_stop_resolver import InMemoryBusStopResolver
 from bus_station.shared_terminal.engine.runner.process_engine_runner import ProcessEngineRunner
 from bus_station.shared_terminal.engine.runner.self_process_engine_runner import SelfProcessEngineRunner
-from bus_station.shared_terminal.fqn_getter import FQNGetter
 from tests.integration.integration_test_case import IntegrationTestCase
 
 
@@ -42,14 +40,10 @@ class TestMemoryQueueCommandBus(IntegrationTestCase):
         passenger_serializer = PassengerJSONSerializer()
         passenger_deserializer = PassengerJSONDeserializer()
         in_memory_repository = InMemoryPassengerRecordRepository()
-        fqn_getter = FQNGetter()
-        command_handler_resolver = InMemoryBusStopResolver(fqn_getter=fqn_getter)
-        passenger_class_resolver = PassengerClassResolver()
+        command_handler_resolver = InMemoryBusStopResolver()
         in_memory_registry = InMemoryCommandRegistry(
             in_memory_repository=in_memory_repository,
             command_handler_resolver=command_handler_resolver,
-            fqn_getter=fqn_getter,
-            passenger_class_resolver=passenger_class_resolver,
         )
         self.command_queue = Queue()
         command_receiver = CommandMiddlewareReceiver()

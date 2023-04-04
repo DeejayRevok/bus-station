@@ -7,7 +7,6 @@ from time import sleep
 
 from redis import Redis
 
-from bus_station.passengers.passenger_class_resolver import PassengerClassResolver
 from bus_station.passengers.passenger_record.redis_passenger_record_repository import RedisPassengerRecordRepository
 from bus_station.passengers.serialization.passenger_json_deserializer import PassengerJSONDeserializer
 from bus_station.passengers.serialization.passenger_json_serializer import PassengerJSONSerializer
@@ -24,7 +23,6 @@ from bus_station.query_terminal.serialization.query_response_json_serializer imp
 from bus_station.shared_terminal.bus_stop_resolver.in_memory_bus_stop_resolver import InMemoryBusStopResolver
 from bus_station.shared_terminal.engine.runner.process_engine_runner import ProcessEngineRunner
 from bus_station.shared_terminal.engine.runner.self_process_engine_runner import SelfProcessEngineRunner
-from bus_station.shared_terminal.fqn_getter import FQNGetter
 from tests.integration.integration_test_case import IntegrationTestCase
 
 
@@ -53,14 +51,10 @@ class TestJsonRPCQueryBus(IntegrationTestCase):
         bus_host = "localhost"
         bus_port = 1234
         redis_repository = RedisPassengerRecordRepository(self.redis_client)
-        fqn_getter = FQNGetter()
-        query_handler_resolver = InMemoryBusStopResolver[QueryHandler](fqn_getter=fqn_getter)
-        passenger_class_resolver = PassengerClassResolver()
+        query_handler_resolver = InMemoryBusStopResolver[QueryHandler]()
         self.redis_registry = RedisQueryRegistry(
             redis_repository=redis_repository,
             query_handler_resolver=query_handler_resolver,
-            fqn_getter=fqn_getter,
-            passenger_class_resolver=passenger_class_resolver,
         )
         query_serializer = PassengerJSONSerializer()
         query_deserializer = PassengerJSONDeserializer()

@@ -13,7 +13,6 @@ from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
 from bus_station.command_terminal.middleware.command_middleware_receiver import CommandMiddlewareReceiver
 from bus_station.command_terminal.registry.redis_command_registry import RedisCommandRegistry
-from bus_station.passengers.passenger_class_resolver import PassengerClassResolver
 from bus_station.passengers.passenger_record.redis_passenger_record_repository import RedisPassengerRecordRepository
 from bus_station.passengers.serialization.passenger_json_deserializer import PassengerJSONDeserializer
 from bus_station.passengers.serialization.passenger_json_serializer import PassengerJSONSerializer
@@ -24,7 +23,6 @@ from bus_station.shared_terminal.bus_stop_resolver.in_memory_bus_stop_resolver i
 from bus_station.shared_terminal.engine.runner.process_engine_runner import ProcessEngineRunner
 from bus_station.shared_terminal.engine.runner.self_process_engine_runner import SelfProcessEngineRunner
 from bus_station.shared_terminal.factories.kombu_connection_factory import KombuConnectionFactory
-from bus_station.shared_terminal.fqn_getter import FQNGetter
 from tests.integration.integration_test_case import IntegrationTestCase
 
 
@@ -66,14 +64,10 @@ class TestRabbitKombuCommandBus(IntegrationTestCase):
         command_serializer = PassengerJSONSerializer()
         command_deserializer = PassengerJSONDeserializer()
         redis_repository = RedisPassengerRecordRepository(self.redis_client)
-        fqn_getter = FQNGetter()
-        command_handler_resolver = InMemoryBusStopResolver(fqn_getter=fqn_getter)
-        passenger_class_resolver = PassengerClassResolver()
+        command_handler_resolver = InMemoryBusStopResolver()
         self.redis_registry = RedisCommandRegistry(
             redis_repository=redis_repository,
             command_handler_resolver=command_handler_resolver,
-            fqn_getter=fqn_getter,
-            passenger_class_resolver=passenger_class_resolver,
         )
         command_receiver = CommandMiddlewareReceiver()
         self.test_command_handler = CommandTestHandler()

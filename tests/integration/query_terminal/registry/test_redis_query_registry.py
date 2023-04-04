@@ -2,13 +2,11 @@ from dataclasses import dataclass
 
 from redis import Redis
 
-from bus_station.passengers.passenger_class_resolver import PassengerClassResolver
 from bus_station.passengers.passenger_record.redis_passenger_record_repository import RedisPassengerRecordRepository
 from bus_station.query_terminal.query import Query
 from bus_station.query_terminal.query_handler import QueryHandler
 from bus_station.query_terminal.registry.redis_query_registry import RedisQueryRegistry
 from bus_station.shared_terminal.bus_stop_resolver.in_memory_bus_stop_resolver import InMemoryBusStopResolver
-from bus_station.shared_terminal.fqn_getter import FQNGetter
 from tests.integration.integration_test_case import IntegrationTestCase
 
 
@@ -31,14 +29,10 @@ class TestRedisQueryRegistry(IntegrationTestCase):
 
     def setUp(self) -> None:
         self.redis_repository = RedisPassengerRecordRepository(self.redis_client)
-        self.fqn_getter = FQNGetter()
-        self.query_handler_resolver = InMemoryBusStopResolver[QueryHandler](fqn_getter=self.fqn_getter)
-        self.passenger_class_resolver = PassengerClassResolver()
+        self.query_handler_resolver = InMemoryBusStopResolver[QueryHandler]()
         self.redis_registry = RedisQueryRegistry(
             redis_repository=self.redis_repository,
             query_handler_resolver=self.query_handler_resolver,
-            fqn_getter=self.fqn_getter,
-            passenger_class_resolver=self.passenger_class_resolver,
         )
 
     def tearDown(self) -> None:

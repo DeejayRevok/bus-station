@@ -3,35 +3,31 @@ from typing import Any, List, Optional, Set, Type
 from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
 from bus_station.event_terminal.registry.event_registry import EventRegistry
-from bus_station.passengers.passenger_class_resolver import PassengerClassResolver
 from bus_station.passengers.passenger_record.in_memory_passenger_record_repository import (
     InMemoryPassengerRecordRepository,
 )
 from bus_station.passengers.passenger_record.passenger_record import PassengerRecord
+from bus_station.passengers.passenger_resolvers import resolve_passenger_class_from_fqn
 from bus_station.shared_terminal.bus_stop_resolver.bus_stop_resolver import BusStopResolver
-from bus_station.shared_terminal.fqn_getter import FQNGetter
+from bus_station.shared_terminal.fqn import resolve_fqn
 
 
 class InMemoryEventRegistry(EventRegistry):
     def __init__(
         self,
         in_memory_repository: InMemoryPassengerRecordRepository,
-        fqn_getter: FQNGetter,
         event_consumer_resolver: BusStopResolver[EventConsumer],
-        passenger_class_resolver: PassengerClassResolver,
     ):
         self.__in_memory_repository = in_memory_repository
-        self.__fqn_getter = fqn_getter
         self.__event_consumer_resolver = event_consumer_resolver
-        self.__passenger_class_resolver = passenger_class_resolver
 
     def _register(self, event: Type[Event], consumer: EventConsumer, consumer_contact: Any) -> None:
         self.__in_memory_repository.save(
             PassengerRecord(
                 passenger_name=event.passenger_name(),
-                passenger_fqn=self.__fqn_getter.get(event),
+                passenger_fqn=resolve_fqn(event),
                 destination_name=consumer.bus_stop_name(),
-                destination_fqn=self.__fqn_getter.get(consumer),
+                destination_fqn=resolve_fqn(consumer),
                 destination_contact=consumer_contact,
             )
         )
@@ -85,7 +81,7 @@ class InMemoryEventRegistry(EventRegistry):
     def get_events_registered(self) -> Set[Type[Event]]:
         events_registered = set()
         for event_record in self.__in_memory_repository.all():
-            event = self.__passenger_class_resolver.resolve_from_fqn(event_record.passenger_fqn)
+            event = resolve_passenger_class_from_fqn(event_record.passenger_fqn)
             if event is None or not issubclass(event, Event):
                 continue
             events_registered.add(event)
