@@ -9,8 +9,8 @@ from bus_station.event_terminal.event_consumer import EventConsumer
 from bus_station.event_terminal.event_consumer_not_found import EventConsumerNotFound
 from bus_station.event_terminal.registry.remote_event_registry import RemoteEventRegistry
 from bus_station.passengers.passenger_kombu_consumer import PassengerKombuConsumer
+from bus_station.passengers.passenger_resolvers import resolve_passenger_class_from_bus_stop
 from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
-from bus_station.passengers.resolve_passenger_from_bus_stop import resolve_passenger_from_bus_stop
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 from bus_station.shared_terminal.engine.engine import Engine
 
@@ -45,7 +45,7 @@ class KombuEventBusEngine(Engine):
             broker_connection,
             event_consumer_queue,
             event_consumer,
-            resolve_passenger_from_bus_stop(event_consumer, "consume", "event", Event),
+            resolve_passenger_class_from_bus_stop(event_consumer, "consume", "event", Event),
             event_receiver,
             event_deserializer,
         )

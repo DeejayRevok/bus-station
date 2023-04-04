@@ -4,12 +4,12 @@ from typing import Any, Iterable, Optional, Type
 from bus_station.event_terminal.consumer_for_event_already_registered import ConsumerForEventAlreadyRegistered
 from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
-from bus_station.passengers.resolve_passenger_from_bus_stop import resolve_passenger_from_bus_stop
+from bus_station.passengers.passenger_resolvers import resolve_passenger_class_from_bus_stop
 
 
 class EventRegistry(metaclass=ABCMeta):
     def register(self, consumer: EventConsumer, consumer_contact: Any) -> None:
-        consumer_event = resolve_passenger_from_bus_stop(consumer, "consume", "event", Event)
+        consumer_event = resolve_passenger_class_from_bus_stop(consumer, "consume", "event", Event)
         existing_event_destination_contact = self.get_event_destination_contact(
             consumer_event.passenger_name(), consumer.bus_stop_name()
         )
