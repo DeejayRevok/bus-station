@@ -7,7 +7,7 @@ from bus_station.shared_terminal.bus_stop import BusStop
 P = TypeVar("P", bound=Passenger)
 
 
-def resolve_passenger_class_from_fqn(passenger_class_fqn: str) -> Optional[Type[P]]:
+def resolve_passenger_class_from_fqn(passenger_class_fqn: str) -> Optional[Type[Passenger]]:
     class_components = passenger_class_fqn.rsplit(".", 1)
     module_name = class_components[0]
     class_name = class_components[1]
