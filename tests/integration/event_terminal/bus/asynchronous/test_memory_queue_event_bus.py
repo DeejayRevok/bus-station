@@ -11,7 +11,6 @@ from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
 from bus_station.event_terminal.middleware.event_middleware_receiver import EventMiddlewareReceiver
 from bus_station.event_terminal.registry.in_memory_event_registry import InMemoryEventRegistry
-from bus_station.passengers.passenger_class_resolver import PassengerClassResolver
 from bus_station.passengers.passenger_record.in_memory_passenger_record_repository import (
     InMemoryPassengerRecordRepository,
 )
@@ -20,7 +19,6 @@ from bus_station.passengers.serialization.passenger_json_serializer import Passe
 from bus_station.shared_terminal.bus_stop_resolver.in_memory_bus_stop_resolver import InMemoryBusStopResolver
 from bus_station.shared_terminal.engine.runner.process_engine_runner import ProcessEngineRunner
 from bus_station.shared_terminal.engine.runner.self_process_engine_runner import SelfProcessEngineRunner
-from bus_station.shared_terminal.fqn_getter import FQNGetter
 from tests.integration.integration_test_case import IntegrationTestCase
 
 
@@ -50,14 +48,10 @@ class TestMemoryQueueEventBus(IntegrationTestCase):
         passenger_serializer = PassengerJSONSerializer()
         passenger_deserializer = PassengerJSONDeserializer()
         in_memory_repository = InMemoryPassengerRecordRepository()
-        fqn_getter = FQNGetter()
-        event_consumer_resolver = InMemoryBusStopResolver(fqn_getter=fqn_getter)
-        passenger_class_resolver = PassengerClassResolver()
+        event_consumer_resolver = InMemoryBusStopResolver()
         in_memory_registry = InMemoryEventRegistry(
             in_memory_repository=in_memory_repository,
             event_consumer_resolver=event_consumer_resolver,
-            fqn_getter=fqn_getter,
-            passenger_class_resolver=passenger_class_resolver,
         )
         self.event_queue1 = Queue()
         self.event_queue2 = Queue()

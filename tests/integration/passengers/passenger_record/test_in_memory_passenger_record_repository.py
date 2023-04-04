@@ -6,7 +6,7 @@ from bus_station.passengers.passenger_record.in_memory_passenger_record_reposito
     InMemoryPassengerRecordRepository,
 )
 from bus_station.passengers.passenger_record.passenger_record import PassengerRecord
-from bus_station.shared_terminal.fqn_getter import FQNGetter
+from bus_station.shared_terminal.fqn import resolve_fqn
 from tests.integration.integration_test_case import IntegrationTestCase
 
 
@@ -22,7 +22,6 @@ class CommandTestHandler(CommandHandler):
 
 class TestInMemoryPassengerRecordRepository(IntegrationTestCase):
     def setUp(self) -> None:
-        self.fqn_getter = FQNGetter()
         self.in_memory_repository = InMemoryPassengerRecordRepository()
 
     def tearDown(self) -> None:
@@ -33,9 +32,9 @@ class TestInMemoryPassengerRecordRepository(IntegrationTestCase):
         test_destination_contact = "test_destination_contact"
         test_command_record = PassengerRecord(
             passenger_name=CommandTest.passenger_name(),
-            passenger_fqn=self.fqn_getter.get(CommandTest),
+            passenger_fqn=resolve_fqn(CommandTest),
             destination_name=CommandTestHandler.bus_stop_name(),
-            destination_fqn=self.fqn_getter.get(test_command_handler),
+            destination_fqn=resolve_fqn(test_command_handler),
             destination_contact=test_destination_contact,
         )
 
@@ -50,9 +49,9 @@ class TestInMemoryPassengerRecordRepository(IntegrationTestCase):
         test_destination_contact = "test_destination_contact"
         test_command_record = PassengerRecord(
             passenger_name=CommandTest.passenger_name(),
-            passenger_fqn=self.fqn_getter.get(CommandTest),
+            passenger_fqn=resolve_fqn(CommandTest),
             destination_name=CommandTestHandler.bus_stop_name(),
-            destination_fqn=self.fqn_getter.get(test_command_handler),
+            destination_fqn=resolve_fqn(test_command_handler),
             destination_contact=test_destination_contact,
         )
         self.in_memory_repository.save(test_command_record)

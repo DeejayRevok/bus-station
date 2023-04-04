@@ -7,7 +7,7 @@ from pypendency.definition import Definition
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
 from bus_station.shared_terminal.bus_stop_resolver.pypendency_bus_stop_resolver import PypendencyBusStopResolver
-from bus_station.shared_terminal.fqn_getter import FQNGetter
+from bus_station.shared_terminal.fqn import resolve_fqn
 from tests.integration.integration_test_case import IntegrationTestCase
 
 
@@ -27,8 +27,7 @@ class CommandTestHandler(CommandHandler):
 class TestPypendencyBusStopResolver(IntegrationTestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        cls.fqn_getter = FQNGetter()
-        cls.command_handler_fqn = cls.fqn_getter.get(CommandTestHandler)
+        cls.command_handler_fqn = resolve_fqn(CommandTestHandler)
         cls.test_init_value = 324
         cls.pypendency_container = Container(
             [

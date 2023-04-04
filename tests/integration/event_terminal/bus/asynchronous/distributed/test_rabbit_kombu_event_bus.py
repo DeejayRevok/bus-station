@@ -13,7 +13,6 @@ from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
 from bus_station.event_terminal.middleware.event_middleware_receiver import EventMiddlewareReceiver
 from bus_station.event_terminal.registry.redis_event_registry import RedisEventRegistry
-from bus_station.passengers.passenger_class_resolver import PassengerClassResolver
 from bus_station.passengers.passenger_record.redis_passenger_record_repository import RedisPassengerRecordRepository
 from bus_station.passengers.serialization.passenger_json_deserializer import PassengerJSONDeserializer
 from bus_station.passengers.serialization.passenger_json_serializer import PassengerJSONSerializer
@@ -24,7 +23,6 @@ from bus_station.shared_terminal.bus_stop_resolver.in_memory_bus_stop_resolver i
 from bus_station.shared_terminal.engine.runner.process_engine_runner import ProcessEngineRunner
 from bus_station.shared_terminal.engine.runner.self_process_engine_runner import SelfProcessEngineRunner
 from bus_station.shared_terminal.factories.kombu_connection_factory import KombuConnectionFactory
-from bus_station.shared_terminal.fqn_getter import FQNGetter
 from tests.integration.integration_test_case import IntegrationTestCase
 
 
@@ -70,14 +68,10 @@ class TestRabbitKombuEventBus(IntegrationTestCase):
         event_serializer = PassengerJSONSerializer()
         event_deserializer = PassengerJSONDeserializer()
         redis_repository = RedisPassengerRecordRepository(self.redis_client)
-        fqn_getter = FQNGetter()
-        event_consumer_resolver = InMemoryBusStopResolver[EventConsumer](fqn_getter=fqn_getter)
-        passenger_class_resolver = PassengerClassResolver()
+        event_consumer_resolver = InMemoryBusStopResolver[EventConsumer]()
         self.redis_registry = RedisEventRegistry(
             redis_repository=redis_repository,
             event_consumer_resolver=event_consumer_resolver,
-            fqn_getter=fqn_getter,
-            passenger_class_resolver=passenger_class_resolver,
         )
         event_middleware_receiver = EventMiddlewareReceiver()
 

@@ -14,7 +14,7 @@ class TestJsonRPCCommandBusEngine(TestCase):
         self.server_mock = Mock(spec=JsonRPCServer)
         self.command_registry_mock = Mock(spec=RemoteCommandRegistry)
 
-    @patch("bus_station.command_terminal.bus_engine.json_rpc_command_bus_engine.resolve_passenger_from_bus_stop")
+    @patch("bus_station.command_terminal.bus_engine.json_rpc_command_bus_engine.resolve_passenger_class_from_bus_stop")
     def test_init_with_command_handler_found(self, passenger_resolver_mock):
         command_name = "test_command"
         command_type_mock = Mock(spec=Command)
@@ -39,7 +39,7 @@ class TestJsonRPCCommandBusEngine(TestCase):
         self.command_registry_mock.get_command_destination.assert_called_once_with(command_name)
         self.server_mock.register.assert_not_called()
 
-    @patch("bus_station.command_terminal.bus_engine.json_rpc_command_bus_engine.resolve_passenger_from_bus_stop")
+    @patch("bus_station.command_terminal.bus_engine.json_rpc_command_bus_engine.resolve_passenger_class_from_bus_stop")
     def test_start(self, _):
         engine = JsonRPCCommandBusEngine(self.server_mock, self.command_registry_mock, "test_command")
 
