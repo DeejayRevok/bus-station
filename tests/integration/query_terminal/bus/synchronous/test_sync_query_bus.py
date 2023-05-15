@@ -1,15 +1,13 @@
 from dataclasses import dataclass
 
-from bus_station.passengers.passenger_record.in_memory_passenger_record_repository import (
-    InMemoryPassengerRecordRepository,
-)
+from bus_station.bus_stop.resolvers.in_memory_bus_stop_resolver import InMemoryBusStopResolver
 from bus_station.query_terminal.bus.synchronous.sync_query_bus import SyncQueryBus
 from bus_station.query_terminal.middleware.query_middleware_receiver import QueryMiddlewareReceiver
 from bus_station.query_terminal.query import Query
 from bus_station.query_terminal.query_handler import QueryHandler
+from bus_station.query_terminal.query_handler_registry import QueryHandlerRegistry
 from bus_station.query_terminal.query_response import QueryResponse
-from bus_station.query_terminal.registry.in_memory_query_registry import InMemoryQueryRegistry
-from bus_station.shared_terminal.bus_stop_resolver.in_memory_bus_stop_resolver import InMemoryBusStopResolver
+from bus_station.shared_terminal.fqn import resolve_fqn
 from tests.integration.integration_test_case import IntegrationTestCase
 
 
@@ -29,23 +27,23 @@ class QueryTestHandler(QueryHandler):
 
 class TestSyncQueryBus(IntegrationTestCase):
     def setUp(self) -> None:
-        self.in_memory_repository = InMemoryPassengerRecordRepository()
-        self.query_handler_resolver = InMemoryBusStopResolver[QueryHandler]()
-        self.in_memory_registry = InMemoryQueryRegistry(
-            in_memory_repository=self.in_memory_repository,
-            query_handler_resolver=self.query_handler_resolver,
+        query_handler_resolver = InMemoryBusStopResolver[QueryHandler]()
+        self.test_query_handler = QueryTestHandler()
+        query_handler_registry = QueryHandlerRegistry(
+            bus_stop_resolver=query_handler_resolver,
         )
-        self.query_middleware_receiver = QueryMiddlewareReceiver()
-        self.sync_query_bus = SyncQueryBus(self.in_memory_registry, self.query_middleware_receiver)
+        query_middleware_receiver = QueryMiddlewareReceiver()
+
+        query_handler_resolver.add_bus_stop(self.test_query_handler)
+        query_handler_registry.register(resolve_fqn(self.test_query_handler))
+
+        self.sync_query_bus = SyncQueryBus(query_handler_registry, query_middleware_receiver)
 
     def test_transport_success(self):
         test_query_value = "test_query_value"
         test_query = QueryTest(test_value=test_query_value)
-        test_query_handler = QueryTestHandler()
-        self.in_memory_registry.register(test_query_handler, test_query_handler)
-        self.query_handler_resolver.add_bus_stop(test_query_handler)
 
         test_query_response = self.sync_query_bus.transport(test_query)
 
-        self.assertEqual(1, test_query_handler.call_count)
+        self.assertEqual(1, self.test_query_handler.call_count)
         self.assertEqual(test_query_value, test_query_response.data)
