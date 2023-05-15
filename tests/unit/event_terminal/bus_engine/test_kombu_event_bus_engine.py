@@ -5,10 +5,10 @@ from kombu import Connection, Exchange, Queue
 from kombu.transport.virtual import Channel
 
 from bus_station.event_terminal.bus_engine.kombu_event_bus_engine import KombuEventBusEngine
-from bus_station.event_terminal.contact_not_found_for_consumer import ContactNotFoundForConsumer
 from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
-from bus_station.event_terminal.registry.event_registry import EventRegistry
+from bus_station.event_terminal.event_consumer_not_found import EventConsumerNotFound
+from bus_station.event_terminal.event_consumer_registry import EventConsumerRegistry
 from bus_station.passengers.passenger_kombu_consumer import PassengerKombuConsumer
 from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
@@ -19,7 +19,7 @@ class TestKombuEventBusEngine(TestCase):
         self.broker_connection_mock = Mock(spec=Connection)
         self.channel_mock = Mock(spec=Channel)
         self.broker_connection_mock.channel.return_value = self.channel_mock
-        self.event_registry_mock = Mock(spec=EventRegistry)
+        self.event_consumer_registry_mock = Mock(spec=EventConsumerRegistry)
         self.event_receiver_mock = Mock(spec=PassengerReceiver)
         self.event_deserializer_mock = Mock(spec=PassengerDeserializer)
         self.event_consumer_mock = Mock(spec=EventConsumer)
@@ -28,23 +28,20 @@ class TestKombuEventBusEngine(TestCase):
     @patch("bus_station.event_terminal.bus_engine.kombu_event_bus_engine.Queue")
     @patch("bus_station.event_terminal.bus_engine.kombu_event_bus_engine.Exchange")
     @patch("bus_station.event_terminal.bus_engine.kombu_event_bus_engine.PassengerKombuConsumer")
-    def test_init_contact_not_found(self, consumer_builder_mock, exchange_builder_mock, queue_builder_mock):
-        self.event_registry_mock.get_event_destination_contact.return_value = None
+    def test_init_event_consumer_not_found(self, consumer_builder_mock, exchange_builder_mock, queue_builder_mock):
+        self.event_consumer_registry_mock.get_bus_stop_by_name.return_value = None
 
-        with self.assertRaises(ContactNotFoundForConsumer) as cnffe:
+        with self.assertRaises(EventConsumerNotFound) as context:
             KombuEventBusEngine(
                 self.broker_connection_mock,
-                self.event_registry_mock,
                 self.event_receiver_mock,
+                self.event_consumer_registry_mock,
                 self.event_deserializer_mock,
-                "test_event",
                 "test_event_consumer",
             )
 
-        self.assertEqual("test_event_consumer", cnffe.exception.event_consumer_name)
-        self.event_registry_mock.get_event_destination_contact.assert_called_once_with(
-            "test_event", "test_event_consumer"
-        )
+        self.assertEqual("test_event_consumer", context.exception.event_consumer_name)
+        self.event_consumer_registry_mock.get_bus_stop_by_name.assert_called_once_with("test_event_consumer")
         consumer_builder_mock.assert_not_called()
         exchange_builder_mock.assert_not_called()
         queue_builder_mock.assert_not_called()
@@ -60,18 +57,15 @@ class TestKombuEventBusEngine(TestCase):
         queue_builder_mock.return_value = test_queue
         test_exchange = Mock(spec=Exchange)
         exchange_builder_mock.return_value = test_exchange
-        test_queue_name = "test_queue"
-        self.event_registry_mock.get_event_destination_contact.return_value = test_queue_name
-        self.event_registry_mock.get_event_destination.return_value = self.event_consumer_mock
+        self.event_consumer_registry_mock.get_bus_stop_by_name.return_value = self.event_consumer_mock
         test_event = Mock(spec=Event)
         passenger_resolver_mock.return_value = test_event
 
         KombuEventBusEngine(
             self.broker_connection_mock,
-            self.event_registry_mock,
             self.event_receiver_mock,
+            self.event_consumer_registry_mock,
             self.event_deserializer_mock,
-            "test_event",
             "test_event_consumer",
         )
 
@@ -100,10 +94,9 @@ class TestKombuEventBusEngine(TestCase):
         consumer_builder_mock.return_value = test_kombu_consumer
         engine = KombuEventBusEngine(
             self.broker_connection_mock,
-            self.event_registry_mock,
             self.event_receiver_mock,
+            self.event_consumer_registry_mock,
             self.event_deserializer_mock,
-            "test_event",
             "test_event_consumer",
         )
 
@@ -120,10 +113,9 @@ class TestKombuEventBusEngine(TestCase):
         consumer_builder_mock.return_value = test_kombu_consumer
         engine = KombuEventBusEngine(
             self.broker_connection_mock,
-            self.event_registry_mock,
             self.event_receiver_mock,
+            self.event_consumer_registry_mock,
             self.event_deserializer_mock,
-            "test_event",
             "test_event_consumer",
         )
 
