@@ -8,10 +8,10 @@ from kombu import Message, Queue
 from kombu.mixins import ConsumerMixin
 from kombu.transport.base import StdChannel
 
+from bus_station.bus_stop.bus_stop import BusStop
 from bus_station.passengers.passenger import Passenger
 from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
-from bus_station.shared_terminal.bus_stop import BusStop
 
 
 class PassengerKombuConsumer(ConsumerMixin):

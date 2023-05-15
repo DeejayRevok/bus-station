@@ -1,8 +1,8 @@
 from abc import abstractmethod
 from typing import Any, Generic, Optional, TypeVar
 
+from bus_station.bus_stop.bus_stop import BusStop
 from bus_station.passengers.passenger import Passenger
-from bus_station.shared_terminal.bus_stop import BusStop
 from bus_station.shared_terminal.context import set_context_root_passenger_id
 
 S = TypeVar("S", bound=BusStop)

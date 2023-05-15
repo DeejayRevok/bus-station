@@ -3,8 +3,8 @@ from dataclasses import asdict
 from datetime import datetime
 from typing import Any
 
+from bus_station.bus_stop.bus_stop import BusStop
 from bus_station.passengers.passenger import Passenger
-from bus_station.shared_terminal.bus_stop import BusStop
 from bus_station.tracking_terminal.models.passenger_model_tracking_map import PassengerModelTrackingMap
 from bus_station.tracking_terminal.models.passenger_tracking import PassengerTracking
 
