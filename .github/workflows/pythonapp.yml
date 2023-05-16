@@ -10,9 +10,9 @@ jobs:
       - name: Setup environment
         run: docker-compose up -d
       - name: Check imports
-        run: docker-compose run bus-station poetry run tox -e isort -- --check-only
+        run: docker-compose run bus-station poetry run tox -e isort -- -- --check-only
       - name: Check formatting
-        run: docker-compose run bus-station poetry run tox -e black -- --check
+        run: docker-compose run bus-station poetry run tox -e black -- -- --check
       - name: Check style
         run: docker-compose run bus-station poetry run tox -e flake8
       - name: Check typing
