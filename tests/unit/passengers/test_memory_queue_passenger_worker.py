@@ -2,11 +2,11 @@ from multiprocessing import Queue
 from unittest import TestCase
 from unittest.mock import MagicMock, Mock, call
 
+from bus_station.bus_stop.bus_stop import BusStop
 from bus_station.passengers.memory_queue_passenger_worker import MemoryQueuePassengerWorker
 from bus_station.passengers.passenger import Passenger
 from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
-from bus_station.shared_terminal.bus_stop import BusStop
 
 
 class TestMemoryQueuePassengerWorker(TestCase):

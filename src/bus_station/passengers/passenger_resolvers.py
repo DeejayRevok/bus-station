@@ -1,19 +1,9 @@
-from importlib import import_module
-from typing import Optional, Type, TypeVar, get_type_hints
+from typing import Type, TypeVar, get_type_hints
 
+from bus_station.bus_stop.bus_stop import BusStop
 from bus_station.passengers.passenger import Passenger
-from bus_station.shared_terminal.bus_stop import BusStop
 
 P = TypeVar("P", bound=Passenger)
-
-
-def resolve_passenger_class_from_fqn(passenger_class_fqn: str) -> Optional[Type[Passenger]]:
-    class_components = passenger_class_fqn.rsplit(".", 1)
-    module_name = class_components[0]
-    class_name = class_components[1]
-
-    module = import_module(module_name)
-    return getattr(module, class_name)
 
 
 def resolve_passenger_class_from_bus_stop(

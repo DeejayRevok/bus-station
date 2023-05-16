@@ -7,19 +7,24 @@ from time import sleep
 
 from redis import Redis
 
+from bus_station.bus_stop.environment import get_bus_stop_address_env_variable
+from bus_station.bus_stop.registration.address.redis_bus_stop_address_registry import RedisBusStopAddressRegistry
+from bus_station.bus_stop.registration.supervisor.bus_stop_address_registration_supervisor import (
+    BusStopAddressRegistrationSupervisor,
+)
+from bus_station.bus_stop.resolvers.in_memory_bus_stop_resolver import InMemoryBusStopResolver
 from bus_station.command_terminal.bus.synchronous.distributed.json_rpc_command_bus import JsonRPCCommandBus
 from bus_station.command_terminal.bus_engine.json_rpc_command_bus_engine import JsonRPCCommandBusEngine
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
+from bus_station.command_terminal.command_handler_registry import CommandHandlerRegistry
 from bus_station.command_terminal.json_rpc_command_server import JsonRPCCommandServer
 from bus_station.command_terminal.middleware.command_middleware_receiver import CommandMiddlewareReceiver
-from bus_station.command_terminal.registry.redis_command_registry import RedisCommandRegistry
-from bus_station.passengers.passenger_record.redis_passenger_record_repository import RedisPassengerRecordRepository
 from bus_station.passengers.serialization.passenger_json_deserializer import PassengerJSONDeserializer
 from bus_station.passengers.serialization.passenger_json_serializer import PassengerJSONSerializer
-from bus_station.shared_terminal.bus_stop_resolver.in_memory_bus_stop_resolver import InMemoryBusStopResolver
 from bus_station.shared_terminal.engine.runner.process_engine_runner import ProcessEngineRunner
 from bus_station.shared_terminal.engine.runner.self_process_engine_runner import SelfProcessEngineRunner
+from bus_station.shared_terminal.fqn import resolve_fqn
 from tests.integration.integration_test_case import IntegrationTestCase
 
 
@@ -39,33 +44,45 @@ class CommandTestHandler(CommandHandler):
 class TestJsonRPCCommandBus(IntegrationTestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        cls.redis_host = cls.redis["host"]
-        cls.redis_port = cls.redis["port"]
-        cls.redis_client = Redis(host=cls.redis_host, port=cls.redis_port)
+        redis_host = cls.redis["host"]
+        redis_port = cls.redis["port"]
+        cls.command_handler_fqn = resolve_fqn(CommandTestHandler)
+        cls.bus_host = "localhost"
+        cls.bus_port = 1234
+        os.environ[get_bus_stop_address_env_variable(cls.command_handler_fqn)] = f"http://{cls.bus_host}:{cls.bus_port}"
+
+        redis_client = Redis(host=redis_host, port=redis_port)
+        cls.redis_address_registry = RedisBusStopAddressRegistry(redis_client)
+        cls.command_handler_resolver = InMemoryBusStopResolver()
+        cls.command_serializer = PassengerJSONSerializer()
+        cls.command_deserializer = PassengerJSONDeserializer()
+        cls.command_receiver = CommandMiddlewareReceiver()
+        cls.json_rpc_server = JsonRPCCommandServer(
+            cls.bus_host, cls.bus_port, cls.command_deserializer, cls.command_receiver
+        )
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        del os.environ[get_bus_stop_address_env_variable(cls.command_handler_fqn)]
 
     def setUp(self) -> None:
-        redis_repository = RedisPassengerRecordRepository(self.redis_client)
-        command_handler_resolver = InMemoryBusStopResolver()
-        self.redis_registry = RedisCommandRegistry(
-            redis_repository=redis_repository,
-            command_handler_resolver=command_handler_resolver,
+        self.command_handler_registry = CommandHandlerRegistry(
+            bus_stop_resolver=self.command_handler_resolver,
+            registration_supervisors=[BusStopAddressRegistrationSupervisor(self.redis_address_registry)],
         )
-        command_serializer = PassengerJSONSerializer()
-        command_deserializer = PassengerJSONDeserializer()
-        bus_host = "localhost"
-        bus_port = 1234
-        command_receiver = CommandMiddlewareReceiver()
-        json_rpc_server = JsonRPCCommandServer(bus_host, bus_port, command_deserializer, command_receiver)
         self.test_command_handler = CommandTestHandler()
-        self.redis_registry.register(self.test_command_handler, f"http://{bus_host}:{bus_port}")
-        command_handler_resolver.add_bus_stop(self.test_command_handler)
+        self.command_handler_resolver.add_bus_stop(self.test_command_handler)
+        self.command_handler_registry.register(self.command_handler_fqn)
+
         self.json_rpc_command_bus_engine = JsonRPCCommandBusEngine(
-            server=json_rpc_server, command_registry=self.redis_registry, command_name=CommandTest.passenger_name()
+            server=self.json_rpc_server,
+            command_handler_registry=self.command_handler_registry,
+            command_handler_name=self.test_command_handler.bus_stop_name(),
         )
-        self.json_rpc_command_bus = JsonRPCCommandBus(command_serializer, self.redis_registry)
+        self.json_rpc_command_bus = JsonRPCCommandBus(self.command_serializer, self.redis_address_registry)
 
     def tearDown(self) -> None:
-        self.redis_registry.unregister(CommandTest.passenger_name())
+        self.command_handler_registry.unregister(self.command_handler_fqn)
 
     def test_process_engine_transport_success(self):
         test_command = CommandTest()

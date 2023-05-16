@@ -2,23 +2,21 @@ import os
 import signal
 from ctypes import c_int
 from dataclasses import dataclass
-from multiprocessing import Process, Queue, Value
+from multiprocessing import Process, Value
 from time import sleep
 
+from bus_station.bus_stop.resolvers.in_memory_bus_stop_resolver import InMemoryBusStopResolver
 from bus_station.event_terminal.bus.asynchronous.memory_queue_event_bus import MemoryQueueEventBus
 from bus_station.event_terminal.bus_engine.memory_queue_event_bus_engine import MemoryQueueEventBusEngine
 from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
+from bus_station.event_terminal.event_consumer_registry import EventConsumerRegistry
 from bus_station.event_terminal.middleware.event_middleware_receiver import EventMiddlewareReceiver
-from bus_station.event_terminal.registry.in_memory_event_registry import InMemoryEventRegistry
-from bus_station.passengers.passenger_record.in_memory_passenger_record_repository import (
-    InMemoryPassengerRecordRepository,
-)
 from bus_station.passengers.serialization.passenger_json_deserializer import PassengerJSONDeserializer
 from bus_station.passengers.serialization.passenger_json_serializer import PassengerJSONSerializer
-from bus_station.shared_terminal.bus_stop_resolver.in_memory_bus_stop_resolver import InMemoryBusStopResolver
 from bus_station.shared_terminal.engine.runner.process_engine_runner import ProcessEngineRunner
 from bus_station.shared_terminal.engine.runner.self_process_engine_runner import SelfProcessEngineRunner
+from bus_station.shared_terminal.fqn import resolve_fqn
 from tests.integration.integration_test_case import IntegrationTestCase
 
 
@@ -44,47 +42,42 @@ class EventTestConsumer2(EventConsumer):
 
 
 class TestMemoryQueueEventBus(IntegrationTestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.event_serializer = PassengerJSONSerializer()
+        cls.event_deserializer = PassengerJSONDeserializer()
+        cls.event_consumer_1_fqn = resolve_fqn(EventTestConsumer1)
+        cls.event_consumer_2_fqn = resolve_fqn(EventTestConsumer2)
+        cls.event_receiver = EventMiddlewareReceiver()
+
     def setUp(self) -> None:
-        passenger_serializer = PassengerJSONSerializer()
-        passenger_deserializer = PassengerJSONDeserializer()
-        in_memory_repository = InMemoryPassengerRecordRepository()
         event_consumer_resolver = InMemoryBusStopResolver()
-        in_memory_registry = InMemoryEventRegistry(
-            in_memory_repository=in_memory_repository,
-            event_consumer_resolver=event_consumer_resolver,
-        )
-        self.event_queue1 = Queue()
-        self.event_queue2 = Queue()
+        event_consumer_registry = EventConsumerRegistry(bus_stop_resolver=event_consumer_resolver)
         event_middleware_receiver = EventMiddlewareReceiver()
         self.test_event_consumer1 = EventTestConsumer1()
         self.test_event_consumer2 = EventTestConsumer2()
-        in_memory_registry.register(self.test_event_consumer1, self.event_queue1)
-        in_memory_registry.register(self.test_event_consumer2, self.event_queue2)
+
         event_consumer_resolver.add_bus_stop(self.test_event_consumer1)
         event_consumer_resolver.add_bus_stop(self.test_event_consumer2)
+        event_consumer_registry.register(self.event_consumer_1_fqn)
+        event_consumer_registry.register(self.event_consumer_2_fqn)
 
         self.memory_queue_event_bus = MemoryQueueEventBus(
-            passenger_serializer,
-            in_memory_registry,
+            self.event_serializer,
+            event_consumer_registry,
         )
         self.memory_queue_event_bus_engine1 = MemoryQueueEventBusEngine(
-            in_memory_registry,
+            event_consumer_registry,
             event_middleware_receiver,
-            passenger_deserializer,
-            EventTest.passenger_name(),
+            self.event_deserializer,
             self.test_event_consumer1.bus_stop_name(),
         )
         self.memory_queue_event_bus_engine2 = MemoryQueueEventBusEngine(
-            in_memory_registry,
+            event_consumer_registry,
             event_middleware_receiver,
-            passenger_deserializer,
-            EventTest.passenger_name(),
+            self.event_deserializer,
             self.test_event_consumer2.bus_stop_name(),
         )
-
-    def tearDown(self) -> None:
-        self.event_queue1.close()
-        self.event_queue2.close()
 
     def test_process_transport_success(self):
         test_event = EventTest()

@@ -3,11 +3,10 @@ from typing import ClassVar
 from kombu import Connection, Exchange, Queue
 from kombu.transport.base import StdChannel
 
-from bus_station.event_terminal.contact_not_found_for_consumer import ContactNotFoundForConsumer
 from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
 from bus_station.event_terminal.event_consumer_not_found import EventConsumerNotFound
-from bus_station.event_terminal.registry.remote_event_registry import RemoteEventRegistry
+from bus_station.event_terminal.event_consumer_registry import EventConsumerRegistry
 from bus_station.passengers.passenger_kombu_consumer import PassengerKombuConsumer
 from bus_station.passengers.passenger_resolvers import resolve_passenger_class_from_bus_stop
 from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
@@ -21,31 +20,28 @@ class KombuEventBusEngine(Engine):
     def __init__(
         self,
         broker_connection: Connection,
-        event_registry: RemoteEventRegistry,
         event_receiver: PassengerReceiver[Event, EventConsumer],
+        event_consumer_registry: EventConsumerRegistry,
         event_deserializer: PassengerDeserializer,
-        event_name: str,
         event_consumer_name: str,
     ):
-        super().__init__()
-        event_exchange_name = event_registry.get_event_destination_contact(event_name, event_consumer_name)
-        if event_exchange_name is None:
-            raise ContactNotFoundForConsumer(event_consumer_name)
-        event_consumer = event_registry.get_event_destination(event_name, event_consumer_name)
+        event_consumer = event_consumer_registry.get_bus_stop_by_name(event_consumer_name)
         if event_consumer is None:
             raise EventConsumerNotFound(event_consumer_name)
+
+        event = resolve_passenger_class_from_bus_stop(event_consumer, "consume", "event", Event)
 
         channel = broker_connection.channel()
         self.__create_dead_letter_exchange(channel)
 
-        event_exchange = self.__create_event_consumer_exchange(event_exchange_name, channel)
+        event_exchange = self.__create_event_consumer_exchange(event.passenger_name(), channel)
         event_consumer_queue = self.__create_event_consumer_queue(event_consumer, event_exchange, channel)
 
         self.__event_consumer_consumer = PassengerKombuConsumer(
             broker_connection,
             event_consumer_queue,
             event_consumer,
-            resolve_passenger_class_from_bus_stop(event_consumer, "consume", "event", Event),
+            event,
             event_receiver,
             event_deserializer,
         )

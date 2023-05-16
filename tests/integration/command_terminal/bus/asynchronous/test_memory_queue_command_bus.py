@@ -2,23 +2,21 @@ import os
 import signal
 from ctypes import c_int
 from dataclasses import dataclass
-from multiprocessing import Process, Queue, Value
+from multiprocessing import Process, Value
 from time import sleep
 
+from bus_station.bus_stop.resolvers.in_memory_bus_stop_resolver import InMemoryBusStopResolver
 from bus_station.command_terminal.bus.asynchronous.memory_queue_command_bus import MemoryQueueCommandBus
 from bus_station.command_terminal.bus_engine.memory_queue_command_bus_engine import MemoryQueueCommandBusEngine
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
+from bus_station.command_terminal.command_handler_registry import CommandHandlerRegistry
 from bus_station.command_terminal.middleware.command_middleware_receiver import CommandMiddlewareReceiver
-from bus_station.command_terminal.registry.in_memory_command_registry import InMemoryCommandRegistry
-from bus_station.passengers.passenger_record.in_memory_passenger_record_repository import (
-    InMemoryPassengerRecordRepository,
-)
 from bus_station.passengers.serialization.passenger_json_deserializer import PassengerJSONDeserializer
 from bus_station.passengers.serialization.passenger_json_serializer import PassengerJSONSerializer
-from bus_station.shared_terminal.bus_stop_resolver.in_memory_bus_stop_resolver import InMemoryBusStopResolver
 from bus_station.shared_terminal.engine.runner.process_engine_runner import ProcessEngineRunner
 from bus_station.shared_terminal.engine.runner.self_process_engine_runner import SelfProcessEngineRunner
+from bus_station.shared_terminal.fqn import resolve_fqn
 from tests.integration.integration_test_case import IntegrationTestCase
 
 
@@ -36,27 +34,26 @@ class CommandTestHandler(CommandHandler):
 
 
 class TestMemoryQueueCommandBus(IntegrationTestCase):
-    def setUp(self) -> None:
-        passenger_serializer = PassengerJSONSerializer()
-        passenger_deserializer = PassengerJSONDeserializer()
-        in_memory_repository = InMemoryPassengerRecordRepository()
-        command_handler_resolver = InMemoryBusStopResolver()
-        in_memory_registry = InMemoryCommandRegistry(
-            in_memory_repository=in_memory_repository,
-            command_handler_resolver=command_handler_resolver,
-        )
-        self.command_queue = Queue()
-        command_receiver = CommandMiddlewareReceiver()
-        self.test_command_handler = CommandTestHandler()
-        in_memory_registry.register(self.test_command_handler, self.command_queue)
-        command_handler_resolver.add_bus_stop(self.test_command_handler)
-        self.memory_queue_bus_engine = MemoryQueueCommandBusEngine(
-            in_memory_registry, command_receiver, passenger_deserializer, CommandTest.passenger_name()
-        )
-        self.memory_queue_command_bus = MemoryQueueCommandBus(passenger_serializer, in_memory_registry)
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.passenger_serializer = PassengerJSONSerializer()
+        cls.passenger_deserializer = PassengerJSONDeserializer()
+        cls.command_handler_resolver = InMemoryBusStopResolver()
+        cls.command_receiver = CommandMiddlewareReceiver()
+        cls.command_handler_fqn = resolve_fqn(CommandTestHandler)
 
-    def tearDown(self) -> None:
-        self.command_queue.close()
+    def setUp(self) -> None:
+        self.command_handler_registry = CommandHandlerRegistry(bus_stop_resolver=self.command_handler_resolver)
+        self.test_command_handler = CommandTestHandler()
+        self.command_handler_resolver.add_bus_stop(self.test_command_handler)
+        self.command_handler_registry.register(self.command_handler_fqn)
+        self.memory_queue_bus_engine = MemoryQueueCommandBusEngine(
+            self.command_handler_registry,
+            self.command_receiver,
+            self.passenger_deserializer,
+            self.test_command_handler.bus_stop_name(),
+        )
+        self.memory_queue_command_bus = MemoryQueueCommandBus(self.passenger_serializer)
 
     def test_process_transport_success(self):
         test_command = CommandTest()

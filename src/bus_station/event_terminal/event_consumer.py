@@ -1,7 +1,7 @@
 from abc import abstractmethod
 
+from bus_station.bus_stop.bus_stop import BusStop
 from bus_station.event_terminal.event import Event
-from bus_station.shared_terminal.bus_stop import BusStop
 
 
 class EventConsumer(BusStop):

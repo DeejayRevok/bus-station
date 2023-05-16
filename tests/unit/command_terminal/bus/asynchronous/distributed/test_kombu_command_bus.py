@@ -6,8 +6,6 @@ from kombu.transport.virtual import Channel
 
 from bus_station.command_terminal.bus.asynchronous.distributed.kombu_command_bus import KombuCommandBus
 from bus_station.command_terminal.command import Command
-from bus_station.command_terminal.handler_not_found_for_command import HandlerNotFoundForCommand
-from bus_station.command_terminal.registry.remote_command_registry import RemoteCommandRegistry
 from bus_station.passengers.serialization.passenger_serializer import PassengerSerializer
 
 
@@ -20,26 +18,10 @@ class TestKombuCommandBus(TestCase):
         self.channel_mock = Mock(spec=Channel)
         self.connection_mock.channel.return_value = self.channel_mock
         self.command_serializer_mock = Mock(spec=PassengerSerializer)
-        self.command_registry_mock = Mock(spec=RemoteCommandRegistry)
         self.kombu_command_bus = KombuCommandBus(
             self.connection_mock,
             self.command_serializer_mock,
-            self.command_registry_mock,
         )
-
-    @patch("bus_station.shared_terminal.bus.get_context_root_passenger_id")
-    def test_transport_not_registered(self, get_context_root_passenger_id_mock):
-        get_context_root_passenger_id_mock.return_value = "test_root_passenger_id"
-        test_command = Mock(spec=Command, **{"passenger_name.return_value": "test_command"})
-        self.command_registry_mock.get_command_destination_contact.return_value = None
-
-        with self.assertRaises(HandlerNotFoundForCommand) as hnffc:
-            self.kombu_command_bus.transport(test_command)
-
-        self.assertEqual(test_command.passenger_name(), hnffc.exception.command_name)
-        self.command_serializer_mock.serialize.assert_not_called()
-        self.command_registry_mock.get_command_destination_contact.assert_called_once_with("test_command")
-        test_command.set_root_passenger_id.assert_called_once_with("test_root_passenger_id")
 
     @patch("bus_station.shared_terminal.bus.get_context_root_passenger_id")
     def test_transport_success(self, get_context_root_passenger_id_mock):
@@ -47,8 +29,6 @@ class TestKombuCommandBus(TestCase):
         test_command = Mock(spec=Command, **{"passenger_name.return_value": "test_command"})
         test_command_serialized = "test_command_serialized"
         self.command_serializer_mock.serialize.return_value = test_command_serialized
-        self.command_registry_mock.get_commands_registered.return_value = [test_command.__class__]
-        self.command_registry_mock.get_command_destination_contact.return_value = "test_command"
 
         self.kombu_command_bus.transport(test_command)
 

@@ -4,10 +4,10 @@ from typing import Callable, ClassVar, Dict, Generic, Optional, Type, TypeVar
 
 from rpyc import Service, ThreadedServer
 
+from bus_station.bus_stop.bus_stop import BusStop
 from bus_station.passengers.passenger import Passenger
 from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
-from bus_station.shared_terminal.bus_stop import BusStop
 
 P = TypeVar("P", bound=Passenger)
 S = TypeVar("S", bound=BusStop)

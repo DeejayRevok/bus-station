@@ -1,27 +1,29 @@
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
-from bus_station.command_terminal.handler_not_found_for_command import HandlerNotFoundForCommand
-from bus_station.command_terminal.registry.command_registry import CommandRegistry
+from bus_station.command_terminal.command_handler_not_found import CommandHandlerNotFound
+from bus_station.command_terminal.command_handler_registry import CommandHandlerRegistry
 from bus_station.passengers.memory_queue_passenger_worker import MemoryQueuePassengerWorker
+from bus_station.passengers.passenger_resolvers import resolve_passenger_class_from_bus_stop
 from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 from bus_station.shared_terminal.engine.engine import Engine
+from bus_station.shared_terminal.factories.memory_queue_factory import memory_queue_factory
 
 
 class MemoryQueueCommandBusEngine(Engine):
     def __init__(
         self,
-        command_registry: CommandRegistry,
+        command_handler_registry: CommandHandlerRegistry,
         command_receiver: PassengerReceiver[Command, CommandHandler],
         command_deserializer: PassengerDeserializer,
-        command_name: str,
+        command_handler_name: str,
     ):
-        super().__init__()
-        command_handler = command_registry.get_command_destination(command_name)
+        command_handler = command_handler_registry.get_bus_stop_by_name(command_handler_name)
         if command_handler is None:
-            raise HandlerNotFoundForCommand(command_name)
+            raise CommandHandlerNotFound(command_handler_name)
 
-        command_queue = command_registry.get_command_destination_contact(command_name)
+        command = resolve_passenger_class_from_bus_stop(command_handler, "handle", "command", Command)
+        command_queue = memory_queue_factory.queue_with_id(command.passenger_name())
         self.__command_worker = MemoryQueuePassengerWorker(
             command_queue, command_handler, command_receiver, command_deserializer
         )
