@@ -11,7 +11,7 @@ class BusStopAddressRegistrationSupervisor(BusStopRegistrationSupervisor):
         self.__address_registry = address_registry
 
     def on_register(self, bus_stop_id: str) -> None:
-        bus_stop_address = self.__address_registry.get_bus_stop_address(bus_stop_id)
+        bus_stop_address = self.__get_bus_stop_address(bus_stop_id)
         if bus_stop_address is None:
             raise AddressNotFoundForBusStop(bus_stop_id)
         self.__address_registry.register(bus_stop_id, bus_stop_address)
