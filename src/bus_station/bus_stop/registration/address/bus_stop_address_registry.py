@@ -1,8 +1,8 @@
-from abc import ABC, abstractmethod
+from abc import ABCMeta, abstractmethod
 from typing import Optional
 
 
-class BusStopAddressRegistry(metaclass=ABC):
+class BusStopAddressRegistry(metaclass=ABCMeta):
     @abstractmethod
     def register(self, bus_stop_id: str, address: str) -> None:
         pass
