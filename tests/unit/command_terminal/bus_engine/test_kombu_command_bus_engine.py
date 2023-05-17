@@ -7,8 +7,8 @@ from kombu.transport.virtual import Channel
 from bus_station.command_terminal.bus_engine.kombu_command_bus_engine import KombuCommandBusEngine
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
-from bus_station.command_terminal.handler_not_found_for_command import HandlerNotFoundForCommand
-from bus_station.command_terminal.registry.command_registry import CommandRegistry
+from bus_station.command_terminal.command_handler_not_found import CommandHandlerNotFound
+from bus_station.command_terminal.command_handler_registry import CommandHandlerRegistry
 from bus_station.passengers.passenger_kombu_consumer import PassengerKombuConsumer
 from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
@@ -19,7 +19,7 @@ class TestKombuCommandBusEngine(TestCase):
         self.broker_connection_mock = Mock(spec=Connection)
         self.channel_mock = Mock(spec=Channel)
         self.broker_connection_mock.channel.return_value = self.channel_mock
-        self.command_registry_mock = Mock(spec=CommandRegistry)
+        self.command_handler_registry_mock = Mock(spec=CommandHandlerRegistry)
         self.command_receiver_mock = Mock(spec=PassengerReceiver)
         self.command_deserializer_mock = Mock(spec=PassengerDeserializer)
         self.command_type_mock = Mock(spec=Command)
@@ -28,24 +28,24 @@ class TestKombuCommandBusEngine(TestCase):
     @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.Exchange")
     @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.PassengerKombuConsumer")
     def test_init_handler_not_found(self, consumer_builder_mock, exchange_builder_mock, queue_builder_mock):
-        self.command_registry_mock.get_command_destination.return_value = None
+        self.command_handler_registry_mock.get_bus_stop_by_name.return_value = None
 
-        with self.assertRaises(HandlerNotFoundForCommand) as hnffc:
+        with self.assertRaises(CommandHandlerNotFound) as context:
             KombuCommandBusEngine(
                 self.broker_connection_mock,
-                self.command_registry_mock,
+                self.command_handler_registry_mock,
                 self.command_receiver_mock,
                 self.command_deserializer_mock,
-                "test_command",
+                "test_command_handler",
             )
 
-        self.assertEqual("test_command", hnffc.exception.command_name)
-        self.command_registry_mock.get_command_destination.assert_called_once_with("test_command")
+        self.assertEqual("test_command_handler", context.exception.command_handler_name)
+        self.command_handler_registry_mock.get_bus_stop_by_name.assert_called_once_with("test_command_handler")
         consumer_builder_mock.assert_not_called()
         exchange_builder_mock.assert_not_called()
         queue_builder_mock.assert_not_called()
 
-    @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.resolve_passenger_from_bus_stop")
+    @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.resolve_passenger_class_from_bus_stop")
     @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.Queue")
     @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.Exchange")
     @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.PassengerKombuConsumer")
@@ -57,23 +57,22 @@ class TestKombuCommandBusEngine(TestCase):
         test_exchange = Mock(spec=Exchange)
         exchange_builder_mock.return_value = test_exchange
         test_command_handler = Mock(spec=CommandHandler)
-        self.command_registry_mock.get_command_destination.return_value = test_command_handler
-        test_queue_name = "test_queue"
+        self.command_handler_registry_mock.get_bus_stop_by_name.return_value = test_command_handler
         test_command = Mock(spec=Command)
+        test_command.passenger_name.return_value = "test_command"
         passenger_resolver_mock.return_value = test_command
-        self.command_registry_mock.get_command_destination_contact.return_value = test_queue_name
 
         KombuCommandBusEngine(
             self.broker_connection_mock,
-            self.command_registry_mock,
+            self.command_handler_registry_mock,
             self.command_receiver_mock,
             self.command_deserializer_mock,
-            "test_command",
+            "test_command_handler",
         )
 
         test_exchange.declare.assert_called_once_with()
         queue_builder_mock.assert_called_once_with(
-            name=test_queue_name,
+            name="test_command",
             queue_arguments={"x-dead-letter-exchange": "failed_commands"},
         )
         test_queue.declare.assert_called_once_with(channel=self.channel_mock)
@@ -87,7 +86,7 @@ class TestKombuCommandBusEngine(TestCase):
         )
         passenger_resolver_mock.assert_called_once_with(test_command_handler, "handle", "command", Command)
 
-    @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.resolve_passenger_from_bus_stop")
+    @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.resolve_passenger_class_from_bus_stop")
     @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.Queue")
     @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.Exchange")
     @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.PassengerKombuConsumer")
@@ -96,7 +95,7 @@ class TestKombuCommandBusEngine(TestCase):
         consumer_builder_mock.return_value = test_kombu_consumer
         engine = KombuCommandBusEngine(
             self.broker_connection_mock,
-            self.command_registry_mock,
+            self.command_handler_registry_mock,
             self.command_receiver_mock,
             self.command_deserializer_mock,
             "test_command",
@@ -106,7 +105,7 @@ class TestKombuCommandBusEngine(TestCase):
 
         test_kombu_consumer.run.assert_called_once_with()
 
-    @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.resolve_passenger_from_bus_stop")
+    @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.resolve_passenger_class_from_bus_stop")
     @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.Queue")
     @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.Exchange")
     @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.PassengerKombuConsumer")
@@ -115,7 +114,7 @@ class TestKombuCommandBusEngine(TestCase):
         consumer_builder_mock.return_value = test_kombu_consumer
         engine = KombuCommandBusEngine(
             self.broker_connection_mock,
-            self.command_registry_mock,
+            self.command_handler_registry_mock,
             self.command_receiver_mock,
             self.command_deserializer_mock,
             "test_command",

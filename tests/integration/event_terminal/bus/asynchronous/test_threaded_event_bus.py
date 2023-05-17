@@ -1,17 +1,13 @@
 from dataclasses import dataclass
 from time import sleep
 
+from bus_station.bus_stop.resolvers.in_memory_bus_stop_resolver import InMemoryBusStopResolver
 from bus_station.event_terminal.bus.asynchronous.threaded_event_bus import ThreadedEventBus
 from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
+from bus_station.event_terminal.event_consumer_registry import EventConsumerRegistry
 from bus_station.event_terminal.middleware.event_middleware_receiver import EventMiddlewareReceiver
-from bus_station.event_terminal.registry.in_memory_event_registry import InMemoryEventRegistry
-from bus_station.passengers.passenger_class_resolver import PassengerClassResolver
-from bus_station.passengers.passenger_record.in_memory_passenger_record_repository import (
-    InMemoryPassengerRecordRepository,
-)
-from bus_station.shared_terminal.bus_stop_resolver.in_memory_bus_stop_resolver import InMemoryBusStopResolver
-from bus_station.shared_terminal.fqn_getter import FQNGetter
+from bus_station.shared_terminal.fqn import resolve_fqn
 from tests.integration.integration_test_case import IntegrationTestCase
 
 
@@ -37,31 +33,32 @@ class EventTestConsumer2(EventConsumer):
 
 
 class TestThreadedEventBus(IntegrationTestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.event_consumer_1_fqn = resolve_fqn(EventTestConsumer1)
+        cls.event_consumer_2_fqn = resolve_fqn(EventTestConsumer2)
+        cls.event_receiver = EventMiddlewareReceiver()
+
     def setUp(self) -> None:
-        self.in_memory_repository = InMemoryPassengerRecordRepository()
-        self.fqn_getter = FQNGetter()
-        self.event_consumer_resolver = InMemoryBusStopResolver[EventConsumer](fqn_getter=self.fqn_getter)
-        self.passenger_class_resolver = PassengerClassResolver()
-        self.in_memory_registry = InMemoryEventRegistry(
-            in_memory_repository=self.in_memory_repository,
-            event_consumer_resolver=self.event_consumer_resolver,
-            fqn_getter=self.fqn_getter,
-            passenger_class_resolver=self.passenger_class_resolver,
+        event_consumer_resolver = InMemoryBusStopResolver[EventConsumer]()
+        event_consumer_registry = EventConsumerRegistry(
+            bus_stop_resolver=event_consumer_resolver,
         )
-        self.event_middleware_receiver = EventMiddlewareReceiver()
-        self.threaded_event_bus = ThreadedEventBus(self.in_memory_registry, self.event_middleware_receiver)
+        self.test_event_consumer1 = EventTestConsumer1()
+        self.test_event_consumer2 = EventTestConsumer2()
+
+        event_consumer_resolver.add_bus_stop(self.test_event_consumer1)
+        event_consumer_resolver.add_bus_stop(self.test_event_consumer2)
+        event_consumer_registry.register(self.event_consumer_1_fqn)
+        event_consumer_registry.register(self.event_consumer_2_fqn)
+
+        self.threaded_event_bus = ThreadedEventBus(event_consumer_registry, self.event_receiver)
 
     def test_transport_success(self):
         test_event = EventTest()
-        test_event_consumer1 = EventTestConsumer1()
-        test_event_consumer2 = EventTestConsumer2()
-        self.in_memory_registry.register(test_event_consumer1, test_event_consumer1)
-        self.in_memory_registry.register(test_event_consumer2, test_event_consumer2)
-        self.event_consumer_resolver.add_bus_stop(test_event_consumer1)
-        self.event_consumer_resolver.add_bus_stop(test_event_consumer2)
 
         self.threaded_event_bus.transport(test_event)
 
         sleep(1)
-        self.assertEqual(1, test_event_consumer1.call_count)
-        self.assertEqual(1, test_event_consumer2.call_count)
+        self.assertEqual(1, self.test_event_consumer1.call_count)
+        self.assertEqual(1, self.test_event_consumer2.call_count)

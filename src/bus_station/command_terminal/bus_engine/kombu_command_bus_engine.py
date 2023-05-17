@@ -5,12 +5,11 @@ from kombu.transport.base import StdChannel
 
 from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
-from bus_station.command_terminal.contact_not_found_for_command import ContactNotFoundForCommand
-from bus_station.command_terminal.handler_not_found_for_command import HandlerNotFoundForCommand
-from bus_station.command_terminal.registry.remote_command_registry import RemoteCommandRegistry
+from bus_station.command_terminal.command_handler_not_found import CommandHandlerNotFound
+from bus_station.command_terminal.command_handler_registry import CommandHandlerRegistry
 from bus_station.passengers.passenger_kombu_consumer import PassengerKombuConsumer
+from bus_station.passengers.passenger_resolvers import resolve_passenger_class_from_bus_stop
 from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
-from bus_station.passengers.resolve_passenger_from_bus_stop import resolve_passenger_from_bus_stop
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 from bus_station.shared_terminal.engine.engine import Engine
 
@@ -21,27 +20,20 @@ class KombuCommandBusEngine(Engine):
     def __init__(
         self,
         broker_connection: Connection,
-        command_registry: RemoteCommandRegistry,
+        command_handler_registry: CommandHandlerRegistry,
         command_receiver: PassengerReceiver[Command, CommandHandler],
         command_deserializer: PassengerDeserializer,
-        command_name: str,
+        command_handler_name: str,
     ):
-        super().__init__()
-        command_handler = command_registry.get_command_destination(command_name)
+        command_handler = command_handler_registry.get_bus_stop_by_name(command_handler_name)
         if command_handler is None:
-            raise HandlerNotFoundForCommand(command_name)
+            raise CommandHandlerNotFound(command_handler_name)
 
-        broker_connection = broker_connection
+        command_type = resolve_passenger_class_from_bus_stop(command_handler, "handle", "command", Command)
         channel = broker_connection.channel()
         self.__create_dead_letter_exchange(channel)
 
-        command_queue_name = command_registry.get_command_destination_contact(command_name)
-        if command_queue_name is None:
-            raise ContactNotFoundForCommand(command_name)
-
-        command_queue = self.__create_command_handler_queue(command_queue_name, channel)
-
-        command_type = resolve_passenger_from_bus_stop(command_handler, "handle", "command", Command)
+        command_queue = self.__create_command_handler_queue(command_type.passenger_name(), channel)
 
         self.__command_consumer = PassengerKombuConsumer(
             broker_connection,

@@ -2,26 +2,20 @@ from multiprocessing import Queue
 
 from bus_station.command_terminal.bus.command_bus import CommandBus
 from bus_station.command_terminal.command import Command
-from bus_station.command_terminal.handler_not_found_for_command import HandlerNotFoundForCommand
-from bus_station.command_terminal.registry.in_memory_command_registry import InMemoryCommandRegistry
 from bus_station.passengers.serialization.passenger_serializer import PassengerSerializer
+from bus_station.shared_terminal.factories.memory_queue_factory import memory_queue_factory
 
 
 class MemoryQueueCommandBus(CommandBus):
     def __init__(
         self,
         command_serializer: PassengerSerializer,
-        command_registry: InMemoryCommandRegistry,
     ):
         self.__command_serializer = command_serializer
-        self.__command_registry = command_registry
 
     def _transport(self, passenger: Command) -> None:
-        handler_queue = self.__command_registry.get_command_destination_contact(passenger.passenger_name())
-        if handler_queue is None:
-            raise HandlerNotFoundForCommand(passenger.passenger_name())
-
-        self.__put_command(handler_queue, passenger)
+        queue = memory_queue_factory.queue_with_id(passenger.passenger_name())
+        self.__put_command(queue, passenger)
 
     def __put_command(self, queue: Queue, command: Command) -> None:
         serialized_command = self.__command_serializer.serialize(command)

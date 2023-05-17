@@ -7,8 +7,12 @@ from time import sleep
 
 from redis import Redis
 
-from bus_station.passengers.passenger_class_resolver import PassengerClassResolver
-from bus_station.passengers.passenger_record.redis_passenger_record_repository import RedisPassengerRecordRepository
+from bus_station.bus_stop.environment import get_bus_stop_address_env_variable
+from bus_station.bus_stop.registration.address.redis_bus_stop_address_registry import RedisBusStopAddressRegistry
+from bus_station.bus_stop.registration.supervisor.bus_stop_address_registration_supervisor import (
+    BusStopAddressRegistrationSupervisor,
+)
+from bus_station.bus_stop.resolvers.in_memory_bus_stop_resolver import InMemoryBusStopResolver
 from bus_station.passengers.serialization.passenger_json_deserializer import PassengerJSONDeserializer
 from bus_station.passengers.serialization.passenger_json_serializer import PassengerJSONSerializer
 from bus_station.query_terminal.bus.synchronous.distributed.rpyc_query_bus import RPyCQueryBus
@@ -16,15 +20,14 @@ from bus_station.query_terminal.bus_engine.rpyc_query_bus_engine import RPyCQuer
 from bus_station.query_terminal.middleware.query_middleware_receiver import QueryMiddlewareReceiver
 from bus_station.query_terminal.query import Query
 from bus_station.query_terminal.query_handler import QueryHandler
+from bus_station.query_terminal.query_handler_registry import QueryHandlerRegistry
 from bus_station.query_terminal.query_response import QueryResponse
-from bus_station.query_terminal.registry.redis_query_registry import RedisQueryRegistry
 from bus_station.query_terminal.rpyc_query_server import RPyCQueryServer
 from bus_station.query_terminal.serialization.query_response_json_deserializer import QueryResponseJSONDeserializer
 from bus_station.query_terminal.serialization.query_response_json_serializer import QueryResponseJSONSerializer
-from bus_station.shared_terminal.bus_stop_resolver.in_memory_bus_stop_resolver import InMemoryBusStopResolver
 from bus_station.shared_terminal.engine.runner.process_engine_runner import ProcessEngineRunner
 from bus_station.shared_terminal.engine.runner.self_process_engine_runner import SelfProcessEngineRunner
-from bus_station.shared_terminal.fqn_getter import FQNGetter
+from bus_station.shared_terminal.fqn import resolve_fqn
 from tests.integration.integration_test_case import IntegrationTestCase
 
 
@@ -45,45 +48,50 @@ class QueryTestHandler(QueryHandler):
 class TestRPyCQueryBus(IntegrationTestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        cls.redis_host = cls.redis["host"]
-        cls.redis_port = cls.redis["port"]
-        cls.redis_client = Redis(host=cls.redis_host, port=cls.redis_port)
+        redis_host = cls.redis["host"]
+        redis_port = cls.redis["port"]
+        cls.query_handler_fqn = resolve_fqn(QueryTestHandler)
+        cls.bus_host = "localhost"
+        cls.bus_port = 1234
+        os.environ[get_bus_stop_address_env_variable(cls.query_handler_fqn)] = f"{cls.bus_host}:{cls.bus_port}"
+
+        redis_client = Redis(host=redis_host, port=redis_port)
+        cls.redis_address_registry = RedisBusStopAddressRegistry(redis_client)
+        cls.query_handler_resolver = InMemoryBusStopResolver()
+        cls.query_serializer = PassengerJSONSerializer()
+        cls.query_deserializer = PassengerJSONDeserializer()
+        cls.query_receiver = QueryMiddlewareReceiver()
+        cls.query_response_serializer = QueryResponseJSONSerializer()
+        cls.query_response_deserializer = QueryResponseJSONDeserializer()
+        cls.rpyc_server = RPyCQueryServer(
+            cls.bus_host, cls.bus_port, cls.query_deserializer, cls.query_receiver, cls.query_response_serializer
+        )
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        del os.environ[get_bus_stop_address_env_variable(cls.query_handler_fqn)]
 
     def setUp(self) -> None:
-        bus_host = "localhost"
-        bus_port = 1234
-        self.redis_repository = RedisPassengerRecordRepository(self.redis_client)
-        fqn_getter = FQNGetter()
-        query_handler_resolver = InMemoryBusStopResolver[QueryHandler](fqn_getter=fqn_getter)
-        passenger_class_resolver = PassengerClassResolver()
-        self.redis_registry = RedisQueryRegistry(
-            redis_repository=self.redis_repository,
-            query_handler_resolver=query_handler_resolver,
-            fqn_getter=fqn_getter,
-            passenger_class_resolver=passenger_class_resolver,
+        self.query_handler_registry = QueryHandlerRegistry(
+            bus_stop_resolver=self.query_handler_resolver,
+            registration_supervisors=[BusStopAddressRegistrationSupervisor(self.redis_address_registry)],
         )
-        query_serializer = PassengerJSONSerializer()
-        query_deserializer = PassengerJSONDeserializer()
-        query_response_serializer = QueryResponseJSONSerializer()
-        query_response_deserializer = QueryResponseJSONDeserializer()
-        query_middleware_receiver = QueryMiddlewareReceiver()
-        rpyc_server = RPyCQueryServer(
-            bus_host, bus_port, query_deserializer, query_middleware_receiver, query_response_serializer
-        )
+
         self.test_query_handler = QueryTestHandler()
-        self.redis_registry.register(self.test_query_handler, f"{bus_host}:{bus_port}")
-        query_handler_resolver.add_bus_stop(self.test_query_handler)
+        self.query_handler_resolver.add_bus_stop(self.test_query_handler)
+        self.query_handler_registry.register(self.query_handler_fqn)
+
         self.rpyc_query_bus_engine = RPyCQueryBusEngine(
-            rpyc_server, self.redis_registry, query_name=QueryTest.passenger_name()
+            rpyc_server=self.rpyc_server,
+            query_handler_registry=self.query_handler_registry,
+            query_handler_name=self.test_query_handler.bus_stop_name(),
         )
         self.rpyc_query_bus = RPyCQueryBus(
-            query_serializer,
-            query_response_deserializer,
-            self.redis_registry,
+            self.query_serializer, self.query_response_deserializer, self.redis_address_registry
         )
 
     def tearDown(self) -> None:
-        self.redis_registry.unregister(QueryTest.passenger_name())
+        self.query_handler_registry.unregister(self.query_handler_fqn)
 
     def test_transport_success(self):
         test_query_value = "test_query_value"

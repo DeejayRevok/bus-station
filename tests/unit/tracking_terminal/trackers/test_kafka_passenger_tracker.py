@@ -5,8 +5,8 @@ from unittest.mock import MagicMock, Mock, patch
 from confluent_kafka.cimpl import Producer
 from freezegun import freeze_time
 
+from bus_station.bus_stop.bus_stop import BusStop
 from bus_station.passengers.passenger import Passenger
-from bus_station.shared_terminal.bus_stop import BusStop
 from bus_station.shared_terminal.kafka_topic_creator import KafkaTopicCreator
 from bus_station.tracking_terminal.models.passenger_model_tracking_map import PassengerModelTrackingMap
 from bus_station.tracking_terminal.models.passenger_tracking_serializer import PassengerTrackingSerializer

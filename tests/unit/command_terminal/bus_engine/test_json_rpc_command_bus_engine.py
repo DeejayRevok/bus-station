@@ -2,47 +2,45 @@ from unittest import TestCase
 from unittest.mock import Mock, patch
 
 from bus_station.command_terminal.bus_engine.json_rpc_command_bus_engine import JsonRPCCommandBusEngine
-from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler import CommandHandler
-from bus_station.command_terminal.handler_not_found_for_command import HandlerNotFoundForCommand
-from bus_station.command_terminal.registry.remote_command_registry import RemoteCommandRegistry
-from bus_station.shared_terminal.json_rpc_server import JsonRPCServer
+from bus_station.command_terminal.command_handler_not_found import CommandHandlerNotFound
+from bus_station.command_terminal.command_handler_registry import CommandHandlerRegistry
+from bus_station.command_terminal.json_rpc_command_server import JsonRPCCommandServer
 
 
 class TestJsonRPCCommandBusEngine(TestCase):
-    def setUp(self) -> None:
-        self.server_mock = Mock(spec=JsonRPCServer)
-        self.command_registry_mock = Mock(spec=RemoteCommandRegistry)
+    def setUp(self):
+        self.server = Mock(spec=JsonRPCCommandServer)
+        self.registry = Mock(spec=CommandHandlerRegistry)
 
-    @patch("bus_station.command_terminal.bus_engine.json_rpc_command_bus_engine.resolve_passenger_from_bus_stop")
-    def test_init_with_command_handler_found(self, passenger_resolver_mock):
-        command_name = "test_command"
-        command_type_mock = Mock(spec=Command)
-        passenger_resolver_mock.return_value = command_type_mock
-        command_handler_mock = Mock(spec=CommandHandler)
-        self.command_registry_mock.get_command_destination.return_value = command_handler_mock
+    @patch("bus_station.command_terminal.bus_engine.json_rpc_command_bus_engine.resolve_passenger_class_from_bus_stop")
+    def test_initialize_registers_command_handler_in_server(self, passenger_resolver_mock):
+        handler = Mock(spec=CommandHandler)
+        handler_name = "handler_name"
+        self.registry.get_bus_stop_by_name.return_value = handler
+        test_command_mock = Mock()
+        passenger_resolver_mock.return_value = test_command_mock
 
-        JsonRPCCommandBusEngine(self.server_mock, self.command_registry_mock, command_name)
+        JsonRPCCommandBusEngine(self.server, self.registry, handler_name)
 
-        self.command_registry_mock.get_command_destination.assert_called_once_with(command_name)
-        self.server_mock.register.assert_called_once_with(command_type_mock, command_handler_mock)
-        passenger_resolver_mock.assert_called_once_with(command_handler_mock, "handle", "command", Command)
+        self.registry.get_bus_stop_by_name.assert_called_once_with(handler_name)
+        self.server.register.assert_called_once_with(test_command_mock, handler)
 
-    def test_init_with_command_handler_not_found(self):
-        command_name = "test_command"
-        self.command_registry_mock.get_command_destination.return_value = None
+    @patch("bus_station.command_terminal.bus_engine.json_rpc_command_bus_engine.resolve_passenger_class_from_bus_stop")
+    def test_initialize_raises_exception_if_command_handler_not_found(self, _):
+        handler_name = "handler_name"
+        self.registry.get_bus_stop_by_name.return_value = None
 
-        with self.assertRaises(HandlerNotFoundForCommand) as hnffc:
-            JsonRPCCommandBusEngine(self.server_mock, self.command_registry_mock, command_name)
+        with self.assertRaises(CommandHandlerNotFound) as context:
+            JsonRPCCommandBusEngine(self.server, self.registry, handler_name)
 
-        self.assertEqual(command_name, hnffc.exception.command_name)
-        self.command_registry_mock.get_command_destination.assert_called_once_with(command_name)
-        self.server_mock.register.assert_not_called()
+        self.assertEqual(handler_name, context.exception.command_handler_name)
+        self.registry.get_bus_stop_by_name.assert_called_once_with(handler_name)
 
-    @patch("bus_station.command_terminal.bus_engine.json_rpc_command_bus_engine.resolve_passenger_from_bus_stop")
-    def test_start(self, _):
-        engine = JsonRPCCommandBusEngine(self.server_mock, self.command_registry_mock, "test_command")
-
+    @patch("bus_station.command_terminal.bus_engine.json_rpc_command_bus_engine.resolve_passenger_class_from_bus_stop")
+    def test_start_runs_the_server(self, _):
+        handler_name = "handler_name"
+        engine = JsonRPCCommandBusEngine(self.server, self.registry, handler_name)
         engine.start()
 
-        self.server_mock.run.assert_called_once_with()
+        self.server.run.assert_called_once()
