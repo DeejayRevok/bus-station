@@ -22,7 +22,7 @@ class MemoryQueueCommandBusEngine(Engine):
         if command_handler is None:
             raise CommandHandlerNotFound(command_handler_name)
 
-        command = resolve_passenger_class_from_bus_stop(command_handler, "handle", "command", Command)
+        command = resolve_passenger_class_from_bus_stop(command_handler, "handle", "command")
         command_queue = memory_queue_factory.queue_with_id(command.passenger_name())
         self.__command_worker = MemoryQueuePassengerWorker(
             command_queue, command_handler, command_receiver, command_deserializer

@@ -1,4 +1,3 @@
-from bus_station.command_terminal.command import Command
 from bus_station.command_terminal.command_handler_not_found import CommandHandlerNotFound
 from bus_station.command_terminal.command_handler_registry import CommandHandlerRegistry
 from bus_station.passengers.passenger_resolvers import resolve_passenger_class_from_bus_stop
@@ -19,7 +18,7 @@ class RPyCCommandBusEngine(Engine):
         handler = command_handler_registry.get_bus_stop_by_name(command_handler_name)
         if handler is None:
             raise CommandHandlerNotFound(command_handler_name)
-        command_type = resolve_passenger_class_from_bus_stop(handler, "handle", "command", Command)
+        command_type = resolve_passenger_class_from_bus_stop(handler, "handle", "command")
         self.__server.register(command_type, handler)
 
     def start(self) -> None:

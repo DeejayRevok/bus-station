@@ -6,7 +6,6 @@ from bus_station.bus_stop.registration.supervisor.bus_stop_registration_supervis
 from bus_station.bus_stop.resolvers.bus_stop_resolver import BusStopResolver
 from bus_station.passengers.passenger_registry import passenger_bus_stop_registry
 from bus_station.passengers.passenger_resolvers import resolve_passenger_class_from_bus_stop
-from bus_station.query_terminal.query import Query
 from bus_station.query_terminal.query_handler import QueryHandler
 
 
@@ -20,7 +19,6 @@ class QueryHandlerRegistry(BusStopRegistry[QueryHandler]):
             resolve_passenger_class_from_bus_stop,
             bus_stop_handle_function_name="handle",
             passenger_type_name="query",
-            expected_passenger_type=Query,
         )
         super().__init__(bus_stop_resolver, bus_stop_passenger_resolver, registration_supervisors)
 

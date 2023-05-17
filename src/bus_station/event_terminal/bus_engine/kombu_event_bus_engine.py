@@ -29,7 +29,7 @@ class KombuEventBusEngine(Engine):
         if event_consumer is None:
             raise EventConsumerNotFound(event_consumer_name)
 
-        event = resolve_passenger_class_from_bus_stop(event_consumer, "consume", "event", Event)
+        event = resolve_passenger_class_from_bus_stop(event_consumer, "consume", "event")
 
         channel = broker_connection.channel()
         self.__create_dead_letter_exchange(channel)

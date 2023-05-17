@@ -9,7 +9,7 @@ from typing_extensions import Self
 @dataclass(frozen=True)
 class Passenger(ABC):
     passenger_id: str = field(init=False, default_factory=lambda: str(uuid4()))
-    root_passenger_id: Optional[str] = field(init=False, default=None)
+    root_passenger_id: Optional[str] = field(init=False, default_factory=lambda: None)
 
     @classmethod
     @abstractmethod
@@ -18,10 +18,11 @@ class Passenger(ABC):
 
     @classmethod
     def from_data_dict(cls, passenger_data: dict) -> Self:
-        passenger_id = cls.__get_passenger_id(passenger_data)
-        root_passenger_id = cls.__get_root_passenger_id(passenger_data)
+        passenger_data_copy = passenger_data.copy()
+        passenger_id = cls.__get_passenger_id(passenger_data_copy)
+        root_passenger_id = cls.__get_root_passenger_id(passenger_data_copy)
 
-        passenger = cls.__from_data_dict(passenger_data)
+        passenger = cls.__from_data_dict(passenger_data_copy)
 
         object.__setattr__(passenger, "passenger_id", passenger_id)
         if root_passenger_id is not None:
