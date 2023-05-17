@@ -84,7 +84,7 @@ class TestKombuCommandBusEngine(TestCase):
             self.command_receiver_mock,
             self.command_deserializer_mock,
         )
-        passenger_resolver_mock.assert_called_once_with(test_command_handler, "handle", "command", Command)
+        passenger_resolver_mock.assert_called_once_with(test_command_handler, "handle", "command")
 
     @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.resolve_passenger_class_from_bus_stop")
     @patch("bus_station.command_terminal.bus_engine.kombu_command_bus_engine.Queue")

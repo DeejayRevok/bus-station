@@ -29,7 +29,7 @@ class KombuCommandBusEngine(Engine):
         if command_handler is None:
             raise CommandHandlerNotFound(command_handler_name)
 
-        command_type = resolve_passenger_class_from_bus_stop(command_handler, "handle", "command", Command)
+        command_type = resolve_passenger_class_from_bus_stop(command_handler, "handle", "command")
         channel = broker_connection.channel()
         self.__create_dead_letter_exchange(channel)
 

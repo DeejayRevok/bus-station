@@ -4,7 +4,6 @@ from typing import List, Optional, Set
 from bus_station.bus_stop.registration.bus_stop_registry import BusStopRegistry
 from bus_station.bus_stop.registration.supervisor.bus_stop_registration_supervisor import BusStopRegistrationSupervisor
 from bus_station.bus_stop.resolvers.bus_stop_resolver import BusStopResolver
-from bus_station.event_terminal.event import Event
 from bus_station.event_terminal.event_consumer import EventConsumer
 from bus_station.passengers.passenger_registry import passenger_bus_stop_registry
 from bus_station.passengers.passenger_resolvers import resolve_passenger_class_from_bus_stop
@@ -20,7 +19,6 @@ class EventConsumerRegistry(BusStopRegistry[EventConsumer]):
             resolve_passenger_class_from_bus_stop,
             bus_stop_handle_function_name="consume",
             passenger_type_name="event",
-            expected_passenger_type=Event,
         )
         super().__init__(bus_stop_resolver, bus_stop_passenger_resolver, registration_supervisors)
 
