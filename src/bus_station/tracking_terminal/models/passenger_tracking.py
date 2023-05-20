@@ -6,6 +6,7 @@ from typing import Optional
 @dataclass
 class PassengerTracking:
     passenger_id: str
+    root_passenger_id: Optional[str]
     name: str
     executor_name: str
     data: dict

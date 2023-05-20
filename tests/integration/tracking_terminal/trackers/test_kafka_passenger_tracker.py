@@ -70,12 +70,11 @@ class TestKafkaPassengerTracker(IntegrationTestCase):
         self.assertIsNotNone(self.kafka_test_consumer.received_message_data)
         received_message_dict = loads(self.kafka_test_consumer.received_message_data)
         self.assertEqual(test_command.passenger_id, received_message_dict["passenger_id"])
+        self.assertEqual(test_command.root_passenger_id, received_message_dict["root_passenger_id"])
         self.assertEqual(test_command.passenger_name(), received_message_dict["name"])
         self.assertEqual(test_command_handler.bus_stop_name(), received_message_dict["executor_name"])
         self.assertEqual(
             {
-                "passenger_id": test_command.passenger_id,
-                "root_passenger_id": "test_root_passenger_id",
                 "test": "test_data",
             },
             received_message_dict["data"],
@@ -96,12 +95,11 @@ class TestKafkaPassengerTracker(IntegrationTestCase):
         self.assertIsNotNone(self.kafka_test_consumer.received_message_data)
         received_message_dict = loads(self.kafka_test_consumer.received_message_data)
         self.assertEqual(test_command.passenger_id, received_message_dict["passenger_id"])
+        self.assertEqual(test_command.root_passenger_id, received_message_dict["root_passenger_id"])
         self.assertEqual(test_command.passenger_name(), received_message_dict["name"])
         self.assertEqual(test_command_handler.bus_stop_name(), received_message_dict["executor_name"])
         self.assertEqual(
             {
-                "passenger_id": test_command.passenger_id,
-                "root_passenger_id": "test_root_passenger_id",
                 "test": "test_data",
             },
             received_message_dict["data"],
