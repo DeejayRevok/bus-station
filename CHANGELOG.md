@@ -1,3 +1,9 @@
+## 6.0.1 (2023-05-20)
+
+### Fix
+
+- add root passenger id to passenger tracking
+
 ## 6.0.0 (2023-05-17)
 
 ### BREAKING CHANGE
