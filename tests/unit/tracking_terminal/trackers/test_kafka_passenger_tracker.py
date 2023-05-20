@@ -46,6 +46,7 @@ class TestKafkaPassengerTracker(TestCase):
         self.passenger_tracking_model_map_mock.get_tracking_model.assert_called_once_with(passenger_mock)
         tracking_model_mock.assert_called_once_with(
             passenger_id=passenger_mock.passenger_id,
+            root_passenger_id=passenger_mock.root_passenger_id,
             name=passenger_mock.passenger_name(),
             executor_name=bus_stop_mock.bus_stop_name(),
             data=asdict_mock(passenger_mock),
@@ -73,6 +74,7 @@ class TestKafkaPassengerTracker(TestCase):
         self.passenger_tracking_model_map_mock.get_tracking_model.assert_called_once_with(passenger_mock)
         tracking_model_mock.assert_called_once_with(
             passenger_id=passenger_mock.passenger_id,
+            root_passenger_id=passenger_mock.root_passenger_id,
             name=passenger_mock.passenger_name(),
             executor_name=bus_stop_mock.bus_stop_name(),
             data=asdict_mock(passenger_mock),

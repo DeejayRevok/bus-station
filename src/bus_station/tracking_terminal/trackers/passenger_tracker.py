@@ -17,9 +17,10 @@ class PassengerTracker(ABC):
         tracking_model = self.__passenger_model_tracking_map.get_tracking_model(passenger)
         tracking = tracking_model(
             passenger_id=passenger.passenger_id,
+            root_passenger_id=passenger.root_passenger_id,
             name=passenger.passenger_name(),
             executor_name=bus_stop.bus_stop_name(),
-            data=asdict(passenger),
+            data=self.__get_passenger_data(passenger),
             execution_start=datetime.now(),
             execution_end=None,
             success=None,
@@ -34,15 +35,22 @@ class PassengerTracker(ABC):
         tracking_model = self.__passenger_model_tracking_map.get_tracking_model(passenger)
         tracking = tracking_model(
             passenger_id=passenger.passenger_id,
+            root_passenger_id=passenger.root_passenger_id,
             name=passenger.passenger_name(),
             executor_name=bus_stop.bus_stop_name(),
-            data=asdict(passenger),
+            data=self.__get_passenger_data(passenger),
             execution_start=None,
             execution_end=datetime.now(),
             success=success,
         )
         self.__set_track_data(tracking, **track_data)
         self._track(tracking)
+
+    def __get_passenger_data(self, passenger: Passenger) -> dict:
+        passenger_data = asdict(passenger)
+        del passenger_data["passenger_id"]
+        del passenger_data["root_passenger_id"]
+        return passenger_data
 
     def __set_track_data(self, passenger_tracking: PassengerTracking, **track_data: Any) -> None:
         for track_data_key, track_data_value in track_data.items():
