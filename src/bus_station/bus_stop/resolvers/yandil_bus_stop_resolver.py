@@ -18,10 +18,12 @@ class YandilBusStopResolver(BusStopResolver[S]):
         if bus_stop_class is None:
             return None
 
-        if not issubclass(bus_stop_class, BusStop):
+        resolved_bus_stop = self.__container[bus_stop_class]
+
+        if not issubclass(resolved_bus_stop.__class__, BusStop):
             raise TypeError(f"Instance resolved from {bus_stop_id} is not a valid BusStop")
 
-        return self.__container[bus_stop_class]
+        return resolved_bus_stop
 
     def __get_class_from_fqn(self, fqn: str) -> Type:
         module_name, class_qualname = fqn.rsplit(".", 1)
