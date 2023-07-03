@@ -44,6 +44,7 @@ class TestMemoryQueueCommandBus(IntegrationTestCase):
         cls.command_handler_fqn = resolve_fqn(CommandTestHandler)
 
     def setUp(self) -> None:
+        self.__exhaust_queue()
         self.command_handler_registry = CommandHandlerRegistry(bus_stop_resolver=self.command_handler_resolver)
         self.test_command_handler = CommandTestHandler()
         self.command_handler_resolver.add_bus_stop(self.test_command_handler)
@@ -56,7 +57,7 @@ class TestMemoryQueueCommandBus(IntegrationTestCase):
         )
         self.memory_queue_command_bus = MemoryQueueCommandBus(self.passenger_serializer)
 
-    def tearDown(self) -> None:
+    def __exhaust_queue(self):
         queue = memory_queue_factory.queue_with_id(CommandTest.passenger_name())
         while not queue.empty():
             queue.get()
