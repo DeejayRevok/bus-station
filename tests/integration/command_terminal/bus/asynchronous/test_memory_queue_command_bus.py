@@ -16,6 +16,7 @@ from bus_station.passengers.serialization.passenger_json_deserializer import Pas
 from bus_station.passengers.serialization.passenger_json_serializer import PassengerJSONSerializer
 from bus_station.shared_terminal.engine.runner.process_engine_runner import ProcessEngineRunner
 from bus_station.shared_terminal.engine.runner.self_process_engine_runner import SelfProcessEngineRunner
+from bus_station.shared_terminal.factories.memory_queue_factory import memory_queue_factory
 from bus_station.shared_terminal.fqn import resolve_fqn
 from tests.integration.integration_test_case import IntegrationTestCase
 
@@ -55,12 +56,17 @@ class TestMemoryQueueCommandBus(IntegrationTestCase):
         )
         self.memory_queue_command_bus = MemoryQueueCommandBus(self.passenger_serializer)
 
+    def tearDown(self) -> None:
+        queue = memory_queue_factory.queue_with_id(CommandTest.passenger_name())
+        while not queue.empty():
+            queue.get()
+
     def test_process_transport_success(self):
         test_command = CommandTest()
         with ProcessEngineRunner(self.memory_queue_bus_engine, should_interrupt=False):
             self.memory_queue_command_bus.transport(test_command)
 
-            sleep(2)
+            sleep(1)
             self.assertEqual(1, self.test_command_handler.call_count.value)
 
     def test_self_process_transport_success(self):
@@ -73,7 +79,7 @@ class TestMemoryQueueCommandBus(IntegrationTestCase):
             for i in range(10):
                 self.memory_queue_command_bus.transport(test_command)
 
-                sleep(2)
+                sleep(1)
                 self.assertEqual(i + 1, self.test_command_handler.call_count.value)
         finally:
             os.kill(runner_process.pid, signal.SIGINT)
