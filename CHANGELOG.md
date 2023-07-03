@@ -1,3 +1,9 @@
+## 6.1.0 (2023-07-03)
+
+### Feat
+
+- add yandil bus stop resolver
+
 ## 6.0.1 (2023-05-20)
 
 ### Fix
