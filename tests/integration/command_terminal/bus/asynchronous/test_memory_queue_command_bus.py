@@ -60,7 +60,7 @@ class TestMemoryQueueCommandBus(IntegrationTestCase):
         with ProcessEngineRunner(self.memory_queue_bus_engine, should_interrupt=False):
             self.memory_queue_command_bus.transport(test_command)
 
-            sleep(1)
+            sleep(2)
             self.assertEqual(1, self.test_command_handler.call_count.value)
 
     def test_self_process_transport_success(self):
@@ -73,7 +73,7 @@ class TestMemoryQueueCommandBus(IntegrationTestCase):
             for i in range(10):
                 self.memory_queue_command_bus.transport(test_command)
 
-                sleep(1)
+                sleep(2)
                 self.assertEqual(i + 1, self.test_command_handler.call_count.value)
         finally:
             os.kill(runner_process.pid, signal.SIGINT)
