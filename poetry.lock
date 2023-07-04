@@ -937,13 +937,13 @@ plugins = ["importlib-metadata"]
 
 [[package]]
 name = "pypendency"
-version = "0.1.0"
+version = "0.5.0"
 description = "A dependency injection tool for python"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 files = [
-    {file = "pypendency-0.1.0-py3-none-any.whl", hash = "sha256:067c46784d6875fe7ce79187410ad7d52b96d6488b58addc2058eaf18801fdde"},
-    {file = "pypendency-0.1.0.tar.gz", hash = "sha256:26f7c42f6a4710bec5013ddd840d61f36e3152ccf00f124b76518c2a0fd0c74e"},
+    {file = "pypendency-0.5.0-py3-none-any.whl", hash = "sha256:c72c6eb0ad8a780cc37b52773917ca6e314d1838c0588c22c2c7640c92b01946"},
+    {file = "pypendency-0.5.0.tar.gz", hash = "sha256:38e28407d3d8e455b54f4b919986612609c5fbe506ce27c555ad715210dc5c09"},
 ]
 
 [package.dependencies]
@@ -1433,4 +1433,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "~=3.10.0"
-content-hash = "d7545c185718b3251899175112bddbba015412b7e63ec4458d76bd002267c5e1"
+content-hash = "66b5e39af2ab01c9c9e578024502af80ad09f4fbc96c808480f6de153e269e22"
