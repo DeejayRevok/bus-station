@@ -1,3 +1,9 @@
+## 6.1.1 (2023-07-04)
+
+### Fix
+
+- fix some dependencies versions
+
 ## 6.1.0 (2023-07-03)
 
 ### Feat
