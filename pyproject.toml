@@ -16,7 +16,7 @@ requests = "^2.27.1"
 pypendency = "^0.1.0"
 confluent-kafka = "^2.1.1"
 freezegun = "^1.2.2"
-yandil = "^0.2.4"
+yandil = "~0"
 
 [tool.poetry.dev-dependencies]
 black = "22.1.0"
