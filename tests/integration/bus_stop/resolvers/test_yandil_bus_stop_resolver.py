@@ -14,6 +14,10 @@ class BusStopTest(BusStop):
         return "test_bus_stop"
 
 
+class TestClass:
+    pass
+
+
 class TestYandilBusStopResolver(TestCase):
     def setUp(self) -> None:
         self.container = Container(configuration_container=default_configuration_container)
@@ -29,8 +33,8 @@ class TestYandilBusStopResolver(TestCase):
         self.assertEqual(test_bus_stop, resolved_bus_stop)
 
     def test_resolve_invalid_instance(self):
-        self.container[BusStopTest] = "invalid_instance"
-        test_bus_stop_fqn = resolve_fqn(BusStopTest)
+        self.container[TestClass] = TestClass()
+        test_bus_stop_fqn = resolve_fqn(TestClass)
 
         with self.assertRaises(TypeError):
             self.resolver.resolve(test_bus_stop_fqn)
