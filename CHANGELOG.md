@@ -1,3 +1,12 @@
+## 6.1.2 (2023-07-07)
+
+### Fix
+
+- check the type of bus stop before returning it from registries
+- **BusStopRegistry**: prevent bus stop registry to unregister None bus stops
+- **BusStopRegistry**: raise exception is the bus resolved is none before trying to register it
+- fix bus resolvers typing
+
 ## 6.1.1 (2023-07-04)
 
 ### Fix
