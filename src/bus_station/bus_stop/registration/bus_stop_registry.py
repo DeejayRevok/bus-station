@@ -1,6 +1,8 @@
+# pyre-ignore-all-errors[7]
 from typing import Callable, Dict, Generic, List, Optional, Set, TypeVar
 
 from bus_station.bus_stop.bus_stop import BusStop
+from bus_station.bus_stop.bus_stop_not_found import BusStopNotFound
 from bus_station.bus_stop.registration.supervisor.bus_stop_registration_supervisor import BusStopRegistrationSupervisor
 from bus_station.bus_stop.resolvers.bus_stop_resolver import BusStopResolver
 from bus_station.passengers.passenger_registry import passenger_bus_stop_registry
@@ -23,6 +25,8 @@ class BusStopRegistry(Generic[S]):
 
     def register(self, bus_stop_id: str) -> None:
         bus_stop = self._bus_stop_resolver.resolve(bus_stop_id)
+        if bus_stop is None:
+            raise BusStopNotFound(bus_stop_id)
         self.__add_bus_stop_name_mapping(bus_stop_id, bus_stop)
         self.__registered_bus_stops.add(bus_stop_id)
         self.__register_in_passenger_registry(bus_stop_id, bus_stop)
@@ -44,6 +48,8 @@ class BusStopRegistry(Generic[S]):
 
     def unregister(self, bus_stop_id: str) -> None:
         bus_stop = self._bus_stop_resolver.resolve(bus_stop_id)
+        if bus_stop is None:
+            raise BusStopNotFound(bus_stop_id)
         self.__remove_bus_stop_name_mapping(bus_stop)
         self.__registered_bus_stops.remove(bus_stop_id)
         self.__unregister_in_passenger_registry(bus_stop_id)

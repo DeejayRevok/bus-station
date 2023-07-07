@@ -27,7 +27,7 @@ class QueryTestHandler(QueryHandler):
 
 class TestSyncQueryBus(IntegrationTestCase):
     def setUp(self) -> None:
-        query_handler_resolver = InMemoryBusStopResolver[QueryHandler]()
+        query_handler_resolver = InMemoryBusStopResolver()
         self.test_query_handler = QueryTestHandler()
         query_handler_registry = QueryHandlerRegistry(
             bus_stop_resolver=query_handler_resolver,

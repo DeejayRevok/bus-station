@@ -39,7 +39,7 @@ class TestSyncEventBus(IntegrationTestCase):
         cls.event_receiver = EventMiddlewareReceiver()
 
     def setUp(self) -> None:
-        event_consumer_resolver = InMemoryBusStopResolver[EventConsumer]()
+        event_consumer_resolver = InMemoryBusStopResolver()
         event_consumer_registry = EventConsumerRegistry(
             bus_stop_resolver=event_consumer_resolver,
         )
