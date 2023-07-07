@@ -1,4 +1,4 @@
-# pyre-ignore[7]
+# pyre-ignore-all-errors[7]
 from typing import Callable, Dict, Generic, List, Optional, Set, TypeVar
 
 from bus_station.bus_stop.bus_stop import BusStop
