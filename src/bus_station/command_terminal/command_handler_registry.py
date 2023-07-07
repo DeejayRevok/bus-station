@@ -5,6 +5,7 @@ from bus_station.bus_stop.registration.bus_stop_registry import BusStopRegistry
 from bus_station.bus_stop.registration.supervisor.bus_stop_registration_supervisor import BusStopRegistrationSupervisor
 from bus_station.bus_stop.resolvers.bus_stop_resolver import BusStopResolver
 from bus_station.command_terminal.command_handler import CommandHandler
+from bus_station.command_terminal.handler_not_found_for_command import HandlerNotFoundForCommand
 from bus_station.passengers.passenger_registry import passenger_bus_stop_registry
 from bus_station.passengers.passenger_resolvers import resolve_passenger_class_from_bus_stop
 
@@ -28,4 +29,8 @@ class CommandHandlerRegistry(BusStopRegistry[CommandHandler]):
             return None
 
         command_handler_id = next(iter(command_handler_ids))
-        return self._bus_stop_resolver.resolve(command_handler_id)
+        resolved_command_handler = self._bus_stop_resolver.resolve(command_handler_id)
+
+        if not isinstance(resolved_command_handler, CommandHandler):
+            raise HandlerNotFoundForCommand(command_name)
+        return resolved_command_handler

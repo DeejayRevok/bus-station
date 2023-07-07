@@ -6,6 +6,7 @@ from bus_station.bus_stop.registration.supervisor.bus_stop_registration_supervis
 from bus_station.bus_stop.resolvers.bus_stop_resolver import BusStopResolver
 from bus_station.passengers.passenger_registry import passenger_bus_stop_registry
 from bus_station.passengers.passenger_resolvers import resolve_passenger_class_from_bus_stop
+from bus_station.query_terminal.handler_not_found_for_query import HandlerNotFoundForQuery
 from bus_station.query_terminal.query_handler import QueryHandler
 
 
@@ -28,4 +29,8 @@ class QueryHandlerRegistry(BusStopRegistry[QueryHandler]):
             return None
 
         query_handler_id = next(iter(query_handler_ids))
-        return self._bus_stop_resolver.resolve(query_handler_id)
+        resolved_query_handler = self._bus_stop_resolver.resolve(query_handler_id)
+
+        if not isinstance(resolved_query_handler, QueryHandler):
+            raise HandlerNotFoundForQuery(query_name)
+        return resolved_query_handler
