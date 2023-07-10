@@ -4,7 +4,7 @@ from typing import Optional
 
 __SEPARATOR = "_"
 __BUS_STOP_ADDRESS_ENV_VARIABLE_NAME_PATTERN = f"BUS_STATION{__SEPARATOR}{{formatted_bus_stop_id}}{__SEPARATOR}ADDRESS"
-__SYMBOLS_REGEX = r"[^a-zA-Z0-9 \n\.]"
+__SYMBOLS_REGEX = r"[^a-zA-Z0-9 \n]"
 
 
 def get_bus_stop_address_from_environment(bus_stop_id: str) -> Optional[str]:
