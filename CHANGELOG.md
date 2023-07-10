@@ -1,3 +1,9 @@
+## 6.1.3 (2023-07-10)
+
+### Fix
+
+- include dot in the list of characters to be substituted by _ in the env var name
+
 ## 6.1.2 (2023-07-07)
 
 ### Fix
