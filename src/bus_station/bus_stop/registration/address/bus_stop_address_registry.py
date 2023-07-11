@@ -10,7 +10,7 @@ PT = TypeVar("PT", bound=Passenger)
 
 class BusStopAddressRegistry(metaclass=ABCMeta):
     @abstractmethod
-    def register(self, bus_stop_class: Type[BT], bus_stop_passenger: Type[PT], address: str) -> None:
+    def register(self, bus_stop_class: Type[BT], bus_stop_passenger_class: Type[PT], address: str) -> None:
         pass
 
     @abstractmethod
