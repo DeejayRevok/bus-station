@@ -27,8 +27,8 @@ class TestRedisBusStopAddressRegistry(TestCase):
 
         self.redis_client.set.assert_has_calls(
             [
-                call(QueryHandlerTest.bus_stop_name(), "address"),
                 call(QueryTest.passenger_name(), QueryHandlerTest.bus_stop_name()),
+                call(QueryHandlerTest.bus_stop_name(), "address"),
             ]
         )
 
@@ -44,9 +44,14 @@ class TestRedisBusStopAddressRegistry(TestCase):
                 call(query_handler_name),
             ]
         )
-        self.assertEqual("address", address)
+        self.assertEqual(b"address", address)
 
     def test_unregister(self):
-        self.registry.unregister(QueryHandlerTest)
+        self.registry.unregister(QueryHandlerTest, QueryTest)
 
-        self.redis_client.delete.assert_called_once_with(QueryHandlerTest.bus_stop_name())
+        self.redis_client.delete.assert_has_calls(
+            [
+                call(QueryTest.passenger_name()),
+                call(QueryHandlerTest.bus_stop_name()),
+            ]
+        )
