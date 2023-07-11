@@ -3,7 +3,7 @@ from typing import Optional, Type, TypeVar
 from redis.client import Redis
 
 from bus_station.bus_stop.bus_stop import BusStop
-from bus_station.bus_stop.registration.address.bus_stop_address_registry import PT, BusStopAddressRegistry
+from bus_station.bus_stop.registration.address.bus_stop_address_registry import BusStopAddressRegistry
 from bus_station.passengers.passenger import Passenger
 
 BT = TypeVar("BT", bound=BusStop)
