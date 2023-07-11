@@ -7,11 +7,7 @@ from time import sleep
 
 from redis import Redis
 
-from bus_station.bus_stop.environment import get_bus_stop_address_env_variable
 from bus_station.bus_stop.registration.address.redis_bus_stop_address_registry import RedisBusStopAddressRegistry
-from bus_station.bus_stop.registration.supervisor.bus_stop_address_registration_supervisor import (
-    BusStopAddressRegistrationSupervisor,
-)
 from bus_station.bus_stop.resolvers.in_memory_bus_stop_resolver import InMemoryBusStopResolver
 from bus_station.passengers.serialization.passenger_json_deserializer import PassengerJSONDeserializer
 from bus_station.passengers.serialization.passenger_json_serializer import PassengerJSONSerializer
@@ -51,12 +47,11 @@ class TestRPyCQueryBus(IntegrationTestCase):
         redis_host = cls.redis["host"]
         redis_port = cls.redis["port"]
         cls.query_handler_fqn = resolve_fqn(QueryTestHandler)
-        cls.bus_host = "localhost"
-        cls.bus_port = 1234
-        os.environ[get_bus_stop_address_env_variable(cls.query_handler_fqn)] = f"{cls.bus_host}:{cls.bus_port}"
 
         redis_client = Redis(host=redis_host, port=redis_port)
         cls.redis_address_registry = RedisBusStopAddressRegistry(redis_client)
+        cls.redis_address_registry.register(QueryTestHandler, QueryTest, f"http://localhost:1234")
+
         cls.query_handler_resolver = InMemoryBusStopResolver()
         cls.query_serializer = PassengerJSONSerializer()
         cls.query_deserializer = PassengerJSONDeserializer()
@@ -69,12 +64,11 @@ class TestRPyCQueryBus(IntegrationTestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
-        del os.environ[get_bus_stop_address_env_variable(cls.query_handler_fqn)]
+        cls.redis_address_registry.unregister(QueryTestHandler, QueryTest)
 
     def setUp(self) -> None:
         self.query_handler_registry = QueryHandlerRegistry(
             bus_stop_resolver=self.query_handler_resolver,
-            registration_supervisors=[BusStopAddressRegistrationSupervisor(self.redis_address_registry)],
         )
 
         self.test_query_handler = QueryTestHandler()
