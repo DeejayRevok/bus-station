@@ -52,7 +52,7 @@ class TestJsonRPCQueryBus(IntegrationTestCase):
 
         redis_client = Redis(host=redis_host, port=redis_port)
         cls.redis_address_registry = RedisBusStopAddressRegistry(redis_client)
-        cls.redis_address_registry.register(QueryTestHandler, QueryTest, f"http://{cls.bus_host}:{cls.bus_port}")
+        cls.redis_address_registry.register(QueryTestHandler, f"http://{cls.bus_host}:{cls.bus_port}")
 
         cls.query_handler_resolver = InMemoryBusStopResolver()
         cls.query_serializer = PassengerJSONSerializer()
@@ -66,7 +66,7 @@ class TestJsonRPCQueryBus(IntegrationTestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
-        cls.redis_address_registry.unregister(QueryTestHandler, QueryTest)
+        cls.redis_address_registry.unregister(QueryTestHandler)
 
     def setUp(self) -> None:
         self.query_handler_registry = QueryHandlerRegistry(
