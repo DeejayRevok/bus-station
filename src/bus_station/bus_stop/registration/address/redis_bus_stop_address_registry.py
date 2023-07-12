@@ -22,7 +22,7 @@ class RedisBusStopAddressRegistry(BusStopAddressRegistry):
 
     def get_address_for_bus_stop_passenger_class(self, bus_stop_passenger_class: Type[PT]) -> Optional[str]:
         bus_stop_name = self.__redis_client.get(bus_stop_passenger_class.passenger_name())
-        return self.__redis_client.get(bus_stop_name)
+        return self.__redis_client.get(bus_stop_name).decode("UTF-8")
 
     def unregister(self, bus_stop_class: Type[BT], bus_stop_passenger: Type[PT]) -> None:
         self.__redis_client.delete(bus_stop_passenger.passenger_name())

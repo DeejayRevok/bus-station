@@ -44,7 +44,7 @@ class TestRedisBusStopAddressRegistry(TestCase):
                 call(query_handler_name),
             ]
         )
-        self.assertEqual(b"address", address)
+        self.assertEqual("address", address)
 
     def test_unregister(self):
         self.registry.unregister(QueryHandlerTest, QueryTest)

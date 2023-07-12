@@ -43,10 +43,12 @@ class TestJsonRPCCommandBus(IntegrationTestCase):
         redis_host = cls.redis["host"]
         redis_port = cls.redis["port"]
         cls.command_handler_fqn = resolve_fqn(CommandTestHandler)
+        cls.bus_host = "localhost"
+        cls.bus_port = 1234
 
         redis_client = Redis(host=redis_host, port=redis_port)
         cls.redis_address_registry = RedisBusStopAddressRegistry(redis_client)
-        cls.redis_address_registry.register(CommandTestHandler, CommandTest, "http://localhost:1234")
+        cls.redis_address_registry.register(CommandTestHandler, CommandTest, f"http://{cls.bus_host}:{cls.bus_port}")
 
         cls.command_handler_resolver = InMemoryBusStopResolver()
         cls.command_serializer = PassengerJSONSerializer()

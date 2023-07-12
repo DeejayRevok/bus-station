@@ -48,7 +48,7 @@ class TestRPyCCommandBus(IntegrationTestCase):
 
         redis_client = Redis(host=redis_host, port=redis_port)
         cls.redis_address_registry = RedisBusStopAddressRegistry(redis_client)
-        cls.redis_address_registry.register(CommandTestHandler, CommandTest, "http://localhost:1234")
+        cls.redis_address_registry.register(CommandTestHandler, CommandTest, f"{cls.bus_host}:{cls.bus_port}")
 
         cls.command_handler_resolver = InMemoryBusStopResolver()
         cls.command_serializer = PassengerJSONSerializer()
@@ -56,6 +56,7 @@ class TestRPyCCommandBus(IntegrationTestCase):
         cls.command_receiver = CommandMiddlewareReceiver()
         cls.rpyc_server = RPyCCommandServer(cls.bus_host, cls.bus_port, cls.command_deserializer, cls.command_receiver)
 
+    @classmethod
     def tearDownClass(cls) -> None:
         cls.redis_address_registry.unregister(CommandTestHandler, CommandTest)
 

@@ -47,10 +47,12 @@ class TestRPyCQueryBus(IntegrationTestCase):
         redis_host = cls.redis["host"]
         redis_port = cls.redis["port"]
         cls.query_handler_fqn = resolve_fqn(QueryTestHandler)
+        cls.bus_host = "localhost"
+        cls.bus_port = 1234
 
         redis_client = Redis(host=redis_host, port=redis_port)
         cls.redis_address_registry = RedisBusStopAddressRegistry(redis_client)
-        cls.redis_address_registry.register(QueryTestHandler, QueryTest, "http://localhost:1234")
+        cls.redis_address_registry.register(QueryTestHandler, QueryTest, f"{cls.bus_host}:{cls.bus_port}")
 
         cls.query_handler_resolver = InMemoryBusStopResolver()
         cls.query_serializer = PassengerJSONSerializer()
