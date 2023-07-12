@@ -1,4 +1,7 @@
 from abc import ABC, abstractmethod
+from typing import Callable, Type, get_type_hints
+
+from bus_station.passengers.passenger import Passenger
 
 
 class BusStop(ABC):
@@ -6,3 +9,21 @@ class BusStop(ABC):
     @abstractmethod
     def bus_stop_name(cls) -> str:
         pass
+
+    @classmethod
+    @abstractmethod
+    def passenger(cls) -> Type[Passenger]:
+        pass
+
+    @classmethod
+    def _get_passenger_from_handling_method(
+        cls, passenger_handling_method: Callable, passenger_argument_name: str
+    ) -> Type[Passenger]:
+        bus_stop_handle_typing = get_type_hints(passenger_handling_method)
+
+        if passenger_argument_name not in bus_stop_handle_typing:
+            raise TypeError(
+                f"{passenger_handling_method.__name__} {passenger_argument_name} not found for {cls.bus_stop_name()}"
+            )
+
+        return bus_stop_handle_typing[passenger_argument_name]
