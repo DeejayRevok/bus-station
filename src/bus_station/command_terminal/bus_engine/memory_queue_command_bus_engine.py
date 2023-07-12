@@ -3,7 +3,6 @@ from bus_station.command_terminal.command_handler import CommandHandler
 from bus_station.command_terminal.command_handler_not_found import CommandHandlerNotFound
 from bus_station.command_terminal.command_handler_registry import CommandHandlerRegistry
 from bus_station.passengers.memory_queue_passenger_worker import MemoryQueuePassengerWorker
-from bus_station.passengers.passenger_resolvers import resolve_passenger_class_from_bus_stop
 from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 from bus_station.shared_terminal.engine.engine import Engine
@@ -22,7 +21,7 @@ class MemoryQueueCommandBusEngine(Engine):
         if command_handler is None:
             raise CommandHandlerNotFound(command_handler_name)
 
-        command = resolve_passenger_class_from_bus_stop(command_handler, "handle", "command")
+        command = command_handler.passenger()
         command_queue = memory_queue_factory.queue_with_id(command.passenger_name())
         self.__command_worker = MemoryQueuePassengerWorker(
             command_queue, command_handler, command_receiver, command_deserializer

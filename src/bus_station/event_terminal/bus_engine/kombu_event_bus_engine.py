@@ -8,7 +8,6 @@ from bus_station.event_terminal.event_consumer import EventConsumer
 from bus_station.event_terminal.event_consumer_not_found import EventConsumerNotFound
 from bus_station.event_terminal.event_consumer_registry import EventConsumerRegistry
 from bus_station.passengers.passenger_kombu_consumer import PassengerKombuConsumer
-from bus_station.passengers.passenger_resolvers import resolve_passenger_class_from_bus_stop
 from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 from bus_station.shared_terminal.engine.engine import Engine
@@ -29,7 +28,7 @@ class KombuEventBusEngine(Engine):
         if event_consumer is None:
             raise EventConsumerNotFound(event_consumer_name)
 
-        event = resolve_passenger_class_from_bus_stop(event_consumer, "consume", "event")
+        event = event_consumer.passenger()
 
         channel = broker_connection.channel()
         self.__create_dead_letter_exchange(channel)

@@ -8,7 +8,6 @@ from bus_station.command_terminal.command_handler import CommandHandler
 from bus_station.command_terminal.command_handler_not_found import CommandHandlerNotFound
 from bus_station.command_terminal.command_handler_registry import CommandHandlerRegistry
 from bus_station.passengers.passenger_kombu_consumer import PassengerKombuConsumer
-from bus_station.passengers.passenger_resolvers import resolve_passenger_class_from_bus_stop
 from bus_station.passengers.reception.passenger_receiver import PassengerReceiver
 from bus_station.passengers.serialization.passenger_deserializer import PassengerDeserializer
 from bus_station.shared_terminal.engine.engine import Engine
@@ -29,7 +28,7 @@ class KombuCommandBusEngine(Engine):
         if command_handler is None:
             raise CommandHandlerNotFound(command_handler_name)
 
-        command_type = resolve_passenger_class_from_bus_stop(command_handler, "handle", "command")
+        command_type = command_handler.passenger()
         channel = broker_connection.channel()
         self.__create_dead_letter_exchange(channel)
 
