@@ -1,12 +1,10 @@
 import requests
 from jsonrpcclient import Error, parse, request
 
-from bus_station.bus_stop.registration.address.address_not_found_for_bus_stop import AddressNotFoundForBusStop
+from bus_station.bus_stop.registration.address.address_not_found_for_passenger import AddressNotFoundForPassenger
 from bus_station.bus_stop.registration.address.bus_stop_address_registry import BusStopAddressRegistry
-from bus_station.passengers.passenger_registry import passenger_bus_stop_registry
 from bus_station.passengers.serialization.passenger_serializer import PassengerSerializer
 from bus_station.query_terminal.bus.query_bus import QueryBus
-from bus_station.query_terminal.handler_not_found_for_query import HandlerNotFoundForQuery
 from bus_station.query_terminal.query import Query
 from bus_station.query_terminal.query_execution_failed import QueryExecutionFailed
 from bus_station.query_terminal.query_response import QueryResponse
@@ -29,14 +27,9 @@ class JsonRPCQueryBus(QueryBus):
         return self.__execute_query(passenger, handler_address)
 
     def __get_handler_address(self, passenger: Query) -> str:
-        query_handler_ids = passenger_bus_stop_registry.get_bus_stops_for_passenger(passenger.passenger_name())
-        if len(query_handler_ids) == 0:
-            raise HandlerNotFoundForQuery(passenger.passenger_name())
-
-        query_handler_id = next(iter(query_handler_ids))
-        handler_address = self.__address_registry.get_bus_stop_address(query_handler_id)
+        handler_address = self.__address_registry.get_address_for_bus_stop_passenger_class(passenger.__class__)
         if handler_address is None:
-            raise AddressNotFoundForBusStop(query_handler_id)
+            raise AddressNotFoundForPassenger(passenger.passenger_name())
 
         return handler_address
 

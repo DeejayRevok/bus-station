@@ -7,11 +7,7 @@ from time import sleep
 
 from redis import Redis
 
-from bus_station.bus_stop.environment import get_bus_stop_address_env_variable
 from bus_station.bus_stop.registration.address.redis_bus_stop_address_registry import RedisBusStopAddressRegistry
-from bus_station.bus_stop.registration.supervisor.bus_stop_address_registration_supervisor import (
-    BusStopAddressRegistrationSupervisor,
-)
 from bus_station.bus_stop.resolvers.in_memory_bus_stop_resolver import InMemoryBusStopResolver
 from bus_station.command_terminal.bus.synchronous.distributed.rpyc_command_bus import RPyCCommandBus
 from bus_station.command_terminal.bus_engine.rpyc_command_bus_engine import RPyCCommandBusEngine
@@ -49,10 +45,11 @@ class TestRPyCCommandBus(IntegrationTestCase):
         cls.command_handler_fqn = resolve_fqn(CommandTestHandler)
         cls.bus_host = "localhost"
         cls.bus_port = 1234
-        os.environ[get_bus_stop_address_env_variable(cls.command_handler_fqn)] = f"{cls.bus_host}:{cls.bus_port}"
 
         redis_client = Redis(host=redis_host, port=redis_port)
         cls.redis_address_registry = RedisBusStopAddressRegistry(redis_client)
+        cls.redis_address_registry.register(CommandTestHandler, CommandTest, f"{cls.bus_host}:{cls.bus_port}")
+
         cls.command_handler_resolver = InMemoryBusStopResolver()
         cls.command_serializer = PassengerJSONSerializer()
         cls.command_deserializer = PassengerJSONDeserializer()
@@ -61,12 +58,11 @@ class TestRPyCCommandBus(IntegrationTestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
-        del os.environ[get_bus_stop_address_env_variable(cls.command_handler_fqn)]
+        cls.redis_address_registry.unregister(CommandTestHandler, CommandTest)
 
     def setUp(self) -> None:
         self.command_handler_registry = CommandHandlerRegistry(
             bus_stop_resolver=self.command_handler_resolver,
-            registration_supervisors=[BusStopAddressRegistrationSupervisor(self.redis_address_registry)],
         )
         self.test_command_handler = CommandTestHandler()
         self.command_handler_resolver.add_bus_stop(self.test_command_handler)
