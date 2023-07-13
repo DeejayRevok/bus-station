@@ -3,7 +3,6 @@ from typing import Type
 
 from bus_station.bus_stop.bus_stop import BusStop
 from bus_station.command_terminal.command import Command
-from bus_station.passengers.passenger import Passenger
 from bus_station.shared_terminal.dataclass_type import DataclassType
 
 
