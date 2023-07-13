@@ -7,7 +7,6 @@
     { "site-package": "kombu" },
     { "site-package": "jsonrpcclient" },
     { "site-package": "rpyc" },
-    { "site-package": "pypendency" },
     { "site-package": "confluent_kafka" }
   ]
 }

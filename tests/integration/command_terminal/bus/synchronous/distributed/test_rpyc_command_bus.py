@@ -8,7 +8,6 @@ from time import sleep
 from redis import Redis
 
 from bus_station.bus_stop.registration.address.redis_bus_stop_address_registry import RedisBusStopAddressRegistry
-from bus_station.bus_stop.resolvers.in_memory_bus_stop_resolver import InMemoryBusStopResolver
 from bus_station.command_terminal.bus.synchronous.distributed.rpyc_command_bus import RPyCCommandBus
 from bus_station.command_terminal.bus_engine.rpyc_command_bus_engine import RPyCCommandBusEngine
 from bus_station.command_terminal.command import Command
@@ -20,7 +19,6 @@ from bus_station.passengers.serialization.passenger_json_deserializer import Pas
 from bus_station.passengers.serialization.passenger_json_serializer import PassengerJSONSerializer
 from bus_station.shared_terminal.engine.runner.process_engine_runner import ProcessEngineRunner
 from bus_station.shared_terminal.engine.runner.self_process_engine_runner import SelfProcessEngineRunner
-from bus_station.shared_terminal.fqn import resolve_fqn
 from tests.integration.integration_test_case import IntegrationTestCase
 
 
@@ -42,7 +40,6 @@ class TestRPyCCommandBus(IntegrationTestCase):
     def setUpClass(cls) -> None:
         redis_host = cls.redis["host"]
         redis_port = cls.redis["port"]
-        cls.command_handler_fqn = resolve_fqn(CommandTestHandler)
         cls.bus_host = "localhost"
         cls.bus_port = 1234
 
@@ -50,7 +47,6 @@ class TestRPyCCommandBus(IntegrationTestCase):
         cls.redis_address_registry = RedisBusStopAddressRegistry(redis_client)
         cls.redis_address_registry.register(CommandTestHandler, f"{cls.bus_host}:{cls.bus_port}")
 
-        cls.command_handler_resolver = InMemoryBusStopResolver()
         cls.command_serializer = PassengerJSONSerializer()
         cls.command_deserializer = PassengerJSONDeserializer()
         cls.command_receiver = CommandMiddlewareReceiver()
@@ -61,12 +57,9 @@ class TestRPyCCommandBus(IntegrationTestCase):
         cls.redis_address_registry.unregister(CommandTestHandler)
 
     def setUp(self) -> None:
-        self.command_handler_registry = CommandHandlerRegistry(
-            bus_stop_resolver=self.command_handler_resolver,
-        )
+        self.command_handler_registry = CommandHandlerRegistry()
         self.test_command_handler = CommandTestHandler()
-        self.command_handler_resolver.add_bus_stop(self.test_command_handler)
-        self.command_handler_registry.register(self.command_handler_fqn)
+        self.command_handler_registry.register(self.test_command_handler)
 
         self.rpyc_command_bus_engine = RPyCCommandBusEngine(
             rpyc_server=self.rpyc_server,
@@ -76,7 +69,7 @@ class TestRPyCCommandBus(IntegrationTestCase):
         self.rpyc_command_bus = RPyCCommandBus(self.command_serializer, self.redis_address_registry)
 
     def tearDown(self) -> None:
-        self.command_handler_registry.unregister(self.command_handler_fqn)
+        self.command_handler_registry.unregister(self.test_command_handler)
 
     def test_process_engine_transport_success(self):
         test_command = CommandTest()

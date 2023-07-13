@@ -5,7 +5,6 @@ from dataclasses import dataclass
 from multiprocessing import Process, Value
 from time import sleep
 
-from bus_station.bus_stop.resolvers.in_memory_bus_stop_resolver import InMemoryBusStopResolver
 from bus_station.command_terminal.bus.asynchronous.memory_queue_command_bus import MemoryQueueCommandBus
 from bus_station.command_terminal.bus_engine.memory_queue_command_bus_engine import MemoryQueueCommandBusEngine
 from bus_station.command_terminal.command import Command
@@ -17,7 +16,6 @@ from bus_station.passengers.serialization.passenger_json_serializer import Passe
 from bus_station.shared_terminal.engine.runner.process_engine_runner import ProcessEngineRunner
 from bus_station.shared_terminal.engine.runner.self_process_engine_runner import SelfProcessEngineRunner
 from bus_station.shared_terminal.factories.memory_queue_factory import memory_queue_factory
-from bus_station.shared_terminal.fqn import resolve_fqn
 from tests.integration.integration_test_case import IntegrationTestCase
 
 
@@ -39,16 +37,13 @@ class TestMemoryQueueCommandBus(IntegrationTestCase):
     def setUpClass(cls) -> None:
         cls.passenger_serializer = PassengerJSONSerializer()
         cls.passenger_deserializer = PassengerJSONDeserializer()
-        cls.command_handler_resolver = InMemoryBusStopResolver()
         cls.command_receiver = CommandMiddlewareReceiver()
-        cls.command_handler_fqn = resolve_fqn(CommandTestHandler)
 
     def setUp(self) -> None:
         self.__exhaust_queue()
-        self.command_handler_registry = CommandHandlerRegistry(bus_stop_resolver=self.command_handler_resolver)
+        self.command_handler_registry = CommandHandlerRegistry()
         self.test_command_handler = CommandTestHandler()
-        self.command_handler_resolver.add_bus_stop(self.test_command_handler)
-        self.command_handler_registry.register(self.command_handler_fqn)
+        self.command_handler_registry.register(self.test_command_handler)
         self.memory_queue_bus_engine = MemoryQueueCommandBusEngine(
             self.command_handler_registry,
             self.command_receiver,
