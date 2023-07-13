@@ -20,7 +20,7 @@ class BusStop(ABC):
     @classmethod
     def _get_passenger_from_handling_method(
         cls, passenger_handling_method: Callable, passenger_argument_name: str
-    ) -> Type[PT]:
+    ) -> Type[PT]:  # pyre-ignore [34]
         bus_stop_handle_typing = get_type_hints(passenger_handling_method)
 
         if passenger_argument_name not in bus_stop_handle_typing:

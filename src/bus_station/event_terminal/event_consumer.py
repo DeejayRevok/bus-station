@@ -18,4 +18,4 @@ class EventConsumer(BusStop):
     @classmethod
     def passenger(cls) -> Type[Event]:
         passenger = cls._get_passenger_from_handling_method(cls.consume, "event")
-        return passenger  # pyre-ignore [7]
+        return passenger
