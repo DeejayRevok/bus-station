@@ -3,15 +3,19 @@ from unittest import TestCase
 from yandil.configuration.configuration_container import default_configuration_container
 from yandil.container import Container
 
-from bus_station.bus_stop.bus_stop import BusStop
 from bus_station.bus_stop.resolvers.yandil_bus_stop_resolver import YandilBusStopResolver
+from bus_station.event_terminal.event import Event
+from bus_station.event_terminal.event_consumer import EventConsumer
 from bus_station.shared_terminal.fqn import resolve_fqn
 
 
-class BusStopTest(BusStop):
+class BusStopTest(EventConsumer):
     @classmethod
     def bus_stop_name(cls) -> str:
         return "test_bus_stop"
+
+    def consume(self, event: Event) -> None:
+        pass
 
 
 class TestClass:

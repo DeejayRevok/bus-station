@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import Callable, Type, get_type_hints
+from typing import Callable, Type, TypeVar, get_type_hints
 
 from bus_station.passengers.passenger import Passenger
+
+PT = TypeVar("PT", bound=Passenger)
 
 
 class BusStop(ABC):
@@ -18,7 +20,7 @@ class BusStop(ABC):
     @classmethod
     def _get_passenger_from_handling_method(
         cls, passenger_handling_method: Callable, passenger_argument_name: str
-    ) -> Type[Passenger]:
+    ) -> Type[PT]:
         bus_stop_handle_typing = get_type_hints(passenger_handling_method)
 
         if passenger_argument_name not in bus_stop_handle_typing:

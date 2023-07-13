@@ -18,6 +18,4 @@ class CommandHandler(BusStop):
     @classmethod
     def passenger(cls) -> Type[Command]:
         passenger = cls._get_passenger_from_handling_method(cls.handle, "command")
-        if not issubclass(passenger, Command):
-            raise TypeError(f"{passenger.__name__} is not a command")
         return passenger  # pyre-ignore [7]
