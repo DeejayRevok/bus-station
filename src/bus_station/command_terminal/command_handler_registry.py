@@ -6,7 +6,7 @@ from bus_station.command_terminal.handler_not_found_for_command import HandlerNo
 from bus_station.passengers.passenger_registry import passenger_bus_stop_registry
 
 
-class CommandHandlerRegistry(BusStopRegistry):
+class CommandHandlerRegistry(BusStopRegistry[CommandHandler]):
     def get_handler_from_command(self, command_name: str) -> Optional[CommandHandler]:
         command_handler_names = passenger_bus_stop_registry.get_bus_stops_for_passenger(command_name)
         if len(command_handler_names) == 0:

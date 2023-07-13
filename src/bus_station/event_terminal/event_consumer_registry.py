@@ -5,7 +5,7 @@ from bus_station.event_terminal.event_consumer import EventConsumer
 from bus_station.passengers.passenger_registry import passenger_bus_stop_registry
 
 
-class EventConsumerRegistry(BusStopRegistry):
+class EventConsumerRegistry(BusStopRegistry[EventConsumer]):
     def get_consumers_from_event(self, event_name: str) -> Set[EventConsumer]:
         result_set = set()
         for event_consumer_name in passenger_bus_stop_registry.get_bus_stops_for_passenger(event_name):
