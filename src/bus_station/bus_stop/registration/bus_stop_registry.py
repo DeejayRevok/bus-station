@@ -37,15 +37,15 @@ class BusStopRegistry(Generic[S]):
         bus_stop = self._bus_stop_resolver.resolve(bus_stop_id)
         if bus_stop is None:
             raise BusStopNotFound(bus_stop_id)
+
         self.__remove_bus_stop_name_mapping(bus_stop)
         self.__registered_bus_stops.remove(bus_stop_id)
-        self.__unregister_in_passenger_registry(bus_stop_id)
+        self.__unregister_in_passenger_registry(bus_stop, bus_stop_id)
 
     def __remove_bus_stop_name_mapping(self, bus_stop: BusStop) -> None:
         del self.__bus_stop_name_id_mapping[bus_stop.bus_stop_name()]
 
-    def __unregister_in_passenger_registry(self, bus_stop_id: str) -> None:
-        bus_stop = self._bus_stop_resolver.resolve(bus_stop_id)
+    def __unregister_in_passenger_registry(self, bus_stop: BusStop, bus_stop_id: str) -> None:
         passenger = bus_stop.passenger()
         passenger_bus_stop_registry.unregister(passenger.passenger_name(), bus_stop_id)
 

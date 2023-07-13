@@ -17,5 +17,8 @@ class CommandHandler(BusStop):
         return f"command_handler.{cls.__module__}.{cls.__name__}"
 
     @classmethod
-    def passenger(cls) -> Type[Passenger]:
-        return cls._get_passenger_from_handling_method(cls.handle, "event")
+    def passenger(cls) -> Type[Command]:
+        passenger = cls._get_passenger_from_handling_method(cls.handle, "event")
+        if not issubclass(passenger, Command):
+            raise TypeError(f"{passenger.__name__} is not a command")
+        return passenger

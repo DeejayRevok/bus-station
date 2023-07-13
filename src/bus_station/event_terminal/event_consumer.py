@@ -18,4 +18,7 @@ class EventConsumer(BusStop):
 
     @classmethod
     def passenger(cls) -> Type[Passenger]:
-        return cls._get_passenger_from_handling_method(cls.consume, "event")
+        passenger = cls._get_passenger_from_handling_method(cls.consume, "event")
+        if not issubclass(passenger, Event):
+            raise TypeError(f"{passenger.__name__} is not an event")
+        return passenger
