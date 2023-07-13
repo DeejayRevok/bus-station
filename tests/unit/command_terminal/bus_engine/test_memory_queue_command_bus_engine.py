@@ -35,18 +35,15 @@ class TestMemoryQueueCommandBusEngine(TestCase):
         self.command_handler_registry_mock.get_bus_stop_by_name.assert_called_once_with("test_command_handler")
         passenger_worker_builder.assert_not_called()
 
-    @patch(
-        "bus_station.command_terminal.bus_engine.memory_queue_command_bus_engine.resolve_passenger_class_from_bus_stop"
-    )
     @patch("bus_station.command_terminal.bus_engine.memory_queue_command_bus_engine.memory_queue_factory")
     @patch("bus_station.command_terminal.bus_engine.memory_queue_command_bus_engine.MemoryQueuePassengerWorker")
-    def test_init_handler_found(self, passenger_worker_builder, queue_factory_mock, passenger_resolver_mock):
+    def test_init_handler_found(self, passenger_worker_builder, queue_factory_mock):
+        test_command_handler = Mock(spec=CommandHandler)
         test_command_mock = Mock(spec=Command)
         test_command_mock.passenger_name.return_value = "test_command"
-        passenger_resolver_mock.return_value = test_command_mock
+        test_command_handler.passenger.return_value = test_command_mock
         memory_queue_passenger_worker_mock = Mock(spec=MemoryQueuePassengerWorker)
         passenger_worker_builder.return_value = memory_queue_passenger_worker_mock
-        test_command_handler = Mock(spec=CommandHandler)
         test_queue = Mock(spec=Queue)
         queue_factory_mock.queue_with_id.return_value = test_queue
         self.command_handler_registry_mock.get_bus_stop_by_name.return_value = test_command_handler
@@ -64,9 +61,6 @@ class TestMemoryQueueCommandBusEngine(TestCase):
             test_queue, test_command_handler, self.command_receiver_mock, self.command_deserializer_mock
         )
 
-    @patch(
-        "bus_station.command_terminal.bus_engine.memory_queue_command_bus_engine.resolve_passenger_class_from_bus_stop"
-    )
     @patch("bus_station.command_terminal.bus_engine.memory_queue_command_bus_engine.memory_queue_factory")
     @patch("bus_station.command_terminal.bus_engine.memory_queue_command_bus_engine.MemoryQueuePassengerWorker")
     def test_start(self, passenger_worker_builder, *_):
@@ -83,9 +77,6 @@ class TestMemoryQueueCommandBusEngine(TestCase):
 
         memory_queue_passenger_worker_mock.work.assert_called_once_with()
 
-    @patch(
-        "bus_station.command_terminal.bus_engine.memory_queue_command_bus_engine.resolve_passenger_class_from_bus_stop"
-    )
     @patch("bus_station.command_terminal.bus_engine.memory_queue_command_bus_engine.memory_queue_factory")
     @patch("bus_station.command_terminal.bus_engine.memory_queue_command_bus_engine.MemoryQueuePassengerWorker")
     def test_stop(self, passenger_worker_builder, *_):
