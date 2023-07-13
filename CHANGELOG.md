@@ -1,3 +1,23 @@
+## 7.0.0 (2023-07-13)
+
+### BREAKING CHANGE
+
+- bus stop resolvers removed and for registering bus stop the instance is needed
+- now calling the bus stop address registry register and unregister methods does not accept passenger since its taken from the bus stop itself
+- registration supervisors removed, removed getting address from env vars
+
+### Feat
+
+- add passenger resolving to bus stops
+
+### Refactor
+
+- remove bus stop resolvers and accept instances instead of ids in registries
+- simplify engines code getting the passenger from the bus stops instead of using a passenger resolver
+- simplify bus stop address registries code removing the need of passenger resolver
+- simplify address registration removing the need of passing the passenger
+- refactor bus stop address registration
+
 ## 6.1.3 (2023-07-10)
 
 ### Fix
