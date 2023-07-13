@@ -20,4 +20,4 @@ class CommandHandler(BusStop):
         passenger = cls._get_passenger_from_handling_method(cls.handle, "event")
         if not issubclass(passenger, Command):
             raise TypeError(f"{passenger.__name__} is not a command")
-        return passenger
+        return passenger  # pyre-ignore [7]
