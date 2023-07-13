@@ -533,13 +533,13 @@ examples = ["aiohttp", "aiozmq", "flask", "flask-socketio", "gmqtt", "pyzmq", "t
 
 [[package]]
 name = "jsonschema"
-version = "4.18.2"
+version = "4.18.3"
 description = "An implementation of JSON Schema validation for Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "jsonschema-4.18.2-py3-none-any.whl", hash = "sha256:159fdff1443b4c5ed900d4eeac6b928a3485f4aff5fba6edd1e25cd66bb46b39"},
-    {file = "jsonschema-4.18.2.tar.gz", hash = "sha256:af3855bfa30e83b2200a5fe12ab5eb92460e4d3b8e4efd34094aa637f7272a87"},
+    {file = "jsonschema-4.18.3-py3-none-any.whl", hash = "sha256:aab78b34c2de001c6b692232f08c21a97b436fe18e0b817bf0511046924fceef"},
+    {file = "jsonschema-4.18.3.tar.gz", hash = "sha256:64b7104d72efe856bea49ca4af37a14a9eba31b40bb7238179f3803130fd34d9"},
 ]
 
 [package.dependencies]
@@ -950,20 +950,6 @@ files = [
 
 [package.extras]
 plugins = ["importlib-metadata"]
-
-[[package]]
-name = "pypendency"
-version = "0.5.0"
-description = "A dependency injection tool for python"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "pypendency-0.5.0-py3-none-any.whl", hash = "sha256:c72c6eb0ad8a780cc37b52773917ca6e314d1838c0588c22c2c7640c92b01946"},
-    {file = "pypendency-0.5.0.tar.gz", hash = "sha256:38e28407d3d8e455b54f4b919986612609c5fbe506ce27c555ad715210dc5c09"},
-]
-
-[package.dependencies]
-pyyaml = "*"
 
 [[package]]
 name = "pyre-check"
@@ -1507,17 +1493,6 @@ files = [
 ]
 
 [[package]]
-name = "yandil"
-version = "0.3.3"
-description = "Yet ANother Dependency Injection Library"
-optional = false
-python-versions = ">=3.10.0,<3.11.0"
-files = [
-    {file = "yandil-0.3.3-py3-none-any.whl", hash = "sha256:39264bc52e7c58ce3c70f90b2768242cff61bea7fa875f865f458e6f715e04f7"},
-    {file = "yandil-0.3.3.tar.gz", hash = "sha256:9935980c363f60560c25d4b2dce44c95ea4de77c9084638f6e1b1f969d89a7b0"},
-]
-
-[[package]]
 name = "zipp"
 version = "3.16.1"
 description = "Backport of pathlib-compatible object wrapper for zip files"
@@ -1535,4 +1510,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "~=3.10.0"
-content-hash = "b7f0740259e5400f592d85b17a9fda93e2a4ab8e8c4696e42c5c40713c8b5fef"
+content-hash = "930937674a4cf0a7b60847f0ec37395b0f1f64539cd36d2d2851923bb951e77d"
