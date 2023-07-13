@@ -46,20 +46,17 @@ class TestKombuEventBusEngine(TestCase):
         exchange_builder_mock.assert_not_called()
         queue_builder_mock.assert_not_called()
 
-    @patch("bus_station.event_terminal.bus_engine.kombu_event_bus_engine.resolve_passenger_class_from_bus_stop")
     @patch("bus_station.event_terminal.bus_engine.kombu_event_bus_engine.Queue")
     @patch("bus_station.event_terminal.bus_engine.kombu_event_bus_engine.Exchange")
     @patch("bus_station.event_terminal.bus_engine.kombu_event_bus_engine.PassengerKombuConsumer")
-    def test_init_contact_found(
-        self, consumer_builder_mock, exchange_builder_mock, queue_builder_mock, passenger_resolver_mock
-    ):
+    def test_init_contact_found(self, consumer_builder_mock, exchange_builder_mock, queue_builder_mock):
         test_queue = Mock(spec=Queue)
         queue_builder_mock.return_value = test_queue
         test_exchange = Mock(spec=Exchange)
         exchange_builder_mock.return_value = test_exchange
         self.event_consumer_registry_mock.get_bus_stop_by_name.return_value = self.event_consumer_mock
         test_event = Mock(spec=Event)
-        passenger_resolver_mock.return_value = test_event
+        self.event_consumer_mock.passenger.return_value = test_event
 
         KombuEventBusEngine(
             self.broker_connection_mock,
@@ -85,7 +82,6 @@ class TestKombuEventBusEngine(TestCase):
             self.event_deserializer_mock,
         )
 
-    @patch("bus_station.event_terminal.bus_engine.kombu_event_bus_engine.resolve_passenger_class_from_bus_stop")
     @patch("bus_station.event_terminal.bus_engine.kombu_event_bus_engine.Queue")
     @patch("bus_station.event_terminal.bus_engine.kombu_event_bus_engine.Exchange")
     @patch("bus_station.event_terminal.bus_engine.kombu_event_bus_engine.PassengerKombuConsumer")
@@ -104,7 +100,6 @@ class TestKombuEventBusEngine(TestCase):
 
         test_kombu_consumer.run.assert_called_once_with()
 
-    @patch("bus_station.event_terminal.bus_engine.kombu_event_bus_engine.resolve_passenger_class_from_bus_stop")
     @patch("bus_station.event_terminal.bus_engine.kombu_event_bus_engine.Queue")
     @patch("bus_station.event_terminal.bus_engine.kombu_event_bus_engine.Exchange")
     @patch("bus_station.event_terminal.bus_engine.kombu_event_bus_engine.PassengerKombuConsumer")

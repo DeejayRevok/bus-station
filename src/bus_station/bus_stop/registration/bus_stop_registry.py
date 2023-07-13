@@ -1,5 +1,5 @@
 # pyre-ignore-all-errors[7]
-from typing import Callable, Dict, Generic, Optional, Set, TypeVar
+from typing import Dict, Generic, Optional, Set, TypeVar
 
 from bus_station.bus_stop.bus_stop import BusStop
 from bus_station.bus_stop.bus_stop_not_found import BusStopNotFound
@@ -13,10 +13,8 @@ class BusStopRegistry(Generic[S]):
     def __init__(
         self,
         bus_stop_resolver: BusStopResolver,
-        bus_stop_passenger_resolver: Callable,
     ):
         self._bus_stop_resolver = bus_stop_resolver
-        self.__bus_stop_passenger_resolver = bus_stop_passenger_resolver
         self.__registered_bus_stops: Set[str] = set()
         self.__bus_stop_name_id_mapping: Dict[str, str] = {}
 
@@ -32,23 +30,23 @@ class BusStopRegistry(Generic[S]):
         self.__bus_stop_name_id_mapping[bus_stop.bus_stop_name()] = bus_stop_id
 
     def __register_in_passenger_registry(self, bus_stop_id: str, bus_stop: BusStop) -> None:
-        passenger = self.__bus_stop_passenger_resolver(bus_stop)
+        passenger = bus_stop.passenger()
         passenger_bus_stop_registry.register(passenger.passenger_name(), bus_stop_id)
 
     def unregister(self, bus_stop_id: str) -> None:
         bus_stop = self._bus_stop_resolver.resolve(bus_stop_id)
         if bus_stop is None:
             raise BusStopNotFound(bus_stop_id)
+
         self.__remove_bus_stop_name_mapping(bus_stop)
         self.__registered_bus_stops.remove(bus_stop_id)
-        self.__unregister_in_passenger_registry(bus_stop_id)
+        self.__unregister_in_passenger_registry(bus_stop, bus_stop_id)
 
     def __remove_bus_stop_name_mapping(self, bus_stop: BusStop) -> None:
         del self.__bus_stop_name_id_mapping[bus_stop.bus_stop_name()]
 
-    def __unregister_in_passenger_registry(self, bus_stop_id: str) -> None:
-        bus_stop = self._bus_stop_resolver.resolve(bus_stop_id)
-        passenger = self.__bus_stop_passenger_resolver(bus_stop)
+    def __unregister_in_passenger_registry(self, bus_stop: BusStop, bus_stop_id: str) -> None:
+        passenger = bus_stop.passenger()
         passenger_bus_stop_registry.unregister(passenger.passenger_name(), bus_stop_id)
 
     def get_bus_stop(self, bus_stop_id: str) -> Optional[S]:

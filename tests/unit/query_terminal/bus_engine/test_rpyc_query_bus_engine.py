@@ -1,5 +1,5 @@
 from unittest import TestCase
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
 from bus_station.command_terminal.command_handler_registry import CommandHandlerRegistry
 from bus_station.query_terminal.bus_engine.rpyc_query_bus_engine import RPyCQueryBusEngine
@@ -12,21 +12,19 @@ class TestRPyCQueryBusEngine(TestCase):
         self.server = Mock(spec=RPyCServer)
         self.registry = Mock(spec=CommandHandlerRegistry)
 
-    @patch("bus_station.query_terminal.bus_engine.rpyc_query_bus_engine.resolve_passenger_class_from_bus_stop")
-    def test_initialize_registers_command_handler_in_server(self, passenger_resolver_mock):
+    def test_initialize_registers_command_handler_in_server(self):
         handler = Mock()
         handler_name = "handler_name"
         self.registry.get_bus_stop_by_name.return_value = handler
         test_command_mock = Mock()
-        passenger_resolver_mock.return_value = test_command_mock
+        handler.passenger.return_value = test_command_mock
 
         RPyCQueryBusEngine(self.server, self.registry, handler_name)
 
         self.registry.get_bus_stop_by_name.assert_called_once_with(handler_name)
         self.server.register.assert_called_once_with(test_command_mock, handler)
 
-    @patch("bus_station.query_terminal.bus_engine.rpyc_query_bus_engine.resolve_passenger_class_from_bus_stop")
-    def test_initialize_raises_exception_if_command_handler_not_found(self, _):
+    def test_initialize_raises_exception_if_command_handler_not_found(self):
         handler_name = "handler_name"
         self.registry.get_bus_stop_by_name.return_value = None
 
@@ -36,8 +34,7 @@ class TestRPyCQueryBusEngine(TestCase):
         self.assertEqual(handler_name, context.exception.query_handler_name)
         self.registry.get_bus_stop_by_name.assert_called_once_with(handler_name)
 
-    @patch("bus_station.query_terminal.bus_engine.rpyc_query_bus_engine.resolve_passenger_class_from_bus_stop")
-    def test_start_runs_the_server(self, _):
+    def test_start_runs_the_server(self):
         handler_name = "handler_name"
         engine = RPyCQueryBusEngine(self.server, self.registry, handler_name)
 

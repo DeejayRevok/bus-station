@@ -1,4 +1,3 @@
-from bus_station.passengers.passenger_resolvers import resolve_passenger_class_from_bus_stop
 from bus_station.query_terminal.query_handler_not_found import QueryHandlerNotFound
 from bus_station.query_terminal.query_handler_registry import QueryHandlerRegistry
 from bus_station.shared_terminal.engine.engine import Engine
@@ -16,7 +15,7 @@ class RPyCQueryBusEngine(Engine):
         if handler is None:
             raise QueryHandlerNotFound(query_handler_name)
 
-        query_type = resolve_passenger_class_from_bus_stop(handler, "handle", "query")
+        query_type = handler.passenger()
         self.__server.register(query_type, handler)
 
     def start(self) -> None:
