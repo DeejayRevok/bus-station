@@ -7,7 +7,6 @@ from time import sleep
 
 from redis import Redis
 
-from bus_station.bus_stop.resolvers.in_memory_bus_stop_resolver import InMemoryBusStopResolver
 from bus_station.command_terminal.bus.asynchronous.distributed.kombu_command_bus import KombuCommandBus
 from bus_station.command_terminal.bus_engine.kombu_command_bus_engine import KombuCommandBusEngine
 from bus_station.command_terminal.command import Command
@@ -22,7 +21,6 @@ from bus_station.shared_terminal.broker_connection.connection_parameters.rabbitm
 from bus_station.shared_terminal.engine.runner.process_engine_runner import ProcessEngineRunner
 from bus_station.shared_terminal.engine.runner.self_process_engine_runner import SelfProcessEngineRunner
 from bus_station.shared_terminal.factories.kombu_connection_factory import KombuConnectionFactory
-from bus_station.shared_terminal.fqn import resolve_fqn
 from tests.integration.integration_test_case import IntegrationTestCase
 
 
@@ -57,8 +55,6 @@ class TestRabbitKombuCommandBus(IntegrationTestCase):
         cls.kombu_connection.connect()
         cls.command_serializer = PassengerJSONSerializer()
         cls.command_deserializer = PassengerJSONDeserializer()
-        cls.command_handler_resolver = InMemoryBusStopResolver()
-        cls.command_handler_fqn = resolve_fqn(CommandTestHandler)
         cls.command_receiver = CommandMiddlewareReceiver()
 
     @classmethod
@@ -66,12 +62,9 @@ class TestRabbitKombuCommandBus(IntegrationTestCase):
         cls.kombu_connection.release()
 
     def setUp(self) -> None:
-        self.command_handler_registry = CommandHandlerRegistry(
-            bus_stop_resolver=self.command_handler_resolver,
-        )
+        self.command_handler_registry = CommandHandlerRegistry()
         self.test_command_handler = CommandTestHandler()
-        self.command_handler_resolver.add_bus_stop(self.test_command_handler)
-        self.command_handler_registry.register(self.command_handler_fqn)
+        self.command_handler_registry.register(self.test_command_handler)
         self.kombu_command_bus_engine = KombuCommandBusEngine(
             self.kombu_connection,
             self.command_handler_registry,
@@ -85,7 +78,7 @@ class TestRabbitKombuCommandBus(IntegrationTestCase):
         )
 
     def tearDown(self) -> None:
-        self.command_handler_registry.unregister(self.command_handler_fqn)
+        self.command_handler_registry.unregister(self.test_command_handler)
 
     def test_process_transport_success(self):
         test_command = CommandTest()

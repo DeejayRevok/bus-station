@@ -8,7 +8,6 @@ from time import sleep
 from redis import Redis
 
 from bus_station.bus_stop.registration.address.redis_bus_stop_address_registry import RedisBusStopAddressRegistry
-from bus_station.bus_stop.resolvers.in_memory_bus_stop_resolver import InMemoryBusStopResolver
 from bus_station.passengers.serialization.passenger_json_deserializer import PassengerJSONDeserializer
 from bus_station.passengers.serialization.passenger_json_serializer import PassengerJSONSerializer
 from bus_station.query_terminal.bus.synchronous.distributed.rpyc_query_bus import RPyCQueryBus
@@ -23,7 +22,6 @@ from bus_station.query_terminal.serialization.query_response_json_deserializer i
 from bus_station.query_terminal.serialization.query_response_json_serializer import QueryResponseJSONSerializer
 from bus_station.shared_terminal.engine.runner.process_engine_runner import ProcessEngineRunner
 from bus_station.shared_terminal.engine.runner.self_process_engine_runner import SelfProcessEngineRunner
-from bus_station.shared_terminal.fqn import resolve_fqn
 from tests.integration.integration_test_case import IntegrationTestCase
 
 
@@ -46,7 +44,6 @@ class TestRPyCQueryBus(IntegrationTestCase):
     def setUpClass(cls) -> None:
         redis_host = cls.redis["host"]
         redis_port = cls.redis["port"]
-        cls.query_handler_fqn = resolve_fqn(QueryTestHandler)
         cls.bus_host = "localhost"
         cls.bus_port = 1234
 
@@ -54,7 +51,6 @@ class TestRPyCQueryBus(IntegrationTestCase):
         cls.redis_address_registry = RedisBusStopAddressRegistry(redis_client)
         cls.redis_address_registry.register(QueryTestHandler, f"{cls.bus_host}:{cls.bus_port}")
 
-        cls.query_handler_resolver = InMemoryBusStopResolver()
         cls.query_serializer = PassengerJSONSerializer()
         cls.query_deserializer = PassengerJSONDeserializer()
         cls.query_receiver = QueryMiddlewareReceiver()
@@ -69,13 +65,10 @@ class TestRPyCQueryBus(IntegrationTestCase):
         cls.redis_address_registry.unregister(QueryTestHandler)
 
     def setUp(self) -> None:
-        self.query_handler_registry = QueryHandlerRegistry(
-            bus_stop_resolver=self.query_handler_resolver,
-        )
+        self.query_handler_registry = QueryHandlerRegistry()
 
         self.test_query_handler = QueryTestHandler()
-        self.query_handler_resolver.add_bus_stop(self.test_query_handler)
-        self.query_handler_registry.register(self.query_handler_fqn)
+        self.query_handler_registry.register(self.test_query_handler)
 
         self.rpyc_query_bus_engine = RPyCQueryBusEngine(
             rpyc_server=self.rpyc_server,
@@ -87,7 +80,7 @@ class TestRPyCQueryBus(IntegrationTestCase):
         )
 
     def tearDown(self) -> None:
-        self.query_handler_registry.unregister(self.query_handler_fqn)
+        self.query_handler_registry.unregister(self.test_query_handler)
 
     def test_transport_success(self):
         test_query_value = "test_query_value"
