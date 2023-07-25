@@ -1,8 +1,7 @@
 from dataclasses import is_dataclass
-from typing import Callable, Optional, Type, TypeVar
+from typing import Any, Callable, Optional, Type, TypeVar
 
 from bus_station.passengers.passenger import Passenger
-from bus_station.shared_terminal.dataclass_type import DataclassType
 
 P = TypeVar("P", bound=Passenger)
 
@@ -18,9 +17,7 @@ __EXCLUDED_MAPPING_MEMBERS = {
 }
 
 
-def passenger_mapper(
-    class_to_map: DataclassType, passenger_type: Type[P], passenger_name: Optional[str] = None
-) -> None:
+def passenger_mapper(class_to_map: Any, passenger_type: Type[P], passenger_name: Optional[str] = None) -> None:
     if is_dataclass(class_to_map) is False:
         raise ValueError("Class to map must be a dataclass")
 
@@ -30,7 +27,7 @@ def passenger_mapper(
     __set_passenger_name(class_to_map, passenger_name)
 
 
-def __copy_class_members(source_class: Type, destination_class: DataclassType) -> None:
+def __copy_class_members(source_class: Type, destination_class: Any) -> None:
     for member_name, member_value in source_class.__dict__.items():
         if member_name in __EXCLUDED_MAPPING_MEMBERS:
             continue
@@ -49,7 +46,7 @@ def __copy_class_members(source_class: Type, destination_class: DataclassType) -
         setattr(destination_class, member_name, member_value)
 
 
-def __set_mapped_init_fn(passenger_type: Type[P], destination_class: DataclassType) -> None:
+def __set_mapped_init_fn(passenger_type: Type[P], destination_class: Any) -> None:
     def __new_init_fn(passenger_init_fn: Callable, destination_class_init_fn: Callable) -> Callable:
         def real_init_fn(self, *args, **kwargs) -> None:
             passenger_init_fn(self)
@@ -60,7 +57,7 @@ def __set_mapped_init_fn(passenger_type: Type[P], destination_class: DataclassTy
     destination_class.__init__ = __new_init_fn(passenger_type.__init__, destination_class.__init__)  # pyre-ignore[8]
 
 
-def __set_passenger_name(destination_class: DataclassType, passenger_name: Optional[str]) -> None:
+def __set_passenger_name(destination_class: Any, passenger_name: Optional[str]) -> None:
     if passenger_name is None:
         return
 

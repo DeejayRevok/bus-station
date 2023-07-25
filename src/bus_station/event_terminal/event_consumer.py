@@ -1,14 +1,13 @@
 from abc import abstractmethod
-from typing import Type
+from typing import Any, Type
 
 from bus_station.bus_stop.bus_stop import BusStop
 from bus_station.event_terminal.event import Event
-from bus_station.shared_terminal.dataclass_type import DataclassType
 
 
 class EventConsumer(BusStop):
     @abstractmethod
-    def consume(self, event: Event | DataclassType) -> None:
+    def consume(self, event: Any) -> None:
         pass
 
     @classmethod

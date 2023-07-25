@@ -1,14 +1,13 @@
 from abc import abstractmethod
-from typing import Type
+from typing import Any, Type
 
 from bus_station.bus_stop.bus_stop import BusStop
 from bus_station.command_terminal.command import Command
-from bus_station.shared_terminal.dataclass_type import DataclassType
 
 
 class CommandHandler(BusStop):
     @abstractmethod
-    def handle(self, command: Command | DataclassType) -> None:
+    def handle(self, command: Any) -> None:
         pass
 
     @classmethod
