@@ -54,7 +54,7 @@ def __set_mapped_init_fn(passenger_type: Type[P], destination_class: Any) -> Non
 
         return real_init_fn
 
-    destination_class.__init__ = __new_init_fn(passenger_type.__init__, destination_class.__init__)  # pyre-ignore[8]
+    destination_class.__init__ = __new_init_fn(passenger_type.__init__, destination_class.__init__)
 
 
 def __set_passenger_name(destination_class: Any, passenger_name: Optional[str]) -> None:
