@@ -1,3 +1,9 @@
+## 7.2.0 (2023-07-28)
+
+### Feat
+
+- make confluent kafka dependency optional
+
 ## 7.1.0 (2023-07-28)
 
 ### Feat
