@@ -1,3 +1,9 @@
+## 7.1.0 (2023-07-28)
+
+### Feat
+
+- add kafka passenger tracker builder
+
 ## 7.0.0 (2023-07-13)
 
 ### BREAKING CHANGE
