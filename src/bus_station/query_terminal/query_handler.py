@@ -1,15 +1,14 @@
 from abc import abstractmethod
-from typing import Type
+from typing import Any, Type
 
 from bus_station.bus_stop.bus_stop import BusStop
 from bus_station.query_terminal.query import Query
 from bus_station.query_terminal.query_response import QueryResponse
-from bus_station.shared_terminal.dataclass_type import DataclassType
 
 
 class QueryHandler(BusStop):
     @abstractmethod
-    def handle(self, query: Query | DataclassType) -> QueryResponse:
+    def handle(self, query: Any) -> QueryResponse:
         pass
 
     @classmethod
